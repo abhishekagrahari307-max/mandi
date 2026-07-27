@@ -1042,7 +1042,7 @@
         let trendChartObj = null;
         let auctionWs = null;
 
-        window.addEventListener('load', () => {
+        function initializeApp() {
             lucide.createIcons();
             loadLanguage(currentLang);
             fetchDashboardData();
@@ -1070,7 +1070,14 @@
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
-        });
+        }
+
+        // Force-bypass window load race condition (PWA production-standard)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initializeApp();
+        } else {
+            window.addEventListener('load', initializeApp);
+        }
 
         function updateOnlineStatus() {
             const banner = document.getElementById('offline-banner');
