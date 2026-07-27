@@ -1,137 +1,137 @@
 [
   {
-    "district": "Muzaffarnagar",
-    "district_hi": "मुजफ्फरनगर",
-    "temp": 21,
-    "status": "Heavy Rain",
-    "status_hi": "भारी बारिश",
-    "humidity": 84,
-    "wind": 7
-  },
-  {
-    "district": "Lucknow",
-    "district_hi": "लखनऊ",
-    "temp": 30,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 60,
+    "district": "Hamirpur",
+    "district_hi": "हमीरपुर",
+    "temp": 34,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 90,
     "wind": 16
   },
   {
-    "district": "Sultanpur",
-    "district_hi": "सुल्तानपुर",
+    "district": "Jaunpur",
+    "district_hi": "जाउनपुर",
     "temp": 27,
-    "status": "Heavy Rain",
-    "status_hi": "भारी बारिश",
-    "humidity": 49,
-    "wind": 20
-  },
-  {
-    "district": "Bijnor",
-    "district_hi": "बिजनौर",
-    "temp": 28,
     "status": "Sunny",
     "status_hi": "धूप",
-    "humidity": 84,
-    "wind": 12
-  },
-  {
-    "district": "Ambedkar Nagar",
-    "district_hi": "अम्बेडकर नगर",
-    "temp": 27,
-    "status": "Showers",
-    "status_hi": "हल्की बारिश",
-    "humidity": 67,
-    "wind": 11
-  },
-  {
-    "district": "Ayodhya",
-    "district_hi": "अयोध्या",
-    "temp": 28,
-    "status": "Showers",
-    "status_hi": "हल्की बारिश",
-    "humidity": 57,
+    "humidity": 47,
     "wind": 8
   },
   {
     "district": "Raebareli",
     "district_hi": "रायबरेली",
-    "temp": 26,
+    "temp": 34,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 90,
+    "wind": 10
+  },
+  {
+    "district": "Varanasi",
+    "district_hi": "वाराणसी",
+    "temp": 28,
+    "status": "Showers",
+    "status_hi": "हल्की बारिश",
+    "humidity": 58,
+    "wind": 20
+  },
+  {
+    "district": "Gonda",
+    "district_hi": "गोंडा",
+    "temp": 31,
+    "status": "Partly Cloudy",
+    "status_hi": "आंशिक बादल",
+    "humidity": 46,
+    "wind": 6
+  },
+  {
+    "district": "Lalitpur",
+    "district_hi": "ललितपुर",
+    "temp": 37,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 87,
+    "wind": 13
+  },
+  {
+    "district": "Siddharthnagar",
+    "district_hi": "सिद्धार्थनगर",
+    "temp": 25,
     "status": "Heavy Rain",
     "status_hi": "भारी बारिश",
-    "humidity": 82,
-    "wind": 18
-  },
-  {
-    "district": "Auraiya",
-    "district_hi": "औरैया",
-    "temp": 38,
-    "status": "Sunny",
-    "status_hi": "धूप",
-    "humidity": 69,
-    "wind": 9
-  },
-  {
-    "district": "Budaun",
-    "district_hi": "बदायूं",
-    "temp": 25,
-    "status": "Sunny",
-    "status_hi": "धूप",
-    "humidity": 84,
-    "wind": 11
-  },
-  {
-    "district": "Etah",
-    "district_hi": "एटा",
-    "temp": 32,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 79,
-    "wind": 9
-  },
-  {
-    "district": "Rampur",
-    "district_hi": "रामपुर",
-    "temp": 33,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 80,
-    "wind": 19
-  },
-  {
-    "district": "Baghpat",
-    "district_hi": "बागपत",
-    "temp": 31,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 64,
-    "wind": 11
+    "humidity": 77,
+    "wind": 8
   },
   {
     "district": "Shamli",
     "district_hi": "शामली",
+    "temp": 27,
+    "status": "Heavy Rain",
+    "status_hi": "भारी बारिश",
+    "humidity": 69,
+    "wind": 19
+  },
+  {
+    "district": "Kasganj",
+    "district_hi": "कासगंज",
+    "temp": 20,
+    "status": "Heavy Rain",
+    "status_hi": "भारी बारिश",
+    "humidity": 78,
+    "wind": 12
+  },
+  {
+    "district": "Ghazipur",
+    "district_hi": "गाजीपुर",
+    "temp": 21,
+    "status": "Heavy Rain",
+    "status_hi": "भारी बारिश",
+    "humidity": 47,
+    "wind": 12
+  },
+  {
+    "district": "Meerut",
+    "district_hi": "मेरठ",
     "temp": 25,
     "status": "Clear Sky",
     "status_hi": "साफ मौसम",
-    "humidity": 75,
-    "wind": 14
+    "humidity": 72,
+    "wind": 9
+  },
+  {
+    "district": "Ballia",
+    "district_hi": "बलिया",
+    "temp": 37,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 81,
+    "wind": 18
+  },
+  {
+    "district": "Chitrakoot",
+    "district_hi": "चित्रकूट",
+    "temp": 29,
+    "status": "Clear Sky",
+    "status_hi": "साफ मौसम",
+    "humidity": 71,
+    "wind": 16
+  },
+  {
+    "district": "Bareilly",
+    "district_hi": "बरेली",
+    "temp": 30,
+    "status": "Clear Sky",
+    "status_hi": "साफ मौसम",
+    "humidity": 58,
+    "wind": 13
   },
   {
     "district": "Hardoi",
     "district_hi": "हरदोई",
-    "temp": 25,
-    "status": "Showers",
-    "status_hi": "हल्की बारिश",
-    "humidity": 60,
-    "wind": 11
-  },
-  {
-    "district": "Sonbhadra",
-    "district_hi": "सोनभद्र",
-    "temp": 29,
+    "temp": 32,
     "status": "Partly Cloudy",
     "status_hi": "आंशिक बादल",
-    "humidity": 47,
-    "wind": 13
+    "humidity": 53,
+    "wind": 9
   }
 ]

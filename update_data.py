@@ -90,6 +90,7 @@ COMMODITIES = [
     {"en": "Wheat", "hi": "गेहूं", "base_price": 2350, "min_var": -50, "max_var": 80, "unit": "Quintal"},
     {"en": "Paddy (Dhan)", "hi": "धान (सामान्य)", "base_price": 2183, "min_var": -40, "max_var": 60, "unit": "Quintal"},
     {"en": "Basmati Paddy", "hi": "धान (बासमती)", "base_price": 3800, "min_var": -200, "max_var": 400, "unit": "Quintal"},
+    {"en": "Rice", "hi": "चावल", "base_price": 3100, "min_var": -80, "max_var": 120, "unit": "Quintal"},
     {"en": "Potato", "hi": "आलू", "base_price": 1450, "min_var": -150, "max_var": 200, "unit": "Quintal"},
     {"en": "Onion", "hi": "प्याज़", "base_price": 2200, "min_var": -200, "max_var": 300, "unit": "Quintal"},
     {"en": "Tomato", "hi": "टमाटर", "base_price": 1800, "min_var": -300, "max_var": 500, "unit": "Quintal"},
