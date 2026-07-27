@@ -608,7 +608,18 @@ def main() -> None:
 
     if candidate_feeds:
         source_name, primary_records = candidate_feeds[0]
-        up_records = add_cross_verification(primary_records, source_name, candidate_feeds[1:])
+        checked_records = add_cross_verification(primary_records, source_name, candidate_feeds[1:])
+        # The public dashboard is intentionally stricter than a normal single-
+        # source reader: publish a price only after three government feeds agree.
+        up_records = [record for record in checked_records if record.get("three_source_verified")]
+        if up_records:
+            source_name = "3-source verified: " + ", ".join(name for name, records in candidate_feeds if records)
+        sources.append({
+            "name": "3-source verification gate",
+            "status": "ok" if up_records else "insufficient_sources",
+            "records": len(up_records),
+            "message": f"{len(up_records)} of {len(checked_records)} records matched across 3+ feeds",
+        })
     fresh_verified_data = bool(up_records)
     if not up_records:
         if previous_verified:
@@ -620,8 +631,9 @@ def main() -> None:
             source_name = "Official feed unavailable"
             print("No verified snapshot exists; legacy generated rates were not retained.")
 
-    if not all_india_records:
-        all_india_records = up_records
+    # State summaries also use only records that passed the same 3-source gate.
+    # A single all-India OGD response is monitored but never published alone.
+    all_india_records = up_records
 
     contacts, contact_source = ([], None) if offline else fetch_mandi_contacts()
     sources.append({

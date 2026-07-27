@@ -15,7 +15,7 @@
 - **🏛️ पूरी मंडी निर्देशिका:** मंडी, जिला, जिंस, भाव सीमा, उपलब्ध स्थानीय अधिकारी संपर्क, केंद्रीय helpdesk और official links।
 - **⚖️ अधिनियम और नियमावली:** U.P. Krishi Utpadan Mandi Adhiniyam 1964, Niyamawali 1965, अध्याय और धारा-सूची के official India Code links।
 - **🔨 e-NAM नीलामी:** अधिकृत feed मिलने पर जिला एवं lot-wise read-only live snapshot; वास्तविक bid केवल authenticated e-NAM portal पर। कोई simulated lot/bid नहीं।
-- **🗺️ राज्य-वार भाव:** data.gov.in/AGMARKNET records से राज्य, जिला, मंडी और प्रमुख जिंस का सारांश।
+- **🗺️ राज्य-वार भाव:** केवल 3+ सरकारी feeds पर match हुए records से राज्य, जिला, मंडी और जिंस का सारांश।
 - **🔄 दिन में 6 बार auto-update:** 00:30, 04:30, 08:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---

@@ -157,10 +157,7 @@
                                 <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
                                 <span>डेटाबेस दरें प्रबंधन (Rates Manager)</span>
                             </h3>
-                            <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3.5 rounded-lg text-xs transition flex items-center space-x-1 shadow-lg">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                                <span>नया रेट जोड़ें (Add Custom)</span>
-                            </button>
+                            <span class="bg-blue-500/10 text-blue-300 border border-blue-500/20 font-bold py-1.5 px-3.5 rounded-lg text-xs">🔒 Official feed • Read only</span>
                         </div>
 
                         <!-- Table Search -->
@@ -384,14 +381,7 @@
                                 <td class="py-2.5 px-4 text-slate-300">${r.mandi_hi}</td>
                                 <td class="py-2.5 px-4 text-emerald-400 font-bold">${r.commodity_hi}</td>
                                 <td class="py-2.5 px-4 text-right font-extrabold text-white">₹${r.modal_price}</td>
-                                <td class="py-2.5 px-4 text-center space-x-2">
-                                    <button onclick='editRate(${JSON.stringify(r)})' class="p-1 hover:bg-emerald-500/20 rounded border border-transparent hover:border-emerald-500/30 text-emerald-400 transition inline-block">
-                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="deleteRate(${r.id})" class="p-1 hover:bg-red-500/20 rounded border border-transparent hover:border-red-500/30 text-red-400 transition inline-block">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </td>
+                                <td class="py-2.5 px-4 text-center text-blue-300 font-bold text-[10px]">Verified feed</td>
                             </tr>
                         `;
                     });

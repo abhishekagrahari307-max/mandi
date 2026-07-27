@@ -362,78 +362,30 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "avg_modal_price": round(avg_val, 2)
     }
 
-@app.post("/api/v2/rates", status_code=status.HTTP_201_CREATED)
-def create_rate(
-    rate: RateCreate, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role not in ["admin", "trader", "staff"]:
-        raise HTTPException(status_code=403, detail="Role unauthorized to insert rates")
-        
-    m_record = db.MandiRecord(**pydantic_to_dict(rate))
-    db_sess.add(m_record)
-    db_sess.commit()
-    db_sess.refresh(m_record)
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "CREATE_RATE", 
-        f"Inserted new rate for {rate.commodity} in {rate.mandi} (₹{rate.modal_price})", request
+@app.post("/api/v2/rates")
+def create_rate(current_user: db.User = Depends(get_current_user)):
+    """Official price records are read-only and cannot be entered manually."""
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Manual rates are disabled; prices must come from a verified government feed",
     )
-    return {"message": "Mandi rate added successfully!", "record": sqlalchemy_to_dict(m_record)}
+
 
 @app.put("/api/v2/rates/{record_id}")
-def update_rate(
-    record_id: int, 
-    updated: RateCreate, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role not in ["admin", "trader"]:
-        raise HTTPException(status_code=403, detail="Role unauthorized to modify rates")
-        
-    record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Mandi record not found")
-        
-    for key, value in pydantic_to_dict(updated).items():
-        setattr(record, key, value)
-        
-    db_sess.commit()
-    db_sess.refresh(record)
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "UPDATE_RATE", 
-        f"Modified record ID {record_id} - New Modal Price: ₹{updated.modal_price}", request
+def update_rate(record_id: int, current_user: db.User = Depends(get_current_user)):
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Manual rate edits are disabled; refresh the verified government feed",
     )
-    return {"message": "Mandi rate updated successfully!", "record": sqlalchemy_to_dict(record)}
+
 
 @app.delete("/api/v2/rates/{record_id}")
-def delete_rate(
-    record_id: int, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Strictly Admin only operation")
-        
-    record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Mandi record not found")
-        
-    deleted_commodity = record.commodity
-    deleted_mandi = record.mandi
-    db_sess.delete(record)
-    db_sess.commit()
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "DELETE_RATE", 
-        f"Deleted record ID {record_id} ({deleted_commodity} at {deleted_mandi})", request
+def delete_rate(record_id: int, current_user: db.User = Depends(get_current_user)):
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Official feed records are read-only",
     )
-    return {"message": f"Record with ID {record_id} deleted successfully!"}
+
 
 @app.post("/api/v2/update")
 def trigger_system_update(
