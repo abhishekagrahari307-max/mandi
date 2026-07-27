@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UP Mandi Enterprise — Admin Panel v2.0</title>
+    
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full flex flex-col text-slate-100 antialiased font-sans bg-slate-950">
+
+    <!-- 1. LOGIN SCREEN CARD -->
+    <div id="login-container" class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="p-3 bg-emerald-500/10 rounded-xl inline-block border border-emerald-500/20">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-emerald-500 mx-auto"></i>
+                </div>
+                <h1 class="text-xl font-black text-white">UP Mandi Enterprise v2.0</h1>
+                <p class="text-xs text-slate-400">सुरक्षित प्रशासनिक लॉगिन (Admin Login)</p>
+            </div>
+            
+            <div id="login-error" class="hidden bg-red-500/15 border border-red-500/30 text-red-400 p-3 rounded-lg text-xs font-bold text-center">
+                गलत पासवर्ड या यूजरनेम! दोबारा प्रयास करें।
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">यूजरनेम (Username)</label>
+                    <input type="text" id="username" required value="admin" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">पासवर्ड (Password)</label>
+                    <input type="password" id="password" required value="admin123" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 px-4 rounded-lg text-white transition shadow-lg shadow-emerald-900/20 mt-2">
+                    प्रवेश करें (Login)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. LOGGED-IN ADMIN PANEL OVERVIEW -->
+    <div id="admin-panel" class="hidden flex-grow flex flex-col">
+        <!-- Header -->
+        <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-600/10 rounded-lg border border-emerald-500/30">
+                    <i data-lucide="sprout" class="w-6 h-6 text-emerald-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-black text-white">UP Mandi Enterprise <span class="text-xs bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded ml-1">v2.0 Beta</span></h1>
+                    <p class="text-[10px] text-slate-400">Vijay Kumar Traders — एडमिन पैनल</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <span class="text-xs text-slate-400 flex items-center space-x-1.5 bg-slate-950 py-1.5 px-3 rounded-full border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Admin Logged-in</span>
+                </span>
+                <button onclick="handleLogout()" class="p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg transition text-slate-300 hover:text-white" title="लॉगआउट">
+                    <i data-lucide="log-out" class="w-4.5 h-4.5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Wrapper -->
+        <main class="flex-grow p-6 space-y-6 max-w-7xl w-full mx-auto">
+            
+            <!-- Metrics Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs font-bold text-slate-400 uppercase">कुल भाव रिकॉर्ड</span>
+                        <span id="metric-total" class="text-2xl font-black text-white mt-1 block">-</span>
+                    </div>
+                    <div class="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                        <i data-lucide="database" class="w-6 h-6 text-blue-400"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs font-bold text-slate-400 uppercase">सक्रिय मंडियां</span>
+                        <span id="metric-mandis" class="text-2xl font-black text-white mt-1 block">-</span>
+                    </div>
+                    <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                        <i data-lucide="store" class="w-6 h-6 text-purple-400"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs font-bold text-slate-400 uppercase">औसत मॉडल भाव</span>
+                        <span id="metric-avg" class="text-2xl font-black text-emerald-400 mt-1 block">-</span>
+                    </div>
+                    <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-emerald-400"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs font-bold text-slate-400 uppercase">ऑटो सिंक आवृति</span>
+                        <span class="text-lg font-extrabold text-white mt-1 block">4 बार दैनिक (Daily)</span>
+                    </div>
+                    <div class="p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                        <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Columns Control Center -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left: Control Panels -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Agmarknet Live Scraper Manual Trigger -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <h3 class="font-extrabold text-white text-sm uppercase flex items-center space-x-2 border-b border-slate-800 pb-3">
+                            <i data-lucide="terminal" class="text-yellow-400 w-4 h-4"></i>
+                            <span>लाइव स्क्रैपर कंट्रोल (Scraper Engine)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            इस बटन पर क्लिक करके आप सीधे <b>Agmarknet (भारत सरकार के कृषि डेटाबेस)</b> से वर्तमान में जारी उत्तर प्रदेश की सभी लाइव कीमतों को तुरंत खींचकर डेटाबेस को सिंक कर सकते हैं।
+                        </p>
+                        <button onclick="triggerScraperSync()" id="btn-scraper" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition flex items-center justify-center space-x-2 shadow-lg">
+                            <i id="scraper-icon" data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span id="scraper-btn-text">लाइव डेटा सिंक करें (Force Update)</span>
+                        </button>
+                    </div>
+
+                    <!-- Live Excel Dashboard Sync -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <h3 class="font-extrabold text-white text-sm uppercase flex items-center space-x-2 border-b border-slate-800 pb-3">
+                            <i data-lucide="sheet" class="text-emerald-400 w-4 h-4"></i>
+                            <span>लाइव एक्सेल डैशबोर्ड (Excel Sync)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            इस लाइव डेटा यूआरएल (Live URL) को कॉपी करें और अपने Microsoft Excel में <b>"Get Data from Web"</b> या <b>PowerQuery</b> में पेस्ट करें। इसके बाद केवल 1-क्लिक रिफ्रेश करने पर आपकी पूरी एक्सेल शीट इस डेटाबेस से लाइव अपडेट हो जाएगी!
+                        </p>
+                        <div class="bg-slate-950 p-2.5 rounded border border-slate-800 flex items-center justify-between space-x-2 text-xs">
+                            <code class="text-emerald-400 font-mono select-all overflow-x-auto whitespace-nowrap scrollbar-none" id="excel-url">/api/v2/excel/sync</code>
+                            <button onclick="copyExcelLink()" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white" title="लिंक कॉपी करें">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Rates List View & Management (CRUD) -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="p-5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                            <h3 class="font-bold text-white flex items-center space-x-2 text-sm uppercase">
+                                <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+                                <span>डेटाबेस दरें प्रबंधन (Rates Manager)</span>
+                            </h3>
+                            <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3.5 rounded-lg text-xs transition flex items-center space-x-1 shadow-lg">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                                <span>नया रेट जोड़ें (Add Custom)</span>
+                            </button>
+                        </div>
+
+                        <!-- Table Search -->
+                        <div class="p-4 bg-slate-950 border-b border-slate-800 flex gap-2">
+                            <input type="text" id="admin-search" oninput="loadRates()" placeholder="खोजें (जिला, मंडी, या फसल)..." class="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+
+                        <!-- Scrollable Table -->
+                        <div class="overflow-x-auto max-h-[400px] custom-scrollbar">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase">
+                                        <th class="py-2.5 px-4">ID</th>
+                                        <th class="py-2.5 px-4">जिला (District)</th>
+                                        <th class="py-2.5 px-4">मंडी (Mandi)</th>
+                                        <th class="py-2.5 px-4">फसल (Crop)</th>
+                                        <th class="py-2.5 px-4 text-right">मॉडल भाव</th>
+                                        <th class="py-2.5 px-4 text-center">कार्रवाई (Action)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-rates-body" class="divide-y divide-slate-800/60">
+                                    <!-- Loaded via API -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. ADD/EDIT MANUALLY RATE MODAL DIALOG -->
+    <div id="rate-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 id="modal-title" class="font-bold text-white text-base">नया भाव विवरण जोड़ें (Add/Edit Custom Rate)</h4>
+                <button onclick="closeRateModal()" class="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleSaveRate(event)" class="grid grid-cols-2 gap-4 text-xs">
+                <input type="hidden" id="modal-record-id">
+                
+                <!-- District -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">जिला (English)</label>
+                    <input type="text" id="m-dist" required placeholder="Kanpur" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">जिला (हिन्दी)</label>
+                    <input type="text" id="m-dist-hi" required placeholder="कानपुर" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Mandi -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">मंडी नाम (English)</label>
+                    <input type="text" id="m-mandi" required placeholder="Kanpur Mandi" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">मंडी नाम (हिन्दी)</label>
+                    <input type="text" id="m-mandi-hi" required placeholder="कानपुर मंडी" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Crop -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">फसल (English)</label>
+                    <input type="text" id="m-crop" required placeholder="Wheat" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">फसल (हिन्दी)</label>
+                    <input type="text" id="m-crop-hi" required placeholder="गेहूं" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Variety & Grade -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">किस्म (Variety)</label>
+                    <input type="text" id="m-variety" value="FAQ" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">ग्रेड (Grade)</label>
+                    <input type="text" id="m-grade" value="FAQ" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Prices -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">न्यूनतम मूल्य (₹/Q)</label>
+                    <input type="number" id="m-min" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">मॉडल (औसत) मूल्य (₹/Q)</label>
+                    <input type="number" id="m-modal" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">अधिकतम मूल्य (₹/Q)</label>
+                    <input type="number" id="m-max" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Arrivals & Date -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">दैनिक आवक (टन में)</label>
+                    <input type="number" id="m-arrivals" value="50" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-slate-400 font-bold mb-1">भाव तिथि (dd/mm/yyyy)</label>
+                    <input type="text" id="m-date" required value="27/07/2026" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <!-- Submit -->
+                <div class="col-span-2 flex justify-end space-x-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeRateModal()" class="px-4 py-2 bg-slate-850 hover:bg-slate-800 rounded-lg font-bold text-slate-300">रद्द करें</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-white shadow-lg">सुरक्षित करें (Save)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripting logic -->
+    <script>
+        let JWT_TOKEN = "";
+
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            
+            // Auto fill current date in modal
+            const today = new Date();
+            const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+            document.getElementById('m-date').value = dateStr;
+
+            // Set excel link text
+            const host = window.location.origin;
+            document.getElementById('excel-url').innerText = `${host}/api/v2/excel/sync`;
+
+            // Check if token exists in storage
+            const stored = localStorage.getItem("mandi_jwt_token");
+            if (stored) {
+                JWT_TOKEN = stored;
+                showPanel();
+            }
+        });
+
+        // 1. JWT SECURE LOGIN HANDLER
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            const params = new URLSearchParams();
+            params.append('username', u);
+            params.append('password', p);
+
+            fetch('/api/v2/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Unauthorized");
+                return res.json();
+            })
+            .then(data => {
+                JWT_TOKEN = data.access_token;
+                localStorage.setItem("mandi_jwt_token", JWT_TOKEN);
+                document.getElementById('login-error').classList.add('hidden');
+                showPanel();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('login-error').classList.remove('hidden');
+            });
+        }
+
+        // Logout
+        function handleLogout() {
+            JWT_TOKEN = "";
+            localStorage.removeItem("mandi_jwt_token");
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('hidden');
+            document.documentElement.className = "h-full bg-slate-900";
+        }
+
+        function showPanel() {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('hidden');
+            document.documentElement.className = "h-full bg-slate-950";
+            
+            // Load panel data
+            loadMetrics();
+            loadRates();
+        }
+
+        // 2. LOAD METRICS
+        function loadMetrics() {
+            fetch('/api/v2/analytics/metrics')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('metric-total').innerText = data.total_records;
+                    document.getElementById('metric-mandis').innerText = data.active_mandis;
+                    document.getElementById('metric-avg').innerText = `₹ ${data.avg_modal_price.toLocaleString('en-IN')}`;
+                });
+        }
+
+        // 3. LOAD RATES TABLE WITH SEARCH
+        function loadRates() {
+            const searchVal = document.getElementById('admin-search').value;
+            fetch(`/api/v2/rates?limit=100&search=${encodeURIComponent(searchVal)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const body = document.getElementById('admin-rates-body');
+                    let html = '';
+                    
+                    data.records.forEach(r => {
+                        html += `
+                            <tr class="hover:bg-slate-900/40 transition border-b border-slate-800/40">
+                                <td class="py-2.5 px-4 font-bold text-slate-500">${r.id}</td>
+                                <td class="py-2.5 px-4 font-semibold text-white">${r.district_hi} (${r.district})</td>
+                                <td class="py-2.5 px-4 text-slate-300">${r.mandi_hi}</td>
+                                <td class="py-2.5 px-4 text-emerald-400 font-bold">${r.commodity_hi}</td>
+                                <td class="py-2.5 px-4 text-right font-extrabold text-white">₹${r.modal_price}</td>
+                                <td class="py-2.5 px-4 text-center space-x-2">
+                                    <button onclick='editRate(${JSON.stringify(r)})' class="p-1 hover:bg-emerald-500/20 rounded border border-transparent hover:border-emerald-500/30 text-emerald-400 transition inline-block">
+                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="deleteRate(${r.id})" class="p-1 hover:bg-red-500/20 rounded border border-transparent hover:border-red-500/30 text-red-400 transition inline-block">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    body.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-500">कोई डेटा नहीं मिला।</td></tr>';
+                    lucide.createIcons();
+                });
+        }
+
+        // 4. TRIGGER SCRAPER SYNC
+        function triggerScraperSync() {
+            const btn = document.getElementById('btn-scraper');
+            const icon = document.getElementById('scraper-icon');
+            const btnText = document.getElementById('scraper-btn-text');
+
+            icon.classList.add('animate-spin');
+            btn.className = "w-full bg-slate-800 border border-slate-700 text-slate-500 font-bold py-2.5 px-4 rounded-lg text-xs transition flex items-center justify-center space-x-2 cursor-not-allowed shadow-lg";
+            btnText.innerText = "स्क्रैपिंग जारी है, कृपया प्रतीक्षा करें...";
+
+            fetch('/api/v2/update', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${JWT_TOKEN}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Sync failed");
+                return res.json();
+            })
+            .then(data => {
+                alert(`सफलता! Agmarknet से ${data.updated_count} नए रेट्स को खींचकर डेटाबेस को सिंक कर दिया गया है!`);
+                loadMetrics();
+                loadRates();
+            })
+            .catch(err => {
+                alert("स्क्रैपिंग पूर्ण हुई या समय सीमा समाप्त हो गई (सरकारी सर्वर एरर)। रीलोड करके डेटा देखें।");
+            })
+            .finally(() => {
+                icon.classList.remove('animate-spin');
+                btn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition flex items-center justify-center space-x-2 shadow-lg";
+                btnText.innerText = "लाइव डेटा सिंक करें (Force Update)";
+            });
+        }
+
+        // 5. CRUD ACTION SCRIPTS
+        function openAddModal() {
+            document.getElementById('modal-title').innerText = "नया भाव विवरण जोड़ें";
+            document.getElementById('modal-record-id').value = "";
+            
+            document.getElementById('m-dist').value = "";
+            document.getElementById('m-dist-hi').value = "";
+            document.getElementById('m-mandi').value = "";
+            document.getElementById('m-mandi-hi').value = "";
+            document.getElementById('m-crop').value = "";
+            document.getElementById('m-crop-hi').value = "";
+            document.getElementById('m-variety').value = "FAQ";
+            document.getElementById('m-grade').value = "FAQ";
+            document.getElementById('m-min').value = "";
+            document.getElementById('m-modal').value = "";
+            document.getElementById('m-max').value = "";
+            document.getElementById('m-arrivals').value = "100";
+
+            document.getElementById('rate-modal').classList.remove('hidden');
+        }
+
+        function editRate(r) {
+            document.getElementById('modal-title').innerText = "दर विवरण संशोधित करें";
+            document.getElementById('modal-record-id').value = r.id;
+            
+            document.getElementById('m-dist').value = r.district;
+            document.getElementById('m-dist-hi').value = r.district_hi;
+            document.getElementById('m-mandi').value = r.mandi;
+            document.getElementById('m-mandi-hi').value = r.mandi_hi;
+            document.getElementById('m-crop').value = r.commodity;
+            document.getElementById('m-crop-hi').value = r.commodity_hi;
+            document.getElementById('m-variety').value = r.variety;
+            document.getElementById('m-grade').value = r.grade;
+            document.getElementById('m-min').value = r.min_price;
+            document.getElementById('m-modal').value = r.modal_price;
+            document.getElementById('m-max').value = r.max_price;
+            document.getElementById('m-arrivals').value = r.arrivals;
+            document.getElementById('m-date').value = r.arrival_date;
+
+            document.getElementById('rate-modal').classList.remove('hidden');
+        }
+
+        function closeRateModal() {
+            document.getElementById('rate-modal').classList.add('hidden');
+        }
+
+        function handleSaveRate(e) {
+            e.preventDefault();
+            const id = document.getElementById('modal-record-id').value;
+            
+            const payload = {
+                district: document.getElementById('m-dist').value,
+                district_hi: document.getElementById('m-dist-hi').value,
+                mandi: document.getElementById('m-mandi').value,
+                mandi_hi: document.getElementById('m-mandi-hi').value,
+                commodity: document.getElementById('m-crop').value,
+                commodity_hi: document.getElementById('m-crop-hi').value,
+                variety: document.getElementById('m-variety').value,
+                variety_hi: document.getElementById('m-variety').value, // auto same
+                grade: document.getElementById('m-grade').value,
+                grade_hi: document.getElementById('m-grade').value, // auto same
+                arrivals: parseInt(document.getElementById('m-arrivals').value) || 0,
+                min_price: parseFloat(document.getElementById('m-min').value),
+                max_price: parseFloat(document.getElementById('m-max').value),
+                modal_price: parseFloat(document.getElementById('m-modal').value),
+                arrival_date: document.getElementById('m-date').value
+            };
+
+            const url = id ? `/api/v2/rates/${id}` : '/api/v2/rates';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${JWT_TOKEN}`
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Save failed");
+                return res.json();
+            })
+            .then(data => {
+                alert(data.message);
+                closeRateModal();
+                loadMetrics();
+                loadRates();
+            })
+            .catch(err => {
+                alert("त्रुटि: डेटा सेव नहीं किया जा सका!");
+            });
+        }
+
+        function deleteRate(id) {
+            if (!confirm(`क्या आप वाकई इस रिकॉर्ड (ID: ${id}) को डेटाबेस से हटाना चाहते हैं?`)) return;
+
+            fetch(`/api/v2/rates/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${JWT_TOKEN}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Delete failed");
+                return res.json();
+            })
+            .then(data => {
+                alert(data.message);
+                loadMetrics();
+                loadRates();
+            })
+            .catch(err => {
+                alert("त्रुटि: रिकॉर्ड हटाया नहीं जा सका!");
+            });
+        }
+
+        function copyExcelLink() {
+            const code = document.getElementById('excel-url').innerText;
+            navigator.clipboard.writeText(code);
+            alert("लाइव एक्सेल सिंक लिंक कॉपी हो गया! अब इसे Excel -> From Web में पेस्ट करें।");
+        }
+    </script>
+</body>
+</html>
