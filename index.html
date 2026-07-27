@@ -1331,29 +1331,53 @@
                 historicalData = history || {};
                 weatherData = weather || [];
                 
-                const lastUpdatedDate = (latest && latest.updated_at) ? new Date(latest.updated_at) : new Date();
-                document.getElementById('stat-updated-time').innerText = lastUpdatedDate.toLocaleTimeString(
-                    currentLang === 'hi' ? 'hi-IN' : 'en-US', 
-                    { hour: '2-digit', minute: '2-digit' }
-                );
-                
-                const uniqueMandis = new Set(latestData.map(r => r.mandi || ''));
-                document.getElementById('stat-mandi-count').innerText = uniqueMandis.size;
-                
-                const sortedPrices = [...latestData].sort((a,b) => (b.modal_price || 0) - (a.modal_price || 0));
-                if (sortedPrices.length > 0) {
-                    const topCrop = sortedPrices[0];
-                    document.getElementById('stat-hot-crop').innerText = (currentLang === 'hi') 
-                        ? (topCrop.commodity_hi || topCrop.commodity || '-') 
-                        : (topCrop.commodity || '-');
-                }
+                // Safe UI Element updates with individual Try-Catch blocks
+                try {
+                    const lastUpdatedDate = (latest && latest.updated_at) ? new Date(latest.updated_at) : new Date();
+                    const elTime = document.getElementById('stat-updated-time');
+                    if (elTime) {
+                        elTime.innerText = lastUpdatedDate.toLocaleTimeString(
+                            currentLang === 'hi' ? 'hi-IN' : 'en-US', 
+                            { hour: '2-digit', minute: '2-digit' }
+                        );
+                    }
+                } catch (e) { console.error("Error setting time:", e); }
 
-                populateDropdowns();
-                renderRatesTable();
-                renderWeather();
-                updatePinnedStaples();
-                renderStaplesLeaderboard();
-                renderPriceRanking();
+                try {
+                    const uniqueMandis = new Set(latestData.map(r => r.mandi || ''));
+                    const elMCount = document.getElementById('stat-mandi-count');
+                    if (elMCount) elMCount.innerText = uniqueMandis.size;
+                } catch (e) { console.error("Error setting mandi count:", e); }
+                
+                try {
+                    const sortedPrices = [...latestData].sort((a,b) => (b.modal_price || 0) - (a.modal_price || 0));
+                    if (sortedPrices.length > 0) {
+                        const topCrop = sortedPrices[0];
+                        const elHot = document.getElementById('stat-hot-crop');
+                        if (elHot) {
+                            elHot.innerText = (currentLang === 'hi') 
+                                ? (topCrop.commodity_hi || topCrop.commodity || '-') 
+                                : (topCrop.commodity || '-');
+                        }
+                    }
+                } catch (e) { console.error("Error setting hot crop:", e); }
+
+                // Safe sequential function runner (Guarantees zero rendering blocks!)
+                const safeRun = (fnName, fn) => {
+                    try {
+                        fn();
+                        console.log(`✅ ${fnName} completed.`);
+                    } catch (e) {
+                        console.error(`❌ Error in ${fnName}:`, e);
+                    }
+                };
+
+                safeRun('populateDropdowns', populateDropdowns);
+                safeRun('renderRatesTable', renderRatesTable);
+                safeRun('renderWeather', renderWeather);
+                safeRun('updatePinnedStaples', updatePinnedStaples);
+                safeRun('renderStaplesLeaderboard', renderStaplesLeaderboard);
+                safeRun('renderPriceRanking', renderPriceRanking);
                 
                 if (refreshIcon) {
                     setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
@@ -1379,11 +1403,12 @@
             const subDist = document.getElementById('sub-dist');
             const subCrop = document.getElementById('sub-crop');
 
-            const currentDistValue = distSelect.value;
-            const currentCropValue = cropSelect.value;
-            const currentTrendValue = trendCropSelect.value;
-            const currentPredictValue = predictCropSelect.value;
-            const currentRankValue = rankCropSelect.value;
+            // Defensive guards in case of DOM elements absence
+            const currentDistValue = distSelect ? distSelect.value : 'all';
+            const currentCropValue = cropSelect ? cropSelect.value : 'all';
+            const currentTrendValue = trendCropSelect ? trendCropSelect.value : 'Wheat';
+            const currentPredictValue = predictCropSelect ? predictCropSelect.value : 'Wheat';
+            const currentRankValue = rankCropSelect ? rankCropSelect.value : 'Wheat';
 
             const uniqueDistricts = [];
             const districtKeys = new Set();
