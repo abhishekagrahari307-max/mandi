@@ -7,4 +7,4 @@ greenlet>=3.0.3
 bcrypt>=4.0.0
 websockets>=12.0
 # FastAPI/Starlette TestClient dependency for local and CI health/API checks
-httpx2>=2.9.0
+httpx2>=2.9.0,<3.0

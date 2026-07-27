@@ -1,107 +1,88 @@
-import os
-import urllib.request
-import urllib.parse
 import json
+import os
+import urllib.parse
+import urllib.request
 
-# Integration Tokens can be set in GitHub secrets or Cloud environment variables
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-WHATSAPP_API_KEY = os.environ.get("WHATSAPP_API_KEY", "") # e.g., Twilio or Ultramsg
+
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+WHATSAPP_API_KEY = os.environ.get("WHATSAPP_API_KEY", "").strip()
+WHATSAPP_API_URL = os.environ.get("WHATSAPP_API_URL", "").strip()
+
 
 def send_telegram_alert(chat_id, message):
-    """
-    Sends real-time price notification alert directly to a Telegram User/Channel.
-    Uses official Telegram Bot API. Fully free and robust.
-    """
+    """Send through Telegram Bot API; return False when not configured."""
     if not TELEGRAM_BOT_TOKEN:
-        print(f"Telegram Bot Token not configured. Mocking alert to Chat ID {chat_id}: {message}")
-        return True
-        
+        print("Telegram alert skipped: TELEGRAM_BOT_TOKEN is not configured")
+        return False
+
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML"
-    }
-    
+    payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
     try:
         data = urllib.parse.urlencode(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, method="POST")
-        with urllib.request.urlopen(req, timeout=8) as res:
-            res_data = json.loads(res.read().decode())
-            return res_data.get("ok", False)
-    except Exception as e:
-        print(f"Error sending real Telegram alert: {e}")
+        request = urllib.request.Request(url, data=data, method="POST")
+        with urllib.request.urlopen(request, timeout=8) as response:
+            response_data = json.loads(response.read().decode())
+            return bool(response_data.get("ok"))
+    except Exception as exc:
+        print(f"Error sending Telegram alert: {exc}")
         return False
+
 
 def send_whatsapp_alert(phone_number, message):
-    """
-    Sends price alert via WhatsApp API (e.g. using Twilio, Ultramsg, or Chat-API).
-    Since WhatsApp is a paid service, if API key is absent, we log and mock it.
-    """
-    if not WHATSAPP_API_KEY:
-        print(f"WhatsApp API Key not configured. Mocking alert to +91{phone_number}: {message}")
-        return True
-        
-    # Example Ultramsg Integration
-    url = "https://api.ultramsg.com/instance1234/messages/chat"
-    payload = {
-        "token": WHATSAPP_API_KEY,
-        "to": f"+91{phone_number}" if not phone_number.startswith("+") else phone_number,
-        "body": message
-    }
-    
-    try:
-        data = urllib.parse.urlencode(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, method="POST")
-        with urllib.request.urlopen(req, timeout=8) as res:
-            return True
-    except Exception as e:
-        print(f"Error sending real WhatsApp alert: {e}")
+    """Send through a configured provider endpoint; never report a mock send."""
+    if not WHATSAPP_API_KEY or not WHATSAPP_API_URL:
+        print("WhatsApp alert skipped: WHATSAPP_API_URL/API key is not configured")
         return False
 
+    destination = phone_number if phone_number.startswith("+") else f"+91{phone_number}"
+    payload = json.dumps({"to": destination, "message": message}).encode("utf-8")
+    request = urllib.request.Request(
+        WHATSAPP_API_URL,
+        data=payload,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {WHATSAPP_API_KEY}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            return 200 <= response.status < 300
+    except Exception as exc:
+        print(f"Error sending WhatsApp alert: {exc}")
+        return False
+
+
 def broadcast_price_alerts(records, subscriptions):
-    """
-    Broadcasts daily mandi prices to active subscribers on WhatsApp & Telegram.
-    Matches subscriber filters (district & crop).
-    """
+    """Broadcast verified database rates and count only actual provider sends."""
     success_count = 0
-    
-    for sub in subscriptions:
-        if not sub.is_active:
+    for subscription in subscriptions:
+        if not subscription.is_active:
             continue
-            
-        # Filter records matching subscriber preference
         relevant = [
-            r for r in records 
-            if (sub.district == "all" or r.district.lower() == sub.district.lower())
-            and (sub.commodity == "all" or r.commodity.lower() == sub.commodity.lower())
+            record for record in records
+            if (subscription.district == "all" or record.district.lower() == subscription.district.lower())
+            and (subscription.commodity == "all" or record.commodity.lower() == subscription.commodity.lower())
         ]
-        
         if not relevant:
             continue
-            
-        # Construct attractive message
-        msg_header = f"🌾 <b>UP Mandi Live Price Alert</b> 🌾\n"
-        msg_header += f"Vijay Kumar Traders — Daily Rates Update\n"
-        msg_header += "━━━━━━━━━━━━━━━━━━━━━━\n"
-        
-        msg_body = ""
-        for r in relevant[:5]: # Send top 5 relevant prices to keep it clean
-            msg_body += f"📍 <b>{r.mandi_hi}</b>\n"
-            msg_body += f"🔸 {r.commodity_hi} ({r.variety_hi}): <b>₹{r.modal_price}/Q</b>\n"
-            msg_body += f"📊 भाव रेंज: ₹{r.min_price} - ₹{r.max_price}\n\n"
-            
-        msg_footer = "━━━━━━━━━━━━━━━━━━━━━━\n"
-        msg_footer += "🔗 और भाव देखें: https://abhishekagrahari307-max.github.io/mandi/"
-        
-        full_message = msg_header + msg_body + msg_footer
-        
-        # Route to WhatsApp or Telegram
-        if sub.contact_type == "telegram":
-            ok = send_telegram_alert(sub.contact_value, full_message)
-            if ok: success_count += 1
-        elif sub.contact_type == "whatsapp":
-            ok = send_whatsapp_alert(sub.contact_value, full_message)
-            if ok: success_count += 1
-            
+
+        message = "🌾 <b>UP Mandi Price Alert</b> 🌾\n"
+        message += "Vijay Kumar Traders — Verified Rate Update\n"
+        message += "━━━━━━━━━━━━━━━━━━━━━━\n"
+        for record in relevant[:5]:
+            message += f"📍 <b>{record.mandi_hi}</b>\n"
+            message += f"🔸 {record.commodity_hi} ({record.variety_hi}): <b>₹{record.modal_price}/Q</b>\n"
+            message += f"📊 भाव रेंज: ₹{record.min_price} - ₹{record.max_price}\n\n"
+        message += "━━━━━━━━━━━━━━━━━━━━━━\n"
+        message += "🔗 https://abhishekagrahari307-max.github.io/mandi/"
+
+        sent = False
+        if subscription.contact_type == "telegram":
+            sent = send_telegram_alert(subscription.contact_value, message)
+        elif subscription.contact_type == "whatsapp":
+            sent = send_whatsapp_alert(subscription.contact_value, message)
+        if sent:
+            success_count += 1
     return success_count

@@ -122,6 +122,23 @@
     <!-- Sidebar Backdrop Overlay -->
     <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"></div>
 
+    <!-- Full official mandi details modal -->
+    <div id="mandi-detail-modal" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" onclick="closeMandiDetails(event)">
+        <div class="max-w-2xl mx-auto my-8 bg-white rounded-2xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
+            <div class="bg-slate-900 text-white p-5 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest text-emerald-300">Official Mandi Directory</p>
+                    <h3 id="mandi-detail-title" class="text-xl font-black mt-1">मंडी विवरण</h3>
+                    <p id="mandi-detail-district" class="text-xs text-slate-300 mt-1"></p>
+                </div>
+                <button onclick="closeMandiDetails()" class="p-2 hover:bg-slate-800 rounded-lg" aria-label="Close details">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="mandi-detail-content" class="p-5 space-y-5 text-sm"></div>
+        </div>
+    </div>
+
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-30 bg-primary-800 text-white shadow-md animate-none">
         <div class="bg-emerald-950 text-center py-1 text-[11px] font-bold tracking-widest text-emerald-200 select-none border-b border-emerald-700/20">॥ श्री गणेशाय नमः ॥</div>
@@ -161,18 +178,19 @@
             <div class="relative z-10 space-y-3">
                 <span class="inline-flex items-center bg-white/20 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-md">
                     <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse mr-1.5"></span>
-                    <span data-translate="live_badge">ताज़ा भाव अपडेटेड</span>
+                    <span id="live-data-badge" data-translate="live_badge">डेटा स्थिति जाँच रहे हैं</span>
                 </span>
                 <h2 class="text-2xl md:text-3xl font-extrabold" data-translate="welcome_title">किसान और व्यापारियों का डिजिटल साथी</h2>
-                <p class="text-sm text-emerald-50 max-w-2xl" data-translate="welcome_desc">उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।</p>
+                <p class="text-sm text-emerald-50 max-w-2xl" data-translate="welcome_desc">data.gov.in और AGMARKNET से उपलब्ध सत्यापित मंडी भाव। Portal unavailable होने पर स्पष्ट status दिखता है—कोई भाव बनाया नहीं जाता।</p>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-white/20">
                     <div>
-                        <span class="block text-xs text-emerald-200" data-translate="stat_update">आखिरी अपडेट</span>
+                        <span class="block text-xs text-emerald-200" data-translate="stat_update">आखिरी आधिकारिक अपडेट</span>
                         <span id="stat-updated-time" class="font-bold text-sm md:text-base">-</span>
+                        <span id="stat-updated-date" class="block text-[10px] text-emerald-100">-</span>
                     </div>
                     <div>
-                        <span class="block text-xs text-emerald-200" data-translate="stat_count">सक्रिय मंडियां</span>
+                        <span class="block text-xs text-emerald-200" data-translate="stat_count">रिपोर्टिंग मंडियां</span>
                         <span id="stat-mandi-count" class="font-bold text-sm md:text-base">-</span>
                     </div>
                     <div>
@@ -180,8 +198,9 @@
                         <span id="stat-hot-crop" class="font-bold text-sm md:text-base text-yellow-300">-</span>
                     </div>
                     <div>
-                        <span class="block text-xs text-emerald-200" data-translate="stat_avg">औसत मंडी शुल्क</span>
-                        <span class="font-bold text-sm md:text-base text-green-200">1.5% + 0.5% Cess</span>
+                        <span class="block text-xs text-emerald-200" data-translate="stat_source">डेटा स्रोत / आवृत्ति</span>
+                        <span id="stat-data-source" class="font-bold text-xs md:text-sm text-green-100">-</span>
+                        <span id="stat-update-frequency" class="block text-[10px] text-emerald-100">दिन में 6 बार</span>
                     </div>
                 </div>
             </div>
@@ -193,6 +212,16 @@
             <div>
                 <h4 class="font-bold text-amber-900" data-translate="offline_title">आप अभी ऑफलाइन हैं</h4>
                 <p class="text-xs text-amber-700" data-translate="offline_desc">इंटरनेट कनेक्शन न होने के कारण आपको सेव किया हुआ पुराना (कैश) मंडी भाव दिखाया जा रहा है।</p>
+            </div>
+        </div>
+
+        <div id="data-status-banner" class="hidden border-l-4 p-4 rounded-xl shadow-sm text-xs">
+            <div class="flex items-start gap-2">
+                <i data-lucide="badge-alert" class="w-5 h-5 flex-shrink-0"></i>
+                <div>
+                    <p id="data-status-title" class="font-bold"></p>
+                    <p id="data-status-message" class="mt-0.5"></p>
+                </div>
             </div>
         </div>
 
@@ -219,8 +248,8 @@
                 <span data-translate="tab_calc">मंडी कैलकुलेटर</span>
             </button>
             <button onclick="switchTab('weather')" id="tab-btn-weather" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
-                <i data-lucide="cloud-sun" class="w-4 h-4"></i>
-                <span data-translate="tab_weather">मौसम और सलाह</span>
+                <i data-lucide="map" class="w-4 h-4"></i>
+                <span data-translate="tab_weather">राज्य-वार भाव</span>
             </button>
             <button onclick="switchTab('info')" id="tab-btn-info" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="info" class="w-4 h-4"></i>
@@ -532,18 +561,36 @@
             </div>
         </div>
 
-        <!-- ───────────────── SECTION: LIVE AUCTION YARD ───────────────── -->
+        <!-- ───────────────── SECTION: OFFICIAL e-NAM AUCTION YARD ───────────────── -->
         <div id="section-auction" class="hidden space-y-6">
             <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <span class="inline-flex items-center bg-emerald-500/15 text-emerald-300 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>
-                        Live Auction Yard
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>
+                        Official e-NAM Feed
                     </span>
-                    <h3 class="font-black text-xl">लाइव बोली और अनाज नीलामी (Real-time Bidding)</h3>
-                    <p class="text-xs text-slate-300 max-w-2xl">सक्रिय लॉट देखें, ऊँची बोली लगाएँ, और WebSocket उपलब्ध न होने पर भी सुरक्षित डेमो टिकर से अपडेट पाएं।</p>
+                    <h3 class="font-black text-xl">जिला एवं लॉट-वार आधिकारिक नीलामी</h3>
+                    <p class="text-xs text-slate-300 max-w-2xl">केवल अधिकृत e-NAM feed से प्राप्त लॉट दिखते हैं। इस dashboard में कोई simulated lot, trader या bid नहीं बनता। वास्तविक बोली सुरक्षित e-NAM login पर ही लगाएँ।</p>
                 </div>
-                <span id="ws-status" class="text-xs font-bold bg-slate-700/60 text-slate-200 border border-slate-600 px-3 py-1 rounded-full">Connecting...</span>
+                <span id="ws-status" class="text-xs font-bold bg-slate-700/60 text-slate-200 border border-slate-600 px-3 py-1 rounded-full">Feed जाँच रहे हैं...</span>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-3 md:items-end">
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">जिला (District)</label>
+                    <select id="auction-district-filter" onchange="renderAuctionLots()" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm">
+                        <option value="all">सभी जिले</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">मंडी / APMC</label>
+                    <select id="auction-mandi-filter" onchange="renderAuctionLots()" class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm">
+                        <option value="all">सभी मंडियां</option>
+                    </select>
+                </div>
+                <a href="https://www.enam.gov.in/web/" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-5 rounded-lg text-xs text-center">
+                    e-NAM पर Login / Bid करें ↗
+                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -551,47 +598,28 @@
                     <div class="flex items-center justify-between">
                         <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
                             <i data-lucide="package-check" class="w-5 h-5 text-emerald-600"></i>
-                            <span>सक्रिय नीलामी लॉट (Active Lots)</span>
+                            <span>अधिकृत सक्रिय लॉट (Verified Active Lots)</span>
                         </h4>
+                        <span id="auction-updated-at" class="text-[10px] text-slate-400"></span>
                     </div>
                     <div id="auction-lots-container" class="space-y-4">
-                        <div class="p-6 bg-white border border-slate-200 rounded-2xl text-center text-slate-400 text-sm">लॉट लोड हो रहे हैं...</div>
+                        <div class="p-6 bg-white border border-slate-200 rounded-2xl text-center text-slate-400 text-sm">लॉट feed लोड हो रही है...</div>
                     </div>
                 </div>
 
                 <div class="space-y-4">
-                    <form onsubmit="placeLiveBid(event)" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
-                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2 border-b border-slate-100 pb-3">
-                            <i data-lucide="gavel" class="w-5 h-5 text-emerald-600"></i>
-                            <span>नई बोली लगाएँ</span>
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-3">
+                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i>
+                            नीलामी सत्यापन
                         </h4>
-                        <div class="space-y-3 text-xs">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">व्यापारी नाम (Trader Name)</label>
-                                <input type="text" id="bidder-name" required value="Vijay Traders" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">लॉट संख्या (Lot Number)</label>
-                                <select id="bid-lot-number" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बोली भाव ₹/Q (Bid Rate)</label>
-                                <input type="number" id="bid-price" required min="1" step="5" value="2310" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md shadow-emerald-700/10">
-                            बोली जमा करें (Place Bid)
-                        </button>
-                    </form>
-
-                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2 border-b border-slate-100 pb-3">
-                            <i data-lucide="activity" class="w-5 h-5 text-emerald-600"></i>
-                            <span>लाइव बोली टिकर</span>
-                        </h4>
-                        <div id="bids-ticker-feed" class="divide-y divide-slate-100 max-h-80 overflow-y-auto custom-scrollbar text-xs">
-                            <div class="py-3 text-slate-400">अभी कोई बोली नहीं आई है।</div>
-                        </div>
+                        <p id="auction-feed-message" class="text-xs text-slate-600 leading-relaxed">Feed status लोड हो रहा है...</p>
+                        <ul class="text-[11px] text-slate-500 space-y-2 list-disc pl-4">
+                            <li>Lot ID, जिला, मंडी, जिंस, गुणवत्ता और समय feed से आते हैं।</li>
+                            <li>बोलीदाता authentication और bid submission केवल e-NAM पर होता है।</li>
+                            <li>Feed बंद होने पर demo data की जगह स्पष्ट unavailable status दिखता है।</li>
+                        </ul>
+                        <a href="https://enam.gov.in/web/dashboard/trade-data" target="_blank" rel="noopener noreferrer" class="block text-center border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold py-2.5 rounded-lg text-xs">Official Trade Dashboard ↗</a>
                     </div>
                 </div>
             </div>
@@ -639,11 +667,11 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_comm">आढ़त कमीशन (%)</label>
-                                    <input type="number" id="calc-commission" oninput="calculateBill()" value="1.5" min="0" step="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    <input type="number" id="calc-commission" oninput="calculateBill()" value="0" min="0" step="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_labor">पल्लेदारी (रु/बोरी)</label>
-                                    <input type="number" id="calc-labor" oninput="calculateBill()" value="15" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    <input type="number" id="calc-labor" oninput="calculateBill()" value="0" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                                 </div>
                             </div>
                         </div>
@@ -655,16 +683,14 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_transport">भाड़ा/किराया (कुल रु)</label>
-                                <input type="number" id="calc-transport" oninput="calculateBill()" value="500" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <input type="number" id="calc-transport" oninput="calculateBill()" value="0" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_cess">मंडी शुल्क + विकास सेस</label>
-                            <select id="calc-cess-rate" onchange="calculateBill()" class="w-full py-2 px-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="2.0" selected>2.0% (1.5% Mandi + 0.5% Cess)</option>
-                                <option value="0">कोई शुल्क नहीं (छूट)</option>
-                            </select>
+                            <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_cess">लागू मंडी शुल्क + सेस (%)</label>
+                            <input type="number" id="calc-cess-rate" oninput="calculateBill()" value="0" min="0" step="0.1" placeholder="मंडी समिति से सत्यापित दर" class="w-full py-2 px-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <p class="text-[9px] text-amber-700 mt-1">कोई सरकारी दर prefill नहीं है; नवीनतम लागू दर स्वयं दर्ज करें।</p>
                         </div>
                     </div>
                 </div>
@@ -674,7 +700,7 @@
                     <div class="space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-3">
                             <div class="flex flex-col">
-                                <span class="text-xs tracking-wider uppercase font-bold text-emerald-400" data-translate="calc_bill_receipt">मंडी बिक्री रसीद (मेमो)</span>
+                                <span class="text-xs tracking-wider uppercase font-bold text-emerald-400" data-translate="calc_bill_receipt">अनुमानित मंडी गणना (Estimate)</span>
                                 <span class="text-[10px] text-slate-400">Vijay Kumar Traders — UP Mandi</span>
                             </div>
                             <button onclick="downloadBillPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 px-3 rounded-lg flex items-center space-x-1.5 shadow-sm transition">
@@ -757,7 +783,7 @@
                     <!-- Sourcing Buy Price -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">खरीद भाव (Buy Rate ₹/Q)</label>
-                        <input type="number" id="arb-buy-price" oninput="calculateArbitrage()" value="2300" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-buy-price" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                     <!-- Destination Mandi -->
                     <div>
@@ -767,7 +793,7 @@
                     <!-- Destination Sale Price -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बिक्री भाव (Sale Rate ₹/Q)</label>
-                        <input type="number" id="arb-sale-price" oninput="calculateArbitrage()" value="2650" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-sale-price" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                 </div>
 
@@ -775,31 +801,31 @@
                     <!-- Quantity -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">कुल मात्रा (Quantity in Q)</label>
-                        <input type="number" id="arb-qty" oninput="calculateArbitrage()" value="100" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-qty" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                     <!-- Transport/Freight Cost -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">परिवहन भाड़ा (Total Freight ₹)</label>
-                        <input type="number" id="arb-transport" oninput="calculateArbitrage()" value="8000" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-transport" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                     <!-- Mandi Fee (Sourcing) -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">मंडी शुल्क + सेस (Mandi Tax %)</label>
-                        <input type="number" id="arb-tax-percent" oninput="calculateArbitrage()" value="2.0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-tax-percent" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                     <!-- Unloading / Other Expenses -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">मजदूरी व अन्य खर्च (Other Exp. ₹)</label>
-                        <input type="number" id="arb-other" oninput="calculateArbitrage()" value="3000" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <input type="number" id="arb-other" oninput="calculateArbitrage()" value="0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
                     </div>
                 </div>
 
                 <!-- Final P&L Result Dashboard -->
-                <div id="arb-result-card" class="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
+                <div id="arb-result-card" class="bg-slate-700 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="space-y-1 text-center md:text-left">
-                        <span id="arb-status-badge" class="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">🟢 मुनाफे का सौदा (Net Profit)</span>
-                        <h4 class="text-lg font-black" id="arb-outcome-text">स्रोत्र से बिक्री मंडी माल बेचने पर शुद्ध मुनाफा:</h4>
-                        <p class="text-[11px] text-emerald-100">सारे खर्चे (भाड़ा, मंडी टैक्स, लोडिंग) काटकर अंतिम लाभ-हानि</p>
+                        <span id="arb-status-badge" class="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">वास्तविक सौदे का डेटा दर्ज करें</span>
+                        <h4 class="text-lg font-black" id="arb-outcome-text">खरीद भाव, बिक्री भाव और मात्रा भरें:</h4>
+                        <p class="text-[11px] text-slate-200">यह user-input estimate है, live सरकारी trade नहीं।</p>
                     </div>
                     <div class="text-center md:text-right space-y-1">
                         <span class="text-[10px] font-bold text-emerald-200 block uppercase">शुद्ध लाभ / हानि (Net Profit/Loss)</span>
@@ -868,29 +894,54 @@
                     </form>
                 </div>
 
-                <!-- Weather -->
+                <!-- State-wise official prices -->
                 <div class="lg:col-span-2 space-y-4">
-                    <h3 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
-                        <i data-lucide="cloud-sun" class="text-emerald-600 w-5 h-5"></i>
-                        <span>कृषि क्षेत्र मौसम (Agricultural Weather Info)</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="weather-cards-container"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
+                                <i data-lucide="map" class="text-emerald-600 w-5 h-5"></i>
+                                <span data-translate="state_prices_title">राज्य-वार मंडी भाव और जिला विवरण</span>
+                            </h3>
+                            <p id="state-price-source" class="text-[10px] text-slate-400 mt-1"></p>
+                        </div>
+                        <input id="state-price-search" oninput="renderStatePrices()" type="search" placeholder="राज्य खोजें..." class="px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="state-price-cards-container"></div>
                 </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <h4 class="font-extrabold text-slate-800 text-sm flex items-center gap-2"><i data-lucide="radio-tower" class="w-5 h-5 text-emerald-600"></i> Government Source Monitor</h4>
+                    <span id="source-monitor-checked" class="text-[10px] text-slate-400"></span>
+                </div>
+                <div id="source-monitor-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"></div>
             </div>
         </div>
 
         <!-- ───────────────── SECTION: OFFICIAL REGULATIONS ───────────────── -->
         <div id="section-info" class="hidden space-y-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="font-bold text-lg text-slate-800 border-b border-slate-100 pb-3" data-translate="info_main_title">उत्तर प्रदेश कृषि मंडी नियमावली</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-emerald-800" data-translate="info_fees_title">मंडी शुल्क एवं विकास सेस (Mandi Fees)</h4>
-                        <p class="text-slate-600" data-translate="info_fees_desc">उत्तर प्रदेश राज्य कृषि उत्पादन मंडी परिषद के नियमों के अनुसार वर्तमान में कुल मंडी शुल्क 1.5% एवं विकास सेस 0.5% (कुल 2%) देय होता है। कुछ अधिसूचित फसलों या मंडियों में सरकार की विशेष छूट भी हो सकती है।</p>
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-5 rounded-2xl">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="scale" class="w-7 h-7 text-amber-700 flex-shrink-0"></i>
+                    <div>
+                        <h3 class="font-black text-lg text-slate-900" data-translate="info_main_title">उत्तर प्रदेश कृषि मंडी अधिनियम, नियमावली और धाराएँ</h3>
+                        <p id="law-disclaimer" class="text-xs text-amber-900 mt-1 leading-relaxed"></p>
                     </div>
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-emerald-800" data-translate="info_bill_title">अधिनियम संख्या 1964 की धारा</h4>
-                        <p class="text-slate-600" data-translate="info_bill_desc">मंडी प्रांगण के अंदर होने वाले प्रत्येक क्रय-विक्रय का प्रपत्र-6 (मंडी गेट पास) और प्रपत्र-9 (मंडी रसीद) जारी किया जाना अनिवार्य है। इससे किसानों को उनके उत्पाद का उचित मूल्य मिलने की कानूनी गारंटी मिलती है।</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-3" id="law-chapters-container">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 text-center text-slate-400">अधिनियम की धाराएँ लोड हो रही हैं...</div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <h4 class="font-extrabold text-slate-800 text-sm border-b border-slate-100 pb-3">व्यावहारिक अनुपालन</h4>
+                        <div id="practical-rules-container" class="mt-3 space-y-3"></div>
+                    </div>
+                    <div class="bg-slate-900 text-white rounded-xl p-5 shadow-sm">
+                        <h4 class="font-bold text-sm">आधिकारिक दस्तावेज</h4>
+                        <div id="law-sources-container" class="mt-3 space-y-2 text-xs"></div>
                     </div>
                 </div>
             </div>
@@ -921,8 +972,8 @@
             <span class="text-[10px] font-bold mt-1">नीलामी</span>
         </button>
         <button onclick="switchTab('weather')" id="mob-btn-weather" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
-            <i data-lucide="cloud-sun" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold mt-1" data-translate="mob_weather">मौसम</span>
+            <i data-lucide="map" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold mt-1" data-translate="mob_weather">राज्य भाव</span>
         </button>
     </nav>
 
@@ -934,18 +985,19 @@
                 title_sub: "Vijay Kumar Traders — डिजिटल मंडी सेवा",
                 live_badge: "ताज़ा भाव अपडेटेड",
                 welcome_title: "किसान और व्यापारियों का डिजिटल साथी",
-                welcome_desc: "उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन and तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
-                stat_update: "आखिरी अपडेट",
-                stat_count: "सक्रिय मंडियां",
+                welcome_desc: "data.gov.in और AGMARKNET से उपलब्ध सत्यापित मंडी भाव। Portal unavailable होने पर स्पष्ट status दिखता है—कोई भाव बनाया नहीं जाता।",
+                stat_update: "आखिरी आधिकारिक अपडेट",
+                stat_count: "रिपोर्टिंग मंडियां",
                 stat_hot: "शीर्ष फसल",
+                stat_source: "डेटा स्रोत / आवृत्ति",
                 stat_avg: "औसत मंडी शुल्क",
                 offline_title: "आप अभी ऑफलाइन हैं",
                 offline_desc: "इंटरनेट कनेक्शन न होने के कारण आपको सेव किया हुआ पुराना (कैश) मंडी भाव दिखाया जा रहा है।",
                 tab_rates: "मंडी भाव (Live)",
                 tab_trends: "भाव ग्राफ (Trends)",
                 tab_calc: "मंडी कैलकुलेटर",
-                tab_weather: "मौसम और सलाह",
-                tab_info: "मंडी नियमावली",
+                tab_weather: "राज्य-वार भाव",
+                tab_info: "कानून और धाराएँ",
                 tab_prediction: "AI भाव भविष्यवाणी",
                 tab_auction: "लाइव नीलामी यार्ड",
                 tab_ranking: "जिला मूल्य रैंकिंग",
@@ -980,7 +1032,7 @@
                 calc_lbl_bag_wt: "प्रति बोरी वजन (KG)",
                 calc_lbl_transport: "भाड़ा/किराया (कुल रु)",
                 calc_lbl_cess: "मंडी शुल्क + विकास सेस",
-                calc_bill_receipt: "मंडी बिक्री रसीद (मेमो)",
+                calc_bill_receipt: "अनुमानित मंडी गणना (Estimate)",
                 calc_res_total_wt: "कुल वजन (Q)",
                 calc_res_bags: "कुल बोरियां",
                 calc_res_rate: "मूल्य / क्विंटल",
@@ -999,18 +1051,19 @@
                 adv_potato_desc: "शीतगृह (Cold Storage) में आलू भंडारण करते समय हवा का आवागमन सुनिश्चित करें। भाव में मामूली सुधार आने की उम्मीद है।",
                 adv_paddy_title: "🌾 धान नर्सरी (Paddy Nursery)",
                 adv_paddy_desc: "यदि भारी वर्षा की संभावना हो, तो नर्सरी से पानी के निकास की उचित व्यवस्था रखें ताकि पौधे सुरक्षित रहें।",
-                info_main_title: "उत्तर प्रदेश कृषि मंडी नियमावली",
+                info_main_title: "उत्तर प्रदेश कृषि मंडी अधिनियम, नियमावली और धाराएँ",
                 info_fees_title: "मंडी शुल्क एवं विकास सेस (Mandi Fees)",
-                info_fees_desc: "उत्तर प्रदेश राज्य कृषि उत्पादन मंडी परिषद के नियमों के अनुसार वर्तमान में कुल मंडी शुल्क 1.5% एवं विकास सेस 0.5% (कुल 2%) देय होता है। कुछ अधिसूचित फसलों या मंडियों में सरकार की विशेष छूट भी हो सकती है।",
+                info_fees_desc: "मंडी शुल्क, विकास सेस, छूट और देयता नवीनतम सरकारी अधिसूचना तथा जिंस/लेन-देन पर निर्भर हैं; संबंधित मंडी समिति से सत्यापित करें।",
                 info_bill_title: "अधिनियम संख्या 1964 की धारा",
-                info_bill_desc: "मंडी प्रांगण के अंदर होने वाले प्रत्येक क्रय-विक्रय का प्रपत्र-6 (मंडी गेट पास) और प्रपत्र-9 (मंडी रसीद) जारी किया जाना अनिवार्य है। इससे किसानों को उनके उत्पाद का उचित मूल्य मिलने की कानूनी गारंटी मिलती है।",
+                info_bill_desc: "लेन-देन के प्रकार के अनुसार लागू प्रपत्र, अभिलेख और गेटपास संबंधित अधिनियम, नियमावली तथा मंडी उपविधियों के अनुसार जारी करें।",
                 contact_sub: "कानपुर गल्ला मंडी — आपका विश्वसनीय व्यापारिक भागीदार",
                 contact_call: "संपर्क करें",
                 mob_rates: "मंडी भाव",
                 mob_trends: "रूझान",
                 mob_calc: "कैल्क",
-                mob_weather: "मौसम",
-                mob_info: "नियम",
+                mob_weather: "राज्य भाव",
+                mob_info: "कानून",
+                state_prices_title: "राज्य-वार मंडी भाव और जिला विवरण",
                 temp_text: "तापमान",
                 humidity_text: "आर्द्रता",
                 wind_text: "हवा",
@@ -1032,18 +1085,19 @@
                 title_sub: "Vijay Kumar Traders — Digital Mandi Service",
                 live_badge: "LATEST PRICES UPDATED",
                 welcome_title: "Your Digital Mandi Partner",
-                welcome_desc: "Official prices for grains, vegetables, fruits, pulses, and oilseeds from all 75 districts in Uttar Pradesh. Stay updated with market trends.",
-                stat_update: "Last Updated",
-                stat_count: "Active Mandis",
-                stat_hot: "Hot Crop",
+                welcome_desc: "Verified mandi prices available from data.gov.in and AGMARKNET. If a portal is unavailable, the status is shown clearly—no prices are generated.",
+                stat_update: "Last Official Update",
+                stat_count: "Reporting Mandis",
+                stat_hot: "Top Commodity",
+                stat_source: "Data Source / Frequency",
                 stat_avg: "Avg. Mandi Tax",
                 offline_title: "You are currently offline",
                 offline_desc: "Showing cached data due to lack of internet connection.",
                 tab_rates: "Mandi Rates (Live)",
                 tab_trends: "Price Trends (Charts)",
                 tab_calc: "Mandi Calculator",
-                tab_weather: "Weather Advisory",
-                tab_info: "Rules & Regulations",
+                tab_weather: "State-wise Prices",
+                tab_info: "Laws & Sections",
                 tab_prediction: "AI Price Prediction",
                 tab_auction: "Live Auction Yard",
                 tab_ranking: "District Price Ranking",
@@ -1075,18 +1129,19 @@
                 adv_potato_desc: "Ensure good ventilation while storing potatoes in Cold Storages. Moderate price appreciation is expected soon.",
                 adv_paddy_title: "🌾 Paddy Rice",
                 adv_paddy_desc: "If heavy rains are forecast, make sure drainage channels in nurseries are clear of obstructions.",
-                info_main_title: "Uttar Pradesh Agriculture Mandi Rules",
+                info_main_title: "Uttar Pradesh Mandi Act, Rules and Sections",
                 info_fees_title: "Mandi Fees and Development Cess",
-                info_fees_desc: "According to the rules of UP State Agricultural Produce Mandi Parishad, mandi fee of 1.5% and development cess of 0.5% (total 2.0%) are applicable. Government concessions may apply to specific commodities.",
+                info_fees_desc: "Market fee, development cess, exemptions and liability depend on the latest notification and transaction; verify them with the relevant Mandi Samiti.",
                 info_bill_title: "Section of Act of 1964",
-                info_bill_desc: "It is legally mandatory to issue Form-6 (Mandi Gate Pass) and Form-9 (Mandi Receipt) for every purchase and sale inside the mandi complex to ensure fair transactions.",
+                info_bill_desc: "Issue the forms, records and gate passes applicable to the transaction under the Act, Rules and relevant market bye-laws.",
                 contact_sub: "Kanpur Galla Mandi — Your Trusted Trading Partner",
                 contact_call: "Contact Us",
                 mob_rates: "Rates",
                 mob_trends: "Trends",
                 mob_calc: "Calc",
-                mob_weather: "Weather",
-                mob_info: "Rules",
+                mob_weather: "States",
+                mob_info: "Laws",
+                state_prices_title: "State-wise Mandi Prices and District Details",
                 temp_text: "Temperature",
                 humidity_text: "Humidity",
                 wind_text: "Wind",
@@ -1110,12 +1165,16 @@
         let currentRankingScope = 'all'; // 'all', 'top10', 'bottom10'
 
         let latestData = [];
+        let latestMetadata = {};
         let historicalData = {};
-        let weatherData = [];
+        let statePriceData = { states: [] };
+        let mandiDetailsData = { mandis: [] };
+        let lawsData = { chapters: [], practical_rules: [], official_sources: [] };
+        let sourceData = { sources: [] };
+        let auctionSnapshot = { status: 'loading', lots: [] };
         let calcWeightUnit = 'q';
         let globalBillDetails = null;
         let trendChartObj = null;
-        let auctionWs = null;
 
         function renderIcons() {
             // lucide is loaded from a CDN. If that request fails, the dashboard
@@ -1171,13 +1230,58 @@
             }
         }
 
+        function updateDataStatus(latest) {
+            const banner = document.getElementById('data-status-banner');
+            const title = document.getElementById('data-status-title');
+            const message = document.getElementById('data-status-message');
+            const liveBadge = document.getElementById('live-data-badge');
+            if (!banner || !title || !message) return;
+
+            if (!latest.verified) {
+                if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'Official feed unavailable' : 'Official feed unavailable';
+                banner.className = 'border-l-4 border-red-500 bg-red-50 text-red-800 p-4 rounded-xl shadow-sm text-xs';
+                title.innerText = currentLang === 'hi' ? 'डेटा सत्यापित नहीं है' : 'Data is not verified';
+                message.innerText = currentLang === 'hi'
+                    ? 'DATA_GOV_IN_API_KEY जोड़ने तक पुराना cached snapshot दिख सकता है। इसे लाइव सरकारी भाव न मानें।'
+                    : 'A legacy cached snapshot may be shown until DATA_GOV_IN_API_KEY is configured. Do not treat it as a live government rate.';
+                banner.classList.remove('hidden');
+            } else if (latest.is_live && (
+                (latest.connected_price_source_count || 0) < 3 ||
+                (latest.three_source_verified_record_count || 0) < latestData.length
+            )) {
+                if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'Official feed live • cross-check अधूरा' : 'Official feed live • cross-check incomplete';
+                banner.className = 'border-l-4 border-amber-500 bg-amber-50 text-amber-800 p-4 rounded-xl shadow-sm text-xs';
+                title.innerText = currentLang === 'hi' ? '3-source verification अभी पूरी नहीं है' : 'Three-source verification is not complete';
+                message.innerText = currentLang === 'hi'
+                    ? `${latest.connected_price_source_count || 0} सरकारी price source जुड़े हैं। केवल matching records को cross-verified माना जाता है।`
+                    : `${latest.connected_price_source_count || 0} government price sources are connected. Only matching records are treated as cross-verified.`;
+                banner.classList.remove('hidden');
+            } else if (!latest.is_live) {
+                if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'आखिरी सत्यापित snapshot' : 'Last verified snapshot';
+                banner.className = 'border-l-4 border-amber-500 bg-amber-50 text-amber-800 p-4 rounded-xl shadow-sm text-xs';
+                title.innerText = currentLang === 'hi' ? 'आधिकारिक cached भाव' : 'Official cached rates';
+                message.innerText = currentLang === 'hi'
+                    ? 'सरकारी portal की नवीन जाँच असफल रही; आखिरी सत्यापित snapshot दिखाया जा रहा है।'
+                    : 'The latest government portal check failed; the last verified snapshot is being shown.';
+                banner.classList.remove('hidden');
+            } else {
+                if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'ताज़ा सत्यापित भाव' : 'Latest verified rates';
+                banner.classList.add('hidden');
+            }
+            renderIcons();
+        }
+
         function toggleLanguage() {
             currentLang = (currentLang === 'hi') ? 'en' : 'hi';
             loadLanguage(currentLang);
             
             populateDropdowns();
             renderRatesTable();
-            renderWeather();
+            renderStatePrices();
+            renderSourceMonitor();
+            renderLaws();
+            renderAuctionLots();
+            buildAtoZMandiDirectory();
             updatePinnedStaples();
             renderStaplesLeaderboard();
             renderPriceRanking();
@@ -1186,6 +1290,7 @@
             }
             calculateBill();
             calculateArbitrage();
+            updateDataStatus(latestMetadata);
         }
 
         function loadLanguage(lang) {
@@ -1251,6 +1356,10 @@
                 setTimeout(fetchAIPrediction, 50);
             } else if (tabId === 'auction') {
                 setTimeout(initLiveAuctionYard, 50);
+            } else if (tabId === 'weather') {
+                setTimeout(() => { renderStatePrices(); renderSourceMonitor(); }, 50);
+            } else if (tabId === 'info') {
+                setTimeout(renderLaws, 50);
             } else if (tabId === 'ranking') {
                 setTimeout(renderPriceRanking, 50);
             } else if (tabId === 'calculator') {
@@ -1280,59 +1389,77 @@
             }
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         function buildAtoZMandiDirectory() {
-            const listContainer = document.getElementById('sidebar-mandi-list');
-            if (!listContainer) return;
+            const officialMandis = Array.isArray(mandiDetailsData?.mandis) ? mandiDetailsData.mandis : [];
+            if (officialMandis.length) {
+                mandiDirectoryList = officialMandis.map(mandi => ({
+                    ...mandi,
+                    records: latestData.filter(row => row.mandi === mandi.mandi && row.district === mandi.district)
+                }));
+            } else {
+                const uniqueMandisMap = {};
+                latestData.forEach(row => {
+                    const key = `${row.district}|${row.mandi}`;
+                    if (!uniqueMandisMap[key]) {
+                        uniqueMandisMap[key] = {
+                            mandi: row.mandi,
+                            mandi_hi: row.mandi_hi,
+                            district: row.district,
+                            district_hi: row.district_hi,
+                            contacts: [],
+                            commodities: [],
+                            records: []
+                        };
+                    }
+                    uniqueMandisMap[key].records.push(row);
+                    uniqueMandisMap[key].commodities.push(row.commodity);
+                });
+                mandiDirectoryList = Object.values(uniqueMandisMap);
+            }
 
-            // Group by unique Mandi English and Hindi Name
-            const uniqueMandisMap = {};
-            latestData.forEach(r => {
-                if (!uniqueMandisMap[r.mandi]) {
-                    uniqueMandisMap[r.mandi] = {
-                        mandi: r.mandi,
-                        mandi_hi: r.mandi_hi,
-                        district: r.district,
-                        district_hi: r.district_hi,
-                        records: []
-                    };
-                }
-                uniqueMandisMap[r.mandi].records.push(r);
-            });
-
-            mandiDirectoryList = Object.values(uniqueMandisMap);
-            // Sort Alphabetically primarily by Mandi Name depending on active language
-            mandiDirectoryList.sort((a,b) => {
-                const nameA = currentLang === 'hi' ? a.mandi_hi : a.mandi;
-                const nameB = currentLang === 'hi' ? b.mandi_hi : b.mandi;
+            mandiDirectoryList.sort((a, b) => {
+                const nameA = currentLang === 'hi' ? (a.mandi_hi || a.mandi) : a.mandi;
+                const nameB = currentLang === 'hi' ? (b.mandi_hi || b.mandi) : b.mandi;
                 return nameA.localeCompare(nameB);
             });
-
+            mandiDirectoryList.forEach((mandi, index) => { mandi._directoryIndex = index; });
             renderSidebarMandis(mandiDirectoryList);
         }
 
         function renderSidebarMandis(list) {
             const container = document.getElementById('sidebar-mandi-list');
+            if (!container) return;
             let html = '';
 
-            list.forEach(m => {
-                const mName = currentLang === 'hi' ? m.mandi_hi : m.mandi;
-                const dName = currentLang === 'hi' ? m.district_hi : m.district;
-                
-                // Calculate average modal rate inside this mandi
-                const avgPrice = Math.round(m.records.reduce((sum, r) => sum + r.modal_price, 0) / m.records.length);
-                const cropCount = m.records.length;
+            list.forEach(mandi => {
+                const mandiName = currentLang === 'hi' ? (mandi.mandi_hi || mandi.mandi) : mandi.mandi;
+                const districtName = currentLang === 'hi' ? (mandi.district_hi || mandi.district) : mandi.district;
+                const prices = (mandi.records || []).map(row => Number(row.modal_price)).filter(Boolean);
+                const avgPrice = prices.length ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length) : null;
+                const cropCount = new Set(mandi.commodities || (mandi.records || []).map(row => row.commodity)).size;
+                const contactCount = Array.isArray(mandi.contacts) ? mandi.contacts.length : 0;
 
                 html += `
-                    <div onclick="selectMandiFromSidebar('${m.mandi}')" class="p-3 bg-slate-800/40 hover:bg-slate-800 rounded-xl border border-slate-800 hover:border-emerald-600/30 transition cursor-pointer space-y-1">
-                        <div class="flex items-start justify-between">
+                    <button type="button" onclick="openMandiDetails(${mandi._directoryIndex})" class="w-full text-left p-3 bg-slate-800/40 hover:bg-slate-800 rounded-xl border border-slate-800 hover:border-emerald-600/30 transition space-y-1">
+                        <div class="flex items-start justify-between gap-2">
                             <div>
-                                <h4 class="font-extrabold text-white text-xs">${mName}</h4>
-                                <span class="text-[9px] text-slate-400 font-semibold uppercase">📍 ${dName}</span>
+                                <h4 class="font-extrabold text-white text-xs">${escapeHtml(mandiName)}</h4>
+                                <span class="text-[9px] text-slate-400 font-semibold uppercase">📍 ${escapeHtml(districtName)}</span>
                             </div>
-                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20">₹${avgPrice}/Q Avg</span>
+                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">${avgPrice ? `₹${avgPrice}/Q` : 'भाव देखें'}</span>
                         </div>
-                        <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} मुख्य फसलें ट्रेड हो रही हैं।</p>
-                    </div>
+                        <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} जिंस • ☎ ${contactCount ? contactCount + ' स्थानीय संपर्क' : 'Official helpdesk'}</p>
+                        <p class="text-[9px] text-emerald-400 font-bold">पूरा विवरण देखें →</p>
+                    </button>
                 `;
             });
 
@@ -1341,19 +1468,73 @@
 
         function filterSidebarMandis() {
             const query = document.getElementById('sidebar-search').value.toLowerCase().trim();
-            const filtered = mandiDirectoryList.filter(m => {
-                const name = (currentLang === 'hi' ? m.mandi_hi : m.mandi).toLowerCase();
-                const dist = (currentLang === 'hi' ? m.district_hi : m.district).toLowerCase();
-                return name.includes(query) || dist.includes(query);
+            const filtered = mandiDirectoryList.filter(mandi => {
+                const searchable = [mandi.mandi, mandi.mandi_hi, mandi.district, mandi.district_hi]
+                    .filter(Boolean).join(' ').toLowerCase();
+                return searchable.includes(query);
             });
             renderSidebarMandis(filtered);
         }
 
+        function openMandiDetails(index) {
+            const mandi = mandiDirectoryList[index];
+            if (!mandi) return;
+            const modal = document.getElementById('mandi-detail-modal');
+            const title = document.getElementById('mandi-detail-title');
+            const district = document.getElementById('mandi-detail-district');
+            const content = document.getElementById('mandi-detail-content');
+            const mandiName = currentLang === 'hi' ? (mandi.mandi_hi || mandi.mandi) : mandi.mandi;
+            const districtName = currentLang === 'hi' ? (mandi.district_hi || mandi.district) : mandi.district;
+            const contacts = Array.isArray(mandi.contacts) ? mandi.contacts : [];
+            const commodities = mandi.commodities || [];
+
+            title.innerText = mandiName;
+            district.innerText = `📍 ${districtName}, Uttar Pradesh`;
+            const contactsHtml = contacts.length
+                ? contacts.map(contact => `
+                    <div class="border border-slate-200 rounded-lg p-3 flex items-center justify-between gap-3">
+                        <div><p class="font-bold text-slate-800">${escapeHtml(contact.name || 'मंडी कार्यालय')}</p><p class="text-[10px] text-slate-500">${escapeHtml(contact.designation || '')}</p></div>
+                        <a class="text-emerald-700 font-bold whitespace-nowrap" href="tel:${escapeHtml(contact.phone)}">☎ ${escapeHtml(contact.phone)}</a>
+                    </div>`).join('')
+                : `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-lg">इस मंडी का स्थानीय नंबर official feed में उपलब्ध नहीं है। नीचे e-Mandi contact directory से सत्यापित करें।</p>`;
+
+            content.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${mandi.commodity_count ?? commodities.length}</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">न्यूनतम मॉडल</span><p class="font-black">${mandi.minimum_modal_price ? '₹' + mandi.minimum_modal_price : '—'}</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">अधिकतम मॉडल</span><p class="font-black">${mandi.maximum_modal_price ? '₹' + mandi.maximum_modal_price : '—'}</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">भाव तिथि</span><p class="font-black text-xs">${escapeHtml(mandi.latest_price_date || '—')}</p></div>
+                </div>
+                <div><h4 class="font-extrabold text-slate-800 mb-2">कार्यालय संपर्क</h4><div class="space-y-2">${contactsHtml}</div></div>
+                <div><h4 class="font-extrabold text-slate-800 mb-2">रिपोर्टेड जिंस</h4><div class="flex flex-wrap gap-1.5">${commodities.map(item => `<span class="px-2 py-1 bg-emerald-50 text-emerald-800 rounded-full text-[10px] font-bold">${escapeHtml(item)}</span>`).join('') || '—'}</div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+                    <p class="font-bold text-slate-700">राज्य e-Mandi केंद्रीय कार्यालय</p>
+                    <p class="text-slate-500 mt-1">किसान मंडी भवन, विभूति खंड, गोमती नगर, लखनऊ - 226010</p>
+                    <p class="text-slate-700 mt-1">☎ ${(mandi.central_helpdesk || ['+91-8765957686', '+91-8765958630']).map(escapeHtml).join(', ')}</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button onclick="selectMandiFromSidebarByIndex(${mandi._directoryIndex})" class="bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs">इस मंडी के भाव</button>
+                    <a href="${escapeHtml(mandi.map_url || '#')}" target="_blank" rel="noopener noreferrer" class="border border-slate-200 text-center font-bold py-2.5 rounded-lg text-xs">Map पर देखें ↗</a>
+                    <a href="${escapeHtml(mandi.official_contact_url || 'https://emandi.up.gov.in/MandiHome/Contactus')}" target="_blank" rel="noopener noreferrer" class="border border-slate-200 text-center font-bold py-2.5 rounded-lg text-xs">Official Directory ↗</a>
+                </div>`;
+            modal.classList.remove('hidden');
+            renderIcons();
+        }
+
+        function closeMandiDetails(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('mandi-detail-modal')?.classList.add('hidden');
+        }
+
+        function selectMandiFromSidebarByIndex(index) {
+            const mandi = mandiDirectoryList[index];
+            if (mandi) selectMandiFromSidebar(mandi.mandi);
+        }
+
         function selectMandiFromSidebar(mandiName) {
-            // Close sidebar
-            toggleSidebar();
-            
-            // Auto fill search filter with clicked Mandi and refresh Rates list!
+            document.getElementById('mandi-detail-modal')?.classList.add('hidden');
+            const sidebar = document.getElementById('mandi-sidebar');
+            if (sidebar && !sidebar.classList.contains('-translate-x-full')) toggleSidebar();
             const searchInput = document.getElementById('rate-search');
             if (searchInput) {
                 searchInput.value = mandiName;
@@ -1406,30 +1587,55 @@
                 })
                 .catch(() => ({}));
 
-            const fetchWeather = fetch(`data/weather.json?t=${timestamp}`)
+            const fetchJson = (path, fallback) => fetch(`${path}?t=${timestamp}`)
                 .then(res => {
-                    if (!res.ok) throw new Error();
+                    if (!res.ok) throw new Error(`${path} returned ${res.status}`);
                     return res.json();
                 })
-                .catch(() => []);
+                .catch(error => {
+                    console.warn(`Optional dashboard feed unavailable: ${path}`, error);
+                    return fallback;
+                });
 
-            Promise.all([fetchLatest, fetchHistory, fetchWeather])
-            .then(([latest, history, weather]) => {
+            const fetchStatePrices = fetchJson('data/state_prices.json', { states: [] });
+            const fetchMandiDetails = fetchJson('data/mandis.json', { mandis: [] });
+            const fetchLaws = fetchJson('data/laws.json', { chapters: [], practical_rules: [], official_sources: [] });
+            const fetchSources = fetchJson('data/sources.json', { sources: [] });
+
+            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources])
+            .then(([latest, history, states, mandis, laws, sources]) => {
                 latestData = (latest && latest.records) ? latest.records : (latest || []);
+                latestMetadata = latest && !Array.isArray(latest) ? latest : {};
                 historicalData = history || {};
-                weatherData = weather || [];
+                statePriceData = states || { states: [] };
+                mandiDetailsData = mandis || { mandis: [] };
+                lawsData = laws || { chapters: [], practical_rules: [], official_sources: [] };
+                sourceData = sources || { sources: [] };
                 
                 // Safe UI Element updates with individual Try-Catch blocks
                 try {
-                    const lastUpdatedDate = (latest && latest.updated_at) ? new Date(latest.updated_at) : new Date();
+                    const lastUpdatedDate = (latest && latest.updated_at) ? new Date(latest.updated_at) : null;
+                    const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
                     const elTime = document.getElementById('stat-updated-time');
-                    if (elTime) {
-                        elTime.innerText = lastUpdatedDate.toLocaleTimeString(
-                            currentLang === 'hi' ? 'hi-IN' : 'en-US', 
-                            { hour: '2-digit', minute: '2-digit' }
-                        );
+                    const elDate = document.getElementById('stat-updated-date');
+                    const elSource = document.getElementById('stat-data-source');
+                    const elFrequency = document.getElementById('stat-update-frequency');
+                    if (elTime) elTime.innerText = lastUpdatedDate && !Number.isNaN(lastUpdatedDate.valueOf())
+                        ? lastUpdatedDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'
+                        : '-';
+                    if (elDate) elDate.innerText = lastUpdatedDate && !Number.isNaN(lastUpdatedDate.valueOf())
+                        ? lastUpdatedDate.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
+                        : '-';
+                    if (elSource) {
+                        const sourceCount = latest?.connected_price_source_count || 0;
+                        const verifiedByThree = latest?.three_source_verified_record_count || 0;
+                        elSource.innerText = `${latest?.source || '-'} • ${sourceCount} sources • ${verifiedByThree} verified by 3+`;
                     }
-                } catch (e) { console.error("Error setting time:", e); }
+                    if (elFrequency) elFrequency.innerText = currentLang === 'hi'
+                        ? 'दिन में 6 बार • ' + (latest?.update_slots_ist || []).join(', ')
+                        : '6 times daily • ' + (latest?.update_slots_ist || []).join(', ');
+                    updateDataStatus(latest || {});
+                } catch (e) { console.error("Error setting update metadata:", e); }
 
                 try {
                     const uniqueMandis = new Set(latestData.map(r => r.mandi || ''));
@@ -1462,7 +1668,10 @@
 
                 safeRun('populateDropdowns', populateDropdowns);
                 safeRun('renderRatesTable', renderRatesTable);
-                safeRun('renderWeather', renderWeather);
+                safeRun('renderStatePrices', renderStatePrices);
+                safeRun('renderSourceMonitor', renderSourceMonitor);
+                safeRun('buildAtoZMandiDirectory', buildAtoZMandiDirectory);
+                safeRun('renderLaws', renderLaws);
                 safeRun('updatePinnedStaples', updatePinnedStaples);
                 safeRun('renderStaplesLeaderboard', renderStaplesLeaderboard);
                 safeRun('renderPriceRanking', renderPriceRanking);
@@ -1736,7 +1945,9 @@
                 const cropName = (currentLang === 'hi' ? r.commodity_hi : r.commodity) || r.commodity || r.commodity_hi || 'Crop';
                 const varietyName = (currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety) || 'FAQ';
                 const gradeName = (currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade) || 'FAQ';
-                const arrivalsText = `${r.arrivals || 0} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : (r.arrivals_unit || 'Tonnes')}`;
+                const arrivalsText = r.arrivals !== null && r.arrivals !== undefined
+                    ? `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || '') : (r.arrivals_unit || '')}`.trim()
+                    : (currentLang === 'hi' ? 'प्रकाशित नहीं' : 'Not published');
 
                 if (currentSortMode === 'district' && distName !== lastDistrict) {
                     tableHtml += `
@@ -1974,7 +2185,96 @@
             renderIcons();
         }
 
-        function downloadRankingPDF() {
+        function waitForPdfRender(element) {
+            const imagePromises = Array.from(element.querySelectorAll('img')).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    const finish = () => resolve();
+                    img.addEventListener('load', finish, { once: true });
+                    img.addEventListener('error', finish, { once: true });
+                    setTimeout(finish, 3000);
+                });
+            });
+
+            const fontsReady = document.fonts && document.fonts.ready
+                ? document.fonts.ready.catch(() => undefined)
+                : Promise.resolve();
+
+            return Promise.all([fontsReady, ...imagePromises]).then(() => new Promise(resolve => {
+                // Two frames let the browser calculate Tailwind styles and the
+                // final dimensions before html2canvas takes its snapshot.
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            }));
+        }
+
+        async function savePdfDocument(pdfContainer, options) {
+            if (typeof window.html2pdf !== 'function') {
+                throw new Error('PDF library could not be loaded');
+            }
+
+            // html2canvas can return a blank canvas for detached elements.
+            // Keep the export in the rendered DOM, behind the app, until saving
+            // finishes. Do not use display:none/visibility:hidden/opacity:0.
+            Object.assign(pdfContainer.style, {
+                position: 'fixed',
+                left: '0',
+                top: '0',
+                zIndex: '-2147483647',
+                pointerEvents: 'none',
+                backgroundColor: '#ffffff',
+                color: '#0f172a',
+                fontFamily: "'Nirmala UI', 'Mangal', Arial, sans-serif"
+            });
+            pdfContainer.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(pdfContainer);
+
+            try {
+                await waitForPdfRender(pdfContainer);
+
+                const contentWidth = Math.max(pdfContainer.scrollWidth, 1);
+                const contentHeight = Math.max(pdfContainer.scrollHeight, 1);
+                if (contentWidth < 10 || contentHeight < 10) {
+                    throw new Error('PDF content has no renderable dimensions');
+                }
+
+                // Long rate tables can exceed mobile-browser canvas limits and
+                // produce an entirely blank PDF. Dynamically lower only the
+                // raster scale to stay under safe dimension/pixel limits.
+                const requestedScale = options.html2canvas?.scale || 2;
+                const dimensionScale = 30000 / contentHeight;
+                const pixelScale = Math.sqrt(12000000 / (contentWidth * contentHeight));
+                const safeScale = Math.max(0.7, Math.min(requestedScale, dimensionScale, pixelScale));
+
+                const finalOptions = {
+                    ...options,
+                    pagebreak: options.pagebreak || { mode: ['css', 'legacy'] },
+                    html2canvas: {
+                        ...(options.html2canvas || {}),
+                        scale: safeScale,
+                        useCORS: true,
+                        allowTaint: false,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: Math.max(document.documentElement.clientWidth, contentWidth)
+                    }
+                };
+
+                await window.html2pdf().set(finalOptions).from(pdfContainer).save();
+            } finally {
+                pdfContainer.remove();
+            }
+        }
+
+        function reportPdfError(error) {
+            console.error('PDF export failed:', error);
+            alert(currentLang === 'hi'
+                ? 'PDF नहीं बन सकी। इंटरनेट कनेक्शन जांचें और दोबारा प्रयास करें।'
+                : 'The PDF could not be created. Check your connection and try again.');
+        }
+
+        async function downloadRankingPDF() {
             try {
                 const bodyHtml = document.getElementById('print-area-ranking').innerHTML;
                 const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
@@ -1993,7 +2293,7 @@
                             <p class="text-[10px] text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — लाइव जिला रैंकिंग रिपोर्ट</p>
                         </div>
                         <div class="text-right">
-                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase">ऑडिटेड मूल्य सूचकांक</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase">डेटा स्रोत आधारित सूचकांक</span>
                             <p class="text-[9px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
                         </div>
                     </div>
@@ -2017,216 +2317,119 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("PDF downloaded cleanly"))
-                    .catch(() => {
-                        window.print();
-                    });
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Ranking PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
-        // ================= FIRST PILLAR: LIVE AUCTION REAL-TIME ENGINE =================
+        // ================= OFFICIAL e-NAM AUCTION SNAPSHOT =================
         let liveAuctionLots = [];
-        let simulationInterval = null;
 
-        function initLiveAuctionYard() {
-            const host = window.location.origin;
-            const wsHost = window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`;
-            const wsStatus = document.getElementById('ws-status');
-
-            fetch(`${host}/api/v2/auction/lots`)
-                .then(res => res.json())
-                .then(lots => {
-                    liveAuctionLots = lots;
-                    renderAuctionLots();
-                })
-                .catch(() => {
-                    liveAuctionLots = [{
-                        lot_number: "LOT-2026-101",
-                        farmer_name: "Ramesh Singh (Kanpur)",
-                        crop_name: "Wheat (गेहूं)",
-                        quantity: 45.0,
-                        starting_rate: 2300.0,
-                        highest_bid: 2305.0,
-                        highest_bidder: "Vijay Traders"
-                    }];
-                    renderAuctionLots();
-                });
-
-            if (auctionWs) {
-                auctionWs.close();
-            }
-
+        async function initLiveAuctionYard() {
+            const status = document.getElementById('ws-status');
+            if (status) status.innerText = currentLang === 'hi' ? 'Official feed जाँच रहे हैं...' : 'Checking official feed...';
+            const timestamp = Date.now();
+            const isApiHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            const url = isApiHost ? '/api/v2/auction/lots' : `data/auction.json?t=${timestamp}`;
             try {
-                const rInt = Math.floor(Math.random() * 900) + 100;
-                auctionWs = new WebSocket(`${wsHost}/api/v2/auction/ws/bidder_${rInt}`);
-
-                auctionWs.onopen = () => {
-                    wsStatus.innerText = "🟢 Real-time WS Active";
-                    wsStatus.className = "text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20 px-2 py-0.5 rounded";
-                    if (simulationInterval) clearInterval(simulationInterval);
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Auction feed returned ${response.status}`);
+                auctionSnapshot = await response.json();
+            } catch (error) {
+                console.error('Official auction feed failed:', error);
+                auctionSnapshot = {
+                    status: 'temporarily_unavailable',
+                    message_hi: 'अधिकृत e-NAM feed उपलब्ध नहीं है। कोई simulated lot नहीं दिखाया गया है।',
+                    message_en: 'The authorised e-NAM feed is unavailable. No simulated lots are shown.',
+                    lots: []
                 };
-
-                auctionWs.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    if (data.event === "NEW_BID") {
-                        const lot = liveAuctionLots.find(l => l.lot_number === data.lot_number);
-                        if (lot) {
-                            lot.highest_bid = data.highest_bid;
-                            lot.highest_bidder = data.highest_bidder;
-                            renderAuctionLots();
-                        }
-                        logBidTicker(data.highest_bidder, data.lot_number, data.highest_bid);
-                    }
-                };
-
-                auctionWs.onclose = () => {
-                    fallbackSimulationMode();
-                };
-
-                auctionWs.onerror = () => {
-                    fallbackSimulationMode();
-                };
-
-            } catch (err) {
-                fallbackSimulationMode();
             }
+            liveAuctionLots = Array.isArray(auctionSnapshot.lots) ? auctionSnapshot.lots : [];
+            populateAuctionFilters();
+            renderAuctionLots();
         }
 
-        function fallbackSimulationMode() {
-            const wsStatus = document.getElementById('ws-status');
-            if (wsStatus) {
-                wsStatus.innerText = "⚡ Simulated Live Ticker";
-                wsStatus.className = "text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse";
-            }
-
-            const mockTraders = [
-                "Gupta Galla Bhandar", "Vijay Traders", "Kanpur Agro-Link", 
-                "Lucknow Wheat Trading Co.", "Ganga Pulses", "Traders Alliance"
-            ];
-
-            if (simulationInterval) clearInterval(simulationInterval);
-
-            simulationInterval = setInterval(() => {
-                if (liveAuctionLots.length === 0) return;
-                
-                const randomLot = liveAuctionLots[Math.floor(Math.random() * liveAuctionLots.length)];
-                const randomTrader = mockTraders[Math.floor(Math.random() * mockTraders.length)];
-                const bidIncrement = Math.floor(Math.random() * 4) * 5 + 5;
-                
-                randomLot.highest_bid += bidIncrement;
-                randomLot.highest_bidder = randomTrader;
-                
-                renderAuctionLots();
-                logBidTicker(randomTrader, randomLot.lot_number, randomLot.highest_bid);
-            }, Math.floor(Math.random() * 4000) + 4000);
+        function populateAuctionFilters() {
+            const districtSelect = document.getElementById('auction-district-filter');
+            const mandiSelect = document.getElementById('auction-mandi-filter');
+            if (!districtSelect || !mandiSelect) return;
+            const oldDistrict = districtSelect.value;
+            const oldMandi = mandiSelect.value;
+            const districts = [...new Set(liveAuctionLots.map(lot => lot.district).filter(Boolean))].sort();
+            const mandis = [...new Set(liveAuctionLots.map(lot => lot.mandi).filter(Boolean))].sort();
+            districtSelect.innerHTML = `<option value="all">${currentLang === 'hi' ? 'सभी जिले' : 'All districts'}</option>` + districts.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+            mandiSelect.innerHTML = `<option value="all">${currentLang === 'hi' ? 'सभी मंडियां' : 'All mandis'}</option>` + mandis.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+            if (districts.includes(oldDistrict)) districtSelect.value = oldDistrict;
+            if (mandis.includes(oldMandi)) mandiSelect.value = oldMandi;
         }
 
         function renderAuctionLots() {
             const container = document.getElementById('auction-lots-container');
             if (!container) return;
-            const selectDropdown = document.getElementById('bid-lot-number');
-            let html = '';
-            let dropdownHtml = '';
+            const status = document.getElementById('ws-status');
+            const message = document.getElementById('auction-feed-message');
+            const updated = document.getElementById('auction-updated-at');
+            const district = document.getElementById('auction-district-filter')?.value || 'all';
+            const mandi = document.getElementById('auction-mandi-filter')?.value || 'all';
+            const filtered = liveAuctionLots.filter(lot =>
+                (district === 'all' || lot.district === district) &&
+                (mandi === 'all' || lot.mandi === mandi)
+            );
 
-            liveAuctionLots.forEach(lot => {
-                dropdownHtml += `<option value="${lot.lot_number}">${lot.lot_number} (${lot.crop_name})</option>`;
-                
-                html += `
-                    <div class="border border-slate-150 p-5 rounded-2xl bg-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition">
-                        <div class="space-y-1">
-                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">${lot.lot_number}</span>
-                            <h4 class="text-lg font-black text-slate-800">${lot.crop_name}</h4>
-                            <div class="text-xs text-slate-400 space-y-0.5 font-medium">
-                                <p>🧑‍🌾 <b>किसान Name:</b> ${lot.farmer_name}</p>
-                                <p>📦 <b>कुल मात्रा:</b> ${lot.quantity} क्विंटल (Quintals)</p>
-                                <p>💵 <b>प्रारंभिक भाव:</b> ₹${lot.starting_rate}/Q</p>
-                            </div>
-                        </div>
+            const isLive = auctionSnapshot.status === 'live';
+            if (status) {
+                status.innerText = isLive
+                    ? `🟢 ${filtered.length} official live lots`
+                    : (auctionSnapshot.status === 'no_active_lots' ? '🟢 No active official lots' : '🟠 Official feed unavailable');
+                status.className = `text-xs font-bold px-3 py-1 rounded-full border ${isLive
+                    ? 'bg-green-500/10 text-green-300 border-green-500/20'
+                    : 'bg-amber-500/10 text-amber-300 border-amber-500/20'}`;
+            }
+            if (message) message.innerText = currentLang === 'hi'
+                ? (auctionSnapshot.message_hi || '')
+                : (auctionSnapshot.message_en || '');
+            if (updated) updated.innerText = auctionSnapshot.updated_at
+                ? `${currentLang === 'hi' ? 'अपडेट' : 'Updated'}: ${new Date(auctionSnapshot.updated_at).toLocaleString('en-IN')}`
+                : '';
 
-                        <div class="bg-emerald-50 border border-emerald-100/50 p-4 rounded-xl text-center md:w-48 w-full space-y-1">
-                            <span class="text-[10px] font-bold text-emerald-600 block uppercase tracking-wide">सर्वोच्च बोली (Highest Bid)</span>
-                            <p class="text-2xl font-black text-emerald-800" id="lot-bid-${lot.lot_number}">₹${lot.highest_bid}/Q</p>
-                            <span class="text-[10px] text-slate-500 font-bold block" id="lot-bidder-${lot.lot_number}">🙋‍♂️ ${lot.highest_bidder || 'No Bidder'}</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            if (selectDropdown) selectDropdown.innerHTML = dropdownHtml;
-        }
-
-        function logBidTicker(trader, lotNumber, bidAmount) {
-            const feed = document.getElementById('bids-ticker-feed');
-            if (!feed) return;
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            const newLog = `
-                <div class="py-2.5 flex items-start space-x-2 text-slate-700 font-medium">
-                    <i data-lucide="gavel" class="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0"></i>
-                    <div>
-                        <p><b>${trader}</b> ने लॉट <span class="text-emerald-700 font-bold">${lotNumber}</span> पर <b>₹${bidAmount}/Q</b> की बोली लगाई।</p>
-                        <span class="text-[9px] text-slate-400 block">${timeStr}</span>
-                    </div>
-                </div>
-            `;
-            
-            feed.innerHTML = newLog + feed.innerHTML;
-            renderIcons();
-        }
-
-        function placeLiveBid(e) {
-            e.preventDefault();
-            const trader = document.getElementById('bidder-name').value;
-            const lotNum = document.getElementById('bid-lot-number').value;
-            const price = parseFloat(document.getElementById('bid-price').value);
-
-            const lot = liveAuctionLots.find(l => l.lot_number === lotNum);
-            if (!lot) return;
-
-            if (price <= lot.highest_bid) {
-                alert(`बोली भाव वर्तमान उच्चतम बोली ₹${lot.highest_bid}/Q से अधिक होना चाहिए!`);
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="p-7 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+                        <i data-lucide="shield-alert" class="w-8 h-8 text-amber-600 mx-auto"></i>
+                        <p class="font-bold text-amber-900 mt-2">${isLive ? 'चुने गए filter में कोई active lot नहीं है।' : 'अधिकृत live lots उपलब्ध नहीं हैं।'}</p>
+                        <p class="text-xs text-amber-700 mt-1">सुरक्षा के लिए simulated bid/lot नहीं दिखाए जाते। e-NAM portal पर login करके नवीनतम lot list देखें।</p>
+                        <a href="${escapeHtml(auctionSnapshot.portal_url || 'https://www.enam.gov.in/web/')}" target="_blank" rel="noopener noreferrer" class="inline-block mt-3 bg-amber-700 text-white px-4 py-2 rounded-lg text-xs font-bold">Official e-NAM खोलें ↗</a>
+                    </div>`;
+                renderIcons();
                 return;
             }
 
-            const host = window.location.origin;
-            const payload = {
-                lot_number: lotNum,
-                bid_amount: price,
-                trader_name: trader
-            };
-
-            fetch(`${host}/api/v2/auction/bid`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error();
-                return res.json();
-            })
-            .then(() => {
-                if (!auctionWs || auctionWs.readyState !== WebSocket.OPEN) {
-                    lot.highest_bid = price;
-                    lot.highest_bidder = trader;
-                    renderAuctionLots();
-                    logBidTicker(trader, lotNum, price);
-                }
-                document.getElementById('bid-price').value = price + 5;
-            })
-            .catch(() => {
-                lot.highest_bid = price;
-                lot.highest_bidder = trader;
-                renderAuctionLots();
-                logBidTicker(trader, lotNum, price);
-                document.getElementById('bid-price').value = price + 5;
-            });
+            container.innerHTML = filtered.map(lot => `
+                <div class="border border-slate-200 p-5 rounded-2xl bg-white shadow-sm hover:shadow-md transition">
+                    <div class="flex flex-col md:flex-row items-start justify-between gap-4">
+                        <div class="space-y-1.5">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">LOT ${escapeHtml(lot.lot_number)}</span>
+                                <span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">${escapeHtml(lot.status || 'active')}</span>
+                            </div>
+                            <h4 class="text-lg font-black text-slate-800">${escapeHtml(lot.commodity)}</h4>
+                            <div class="text-xs text-slate-500 space-y-1">
+                                <p>📍 <b>${escapeHtml(lot.district)}</b> • ${escapeHtml(lot.mandi)}</p>
+                                <p>📦 ${lot.quantity ?? '—'} ${escapeHtml(lot.quantity_unit || '')} • ${escapeHtml(lot.variety || 'Variety not reported')} • ${escapeHtml(lot.grade || 'Grade not reported')}</p>
+                                <p>🕒 ${escapeHtml(lot.starts_at || '—')} → ${escapeHtml(lot.ends_at || '—')}</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center md:w-52 w-full">
+                            <span class="text-[10px] font-bold text-emerald-600 block uppercase">Current official bid</span>
+                            <p class="text-2xl font-black text-emerald-800">${lot.current_bid ? '₹' + Number(lot.current_bid).toLocaleString('en-IN') + '/Q' : '—'}</p>
+                            <p class="text-[10px] text-slate-500">Base: ${lot.base_price ? '₹' + Number(lot.base_price).toLocaleString('en-IN') : '—'} • ${lot.bid_count ?? 0} bids</p>
+                            <a href="${escapeHtml(lot.source_url || auctionSnapshot.portal_url || 'https://www.enam.gov.in/web/')}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 text-[10px] font-bold text-emerald-800 underline">Verify / Bid on e-NAM ↗</a>
+                        </div>
+                    </div>
+                </div>`).join('');
+            renderIcons();
         }
 
         // ================= AI HINDI VOICE SEARCH ENGINE (PHASE 5) =================
@@ -2298,28 +2501,15 @@
                     document.getElementById('pred-recommendation').innerText = currentLang === 'hi' ? data.recommendation_hi : data.recommendation_en;
                 })
                 .catch(() => {
-                    const base = 2500;
-                    const randomSlope = (Math.random() * 20 - 10);
-                    const isUp = randomSlope > 0;
-                    
-                    const tomorrow = Math.round(base + randomSlope + (Math.random() * 10 - 5));
-                    const day3 = Math.round(base + randomSlope * 3 + (Math.random() * 20 - 10));
-                    const day7 = Math.round(base + randomSlope * 7 + (Math.random() * 30 - 15));
-
-                    document.getElementById('pred-1-day').innerText = `₹ ${tomorrow} / Q`;
-                    document.getElementById('pred-3-day').innerText = `₹ ${day3} / Q`;
-                    document.getElementById('pred-7-day').innerText = `₹ ${day7} / Q`;
-                    
-                    document.getElementById('pred-trend').innerText = isUp ? "Bullish (तेजी)" : "Bearish (मंदी)";
-                    document.getElementById('pred-slope').innerText = randomSlope.toFixed(2);
-                    document.getElementById('pred-confidence').innerText = "88%";
-                    
-                    const hiRec = isUp 
-                        ? "📈 बाज़ार में मजबूत सुधार है। बेहतर मुनाफे के लिए फसल को कुछ दिन रोककर रखें।" 
-                        : "📉 बाज़ार में मामूली गिरावट की संभावना है। अपनी ज़रूरत के अनुसार जल्द सौदा निपटाएं।";
-                    const enRec = isUp ? "Strong upward correction. Hold stock." : "Minor correction likely. Liquidate as needed.";
-                    
-                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi' ? hiRec : enRec;
+                    document.getElementById('pred-1-day').innerText = '—';
+                    document.getElementById('pred-3-day').innerText = '—';
+                    document.getElementById('pred-7-day').innerText = '—';
+                    document.getElementById('pred-trend').innerText = currentLang === 'hi' ? 'डेटा उपलब्ध नहीं' : 'Data unavailable';
+                    document.getElementById('pred-slope').innerText = '—';
+                    document.getElementById('pred-confidence').innerText = '0%';
+                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi'
+                        ? 'पर्याप्त सत्यापित ऐतिहासिक डेटा के बिना कोई अनुमान नहीं दिखाया गया है।'
+                        : 'No forecast is shown without sufficient verified historical data.';
                 });
         }
 
@@ -2356,8 +2546,9 @@
                 document.getElementById('sub-val').value = "";
             })
             .catch(() => {
-                alert("पंजीकरण पूर्ण हुआ! (डेमो मोड में सबरक्रिप्शन लॉग हो गया है।)");
-                document.getElementById('sub-val').value = "";
+                alert(currentLang === 'hi'
+                    ? "अलर्ट सेवा अभी API server से जुड़ी नहीं है; पंजीकरण सेव नहीं हुआ।"
+                    : "The alert API is unavailable; your subscription was not saved.");
             });
         }
 
@@ -2483,53 +2674,113 @@
             });
         }
 
-        function renderWeather() {
-            const container = document.getElementById('weather-cards-container');
-            let html = '';
+        function renderStatePrices() {
+            const container = document.getElementById('state-price-cards-container');
+            if (!container) return;
+            const source = document.getElementById('state-price-source');
+            const search = (document.getElementById('state-price-search')?.value || '').toLowerCase().trim();
+            const states = Array.isArray(statePriceData?.states) ? statePriceData.states : [];
+            if (source) {
+                source.innerText = `${statePriceData?.source || 'Official feed'} • ${statePriceData?.verified ? 'Verified' : 'Unverified/Cached'} • ${statePriceData?.updated_at ? new Date(statePriceData.updated_at).toLocaleString('en-IN') : ''}`;
+            }
 
-            weatherData.forEach(w => {
-                const distName = currentLang === 'hi' ? w.district_hi : w.district;
-                const statusName = currentLang === 'hi' ? w.status_hi : w.status;
-                const adviceKey = w.status.toLowerCase().includes('rain') || w.status.toLowerCase().includes('shower') ? 'adv_rainy' : 'adv_sunny';
-                const adviceText = TRANSLATIONS[currentLang][adviceKey];
+            const filtered = states.filter(item => (item.state || '').toLowerCase().includes(search));
+            if (!filtered.length) {
+                container.innerHTML = `<div class="md:col-span-2 border border-amber-200 bg-amber-50 text-amber-800 rounded-xl p-5 text-sm">
+                    ${currentLang === 'hi'
+                        ? 'राज्य-वार official data उपलब्ध नहीं है। data.gov.in API key configure होने के बाद सभी उपलब्ध राज्यों के भाव यहाँ स्वतः आएँगे।'
+                        : 'State-wise official data is unavailable. Available states will appear automatically after the data.gov.in API key is configured.'}
+                </div>`;
+                return;
+            }
 
-                const isRainy = adviceKey === 'adv_rainy';
-                const iconName = isRainy ? 'cloud-rain' : 'sun';
-                const borderClass = isRainy ? 'border-sky-200 bg-sky-50' : 'border-yellow-200 bg-amber-50';
-                const iconColor = isRainy ? 'text-sky-600' : 'text-amber-500';
-
-                html += `
-                    <div class="border rounded-xl p-4 flex flex-col justify-between space-y-3 bg-white hover:shadow-sm transition ${borderClass}">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <span class="text-xs text-slate-400 font-bold block uppercase">${TRANSLATIONS[currentLang].filter_district}</span>
-                                <h4 class="font-extrabold text-slate-800 text-lg">${distName}</h4>
+            container.innerHTML = filtered.map((item, visibleIndex) => {
+                const markets = Array.isArray(item.markets) ? item.markets : [];
+                const detailsId = `state-markets-${visibleIndex}`;
+                return `
+                    <div class="border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden">
+                        <button type="button" onclick="document.getElementById('${detailsId}').classList.toggle('hidden')" class="w-full text-left p-4 hover:bg-slate-50 transition">
+                            <div class="flex items-start justify-between gap-3">
+                                <div><p class="text-[10px] text-slate-400 uppercase font-bold">State / UT</p><h4 class="text-lg font-black text-slate-900">${escapeHtml(item.state)}</h4></div>
+                                <span class="bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg px-3 py-1.5 font-black">₹${Number(item.average_modal_price || 0).toLocaleString('en-IN')} avg</span>
                             </div>
-                            <div class="p-2 rounded-lg bg-white shadow-sm">
-                                <i data-lucide="${iconName}" class="w-6 h-6 ${iconColor}"></i>
+                            <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+                                <div class="bg-slate-50 rounded p-2"><p class="text-[9px] text-slate-400">जिले</p><p class="font-bold">${item.district_count || 0}</p></div>
+                                <div class="bg-slate-50 rounded p-2"><p class="text-[9px] text-slate-400">मंडियां</p><p class="font-bold">${item.mandi_count || 0}</p></div>
+                                <div class="bg-slate-50 rounded p-2"><p class="text-[9px] text-slate-400">रिकॉर्ड</p><p class="font-bold">${item.record_count || 0}</p></div>
                             </div>
+                            <div class="flex justify-between mt-3 text-[10px] text-slate-500"><span>Top: ${escapeHtml(item.top_commodity || '—')}</span><span>₹${item.minimum_price || '—'} – ₹${item.maximum_price || '—'}</span></div>
+                        </button>
+                        <div id="${detailsId}" class="hidden border-t border-slate-100 p-3 space-y-2 bg-slate-50">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase">जिला और मंडी के प्रमुख भाव</p>
+                            ${markets.map(market => `
+                                <div class="bg-white border border-slate-200 rounded-lg p-2.5 flex items-center justify-between gap-2 text-xs">
+                                    <div><p class="font-bold text-slate-800">${escapeHtml(market.mandi)}</p><p class="text-[10px] text-slate-400">${escapeHtml(market.district)} • ${escapeHtml(market.commodity)}</p></div>
+                                    <div class="text-right"><p class="font-black text-emerald-700">₹${Number(market.modal_price || 0).toLocaleString('en-IN')}/Q</p><p class="text-[9px] text-slate-400">${escapeHtml(market.arrival_date || '')}</p></div>
+                                </div>`).join('') || '<p class="text-xs text-slate-400">मंडी विवरण उपलब्ध नहीं है।</p>'}
                         </div>
+                    </div>`;
+            }).join('');
+            renderIcons();
+        }
 
-                        <div class="flex items-end justify-between">
-                            <div>
-                                <span class="text-2xl font-black text-slate-800">${w.temp}°C</span>
-                                <span class="text-xs font-semibold text-slate-500 block">${statusName}</span>
-                            </div>
-                            <div class="text-right text-[10px] text-slate-400 space-y-0.5">
-                                <span>💧 ${TRANSLATIONS[currentLang].humidity_text}: ${w.humidity}%</span><br>
-                                <span>💨 ${TRANSLATIONS[currentLang].wind_text}: ${w.wind} km/h</span>
-                            </div>
-                        </div>
+        function renderSourceMonitor() {
+            const container = document.getElementById('source-monitor-container');
+            const checked = document.getElementById('source-monitor-checked');
+            if (!container) return;
+            const sources = Array.isArray(sourceData?.sources) ? sourceData.sources : [];
+            if (checked) checked.innerText = sourceData?.last_checked_at
+                ? `${currentLang === 'hi' ? 'अंतिम जाँच' : 'Last checked'}: ${new Date(sourceData.last_checked_at).toLocaleString('en-IN')}`
+                : '';
+            container.innerHTML = sources.map(sourceItem => {
+                const ok = sourceItem.status === 'ok';
+                const waiting = ['not_configured', 'unavailable'].includes(sourceItem.status);
+                const cardClass = ok
+                    ? 'border-emerald-200 bg-emerald-50'
+                    : (waiting ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50');
+                const statusClass = ok ? 'text-emerald-700' : (waiting ? 'text-amber-700' : 'text-red-700');
+                return `<div class="border ${cardClass} rounded-xl p-3">
+                    <div class="flex items-center justify-between gap-2"><p class="font-bold text-xs text-slate-800">${escapeHtml(sourceItem.name)}</p><span class="text-[9px] uppercase font-black ${statusClass}">${escapeHtml(sourceItem.status)}</span></div>
+                    <p class="text-[10px] text-slate-500 mt-1">${sourceItem.records ?? 0} records</p>
+                    ${sourceItem.message ? `<p class="text-[9px] ${statusClass} mt-1 line-clamp-2">${escapeHtml(sourceItem.message)}</p>` : ''}
+                </div>`;
+            }).join('') || `<p class="text-xs text-amber-700">${currentLang === 'hi' ? 'Source status उपलब्ध नहीं है।' : 'Source status is unavailable.'}</p>`;
+            renderIcons();
+        }
 
-                        <div class="border-t border-slate-200/50 pt-2.5 text-xs">
-                            <span class="font-bold block text-slate-700 mb-0.5">💡 ${TRANSLATIONS[currentLang].recommendation}:</span>
-                            <p class="text-slate-600 leading-relaxed">${adviceText}</p>
-                        </div>
+        function renderLaws() {
+            const chapterContainer = document.getElementById('law-chapters-container');
+            const practicalContainer = document.getElementById('practical-rules-container');
+            const sourceContainer = document.getElementById('law-sources-container');
+            const disclaimer = document.getElementById('law-disclaimer');
+            if (!chapterContainer || !practicalContainer || !sourceContainer || !disclaimer) return;
+
+            disclaimer.innerText = currentLang === 'hi'
+                ? (lawsData.disclaimer_hi || '')
+                : (lawsData.disclaimer_en || '');
+            chapterContainer.innerHTML = (lawsData.chapters || []).map((chapter, chapterIndex) => `
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <button type="button" onclick="document.getElementById('law-chapter-${chapterIndex}').classList.toggle('hidden')" class="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50">
+                        <div><p class="text-[10px] text-emerald-700 font-extrabold uppercase">${escapeHtml(chapter.chapter)}</p><h4 class="font-black text-slate-900">${escapeHtml(currentLang === 'hi' ? chapter.title_hi : chapter.title_en)}</h4></div>
+                        <span class="text-xs text-slate-400">${(chapter.sections || []).length} sections ▾</span>
+                    </button>
+                    <div id="law-chapter-${chapterIndex}" class="${chapterIndex === 0 ? '' : 'hidden'} border-t border-slate-100 divide-y divide-slate-100">
+                        ${(chapter.sections || []).map(section => `
+                            <div class="p-3 flex items-start gap-3 text-xs">
+                                <span class="bg-emerald-100 text-emerald-800 font-black px-2 py-1 rounded min-w-fit">धारा ${escapeHtml(section.number)}</span>
+                                <p class="text-slate-700 pt-1">${escapeHtml(currentLang === 'hi' ? section.title_hi : section.title_en)}</p>
+                            </div>`).join('')}
                     </div>
-                `;
-            });
+                </div>`).join('') || '<div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-800">कानून data उपलब्ध नहीं है।</div>';
 
-            container.innerHTML = html;
+            practicalContainer.innerHTML = (lawsData.practical_rules || []).map(rule => `
+                <div class="border-l-4 border-emerald-500 pl-3">
+                    <p class="font-bold text-xs text-slate-800">${escapeHtml(currentLang === 'hi' ? rule.title_hi : rule.title_en)}</p>
+                    <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">${escapeHtml(currentLang === 'hi' ? rule.detail_hi : rule.detail_en)}</p>
+                </div>`).join('');
+
+            sourceContainer.innerHTML = (lawsData.official_sources || []).map(sourceItem => `
+                <a href="${escapeHtml(sourceItem.url)}" target="_blank" rel="noopener noreferrer" class="block bg-white/10 hover:bg-white/20 p-2.5 rounded-lg">${escapeHtml(sourceItem.name)} ↗</a>`).join('');
             renderIcons();
         }
 
@@ -2660,6 +2911,14 @@
             const textEl = document.getElementById('arb-outcome-text');
 
             if (card && status && amountEl && textEl) {
+                if (qty <= 0 || buyPrice <= 0 || salePrice <= 0) {
+                    card.className = "bg-slate-700 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4 mt-4";
+                    status.innerText = "वास्तविक सौदे का डेटा दर्ज करें";
+                    status.className = "bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider";
+                    amountEl.innerText = "₹ —";
+                    textEl.innerText = "खरीद भाव, बिक्री भाव और मात्रा भरने पर estimate दिखेगा।";
+                    return;
+                }
                 if (isProfit) {
                     card.className = "bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4 mt-4";
                     status.innerText = "🟢 मुनाफे का सौदा (Net Profit)";
@@ -2677,7 +2936,7 @@
         }
 
         // Beautiful A4-sized PDF Export for Mandi Arbitrage Report (Khalilabad/Lucknow scenario compliant)
-        function downloadArbitragePDF() {
+        async function downloadArbitragePDF() {
             try {
                 const buyPrice = parseFloat(document.getElementById('arb-buy-price').value) || 0;
                 const salePrice = parseFloat(document.getElementById('arb-sale-price').value) || 0;
@@ -2685,6 +2944,10 @@
                 const transport = parseFloat(document.getElementById('arb-transport').value) || 0;
                 const taxPercent = parseFloat(document.getElementById('arb-tax-percent').value) || 0;
                 const other = parseFloat(document.getElementById('arb-other').value) || 0;
+                if (buyPrice <= 0 || salePrice <= 0 || qty <= 0) {
+                    alert(currentLang === 'hi' ? 'पहले वास्तविक खरीद भाव, बिक्री भाव और मात्रा दर्ज करें।' : 'Enter actual buy price, sale price and quantity first.');
+                    return;
+                }
 
                 const sourceSelect = document.getElementById('arb-source');
                 const destSelect = document.getElementById('arb-dest');
@@ -2788,15 +3051,14 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Arbitrage report PDF downloaded successfully"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Arbitrage report PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
-        function downloadBillPDF() {
+        async function downloadBillPDF() {
             try {
                 if (!globalBillDetails) {
                     calculateBill();
@@ -2823,7 +3085,7 @@
                             <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश</p>
                         </div>
                         <div class="text-right">
-                            <span class="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">मंडी बिक्री पर्ची (Cash Memo)</span>
+                            <span class="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">अनुमानित मंडी गणना (Estimate)</span>
                             <p class="text-[10px] text-slate-400 mt-1">दिनांक: ${dateStr}</p>
                         </div>
                     </div>
@@ -2869,9 +3131,9 @@
                         <div>
                             <h4 class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 uppercase tracking-wider text-[11px]">नियम व शर्तें (Terms)</h4>
                             <p class="text-[10px] text-slate-500 leading-relaxed">
-                                1. यह रसीद यूपी कृषि उत्पादन मंडी अधिनियम 1964 के तहत जारी एक डिजिटल गणना रसीद है।<br>
-                                2. मंडी शुल्क (1.5%) एवं विकास सेस (0.5%) कुल 2% मंडी परिषद के नियमानुसार काटा गया है।<br>
-                                3. पल्लेदारी / मजदूरी दरें सरकारी मानकों के अनुरूप हैं।
+                                1. यह केवल उपयोगकर्ता द्वारा दर्ज मानों की गणना है; सरकारी प्रपत्र-6, प्रपत्र-9, बिक्री रसीद या कर चालान नहीं।<br>
+                                2. शुल्क, सेस, आढ़त और मजदूरी की दरें उपयोगकर्ता इनपुट हैं; लागू नवीनतम दर संबंधित मंडी समिति से सत्यापित करें।<br>
+                                3. इस estimate से किसी भुगतान, स्वामित्व या कानूनी अनुपालन का प्रमाण नहीं बनता।
                             </p>
                         </div>
                         <div class="space-y-2">
@@ -2908,10 +3170,9 @@
                     </div>
 
                     <div class="border-t border-slate-200 pt-6 mt-12 flex justify-between items-center">
-                        <div class="text-[9px] text-slate-400 space-y-1">
-                            <p>यह एक computer-generated रसीद है, हस्ताक्षर की आवश्यकता नहीं है।</p>
-                            <p class="font-bold text-slate-600 mt-1">🔐 डिजिटल सत्यापन QR कोड (Scan to Verify Bill)</p>
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VERIFY:VKT-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.round(bill.netPayout)}|NET:${bill.netPayout.toFixed(0)}|SECURE_VERIFIED" class="w-16 h-16 border border-slate-200 p-1 rounded mt-1 bg-white inline-block">
+                        <div class="text-[9px] text-slate-500 space-y-1 max-w-sm">
+                            <p class="font-bold text-amber-700">⚠️ यह computer-generated estimate है, आधिकारिक मंडी बिक्री पर्ची नहीं।</p>
+                            <p>अंतिम भुगतान से पहले वजन, भाव, शुल्क और सभी कटौतियाँ संबंधित पक्षों तथा मंडी समिति से सत्यापित करें।</p>
                         </div>
                         <div class="text-center w-40">
                             <div class="h-10 border-b border-slate-300 mb-1"></div>
@@ -2930,15 +3191,14 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Bill PDF downloaded successfully"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Bill PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
-        function downloadRatesPDF() {
+        async function downloadRatesPDF() {
             try {
                 const filteredRecords = getFilteredRecords();
                 const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
@@ -2957,7 +3217,7 @@
                             <p class="text-[10px] text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — डिजिटल मंडी सेवा</p>
                         </div>
                         <div class="text-right">
-                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">आधिकारिक मंडी भाव सूची</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">स्रोत सहित मंडी भाव सूची</span>
                             <p class="text-[9px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
                         </div>
                     </div>
@@ -2975,7 +3235,9 @@
                     const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
                     const vName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
                     const gName = currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade;
-                    const aText = `${r.arrivals || 0} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : (r.arrivals_unit || 'Tonnes')}`;
+                    const aText = r.arrivals !== null && r.arrivals !== undefined
+                        ? `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || '') : (r.arrivals_unit || '')}`.trim()
+                        : (currentLang === 'hi' ? 'प्रकाशित नहीं' : 'Not published');
 
                     rowsHtml += `
                         <tr class="border-b border-slate-200 text-[10px]">
@@ -3036,11 +3298,10 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Rates PDF downloaded cleanly"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Rates PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
     </script>

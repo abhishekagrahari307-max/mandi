@@ -1,79 +1,60 @@
-import random
-from datetime import datetime, timedelta
+from datetime import datetime
+
 
 def predict_future_prices(historical_data, crop_name):
-    """
-    AI-assisted regression and predictive price analytics model.
-    Analyzes historical weekly trends to predict prices for:
-    - Tomorrow (1-day)
-    - 3-days
-    - 7-days
-    Returns projected prices, trend slope, and professional trader recommendations.
+    """Return a deterministic linear trend from verified historical points.
+
+    This is a statistical projection, not an AI trading recommendation. It
+    refuses to return a value when fewer than three observations are present.
     """
     crop_history = historical_data.get(crop_name, [])
-    
-    if not crop_history or len(crop_history) < 3:
-        # Default fallback prediction if no historical records exist
-        base_price = 2500
-        trend_direction = "Stable"
-        slope = 0
-    else:
-        # Simple Linear Regression (Least Squares Method) to calculate price trends
-        prices = [h["price"] for h in crop_history]
-        n = len(prices)
-        x = list(range(n))
-        y = prices
-        
-        sum_x = sum(x)
-        sum_y = sum(y)
-        sum_xx = sum(i*i for i in x)
-        sum_xy = sum(x[i]*y[i] for i in range(n))
-        
-        # Calculate slope (m)
-        denom = (n * sum_xx - sum_x * sum_x)
-        slope = (n * sum_xy - sum_x * sum_y) / denom if denom != 0 else 0
-        
-        base_price = prices[-1] # Current price is the baseline
+    valid_points = [
+        point for point in crop_history
+        if isinstance(point, dict) and isinstance(point.get("price"), (int, float))
+    ]
+    if len(valid_points) < 3:
+        raise ValueError("At least three verified historical observations are required")
 
-    # Trend categorization
+    prices = [float(point["price"]) for point in valid_points]
+    n = len(prices)
+    x_values = list(range(n))
+    sum_x = sum(x_values)
+    sum_y = sum(prices)
+    sum_xx = sum(value * value for value in x_values)
+    sum_xy = sum(x_values[index] * prices[index] for index in range(n))
+    denominator = n * sum_xx - sum_x * sum_x
+    slope = (n * sum_xy - sum_x * sum_y) / denominator if denominator else 0.0
+    intercept = (sum_y - slope * sum_x) / n
+
+    fitted = [intercept + slope * value for value in x_values]
+    mean_price = sum_y / n
+    total_variance = sum((price - mean_price) ** 2 for price in prices)
+    residual_variance = sum((prices[index] - fitted[index]) ** 2 for index in range(n))
+    r_squared = 1.0 - residual_variance / total_variance if total_variance else 1.0
+    model_fit = max(0, min(100, round(r_squared * 100)))
+
     if slope > 8:
-        trend_direction = "Bullish (तेजी)"
-        recommendation_hi = "📈 बाजार में मजबूत तेजी का संकेत है। बेहतर दाम के लिए फसल को रोककर (Hold) रखें।"
-        recommendation_en = "Strong Bullish trend. Hold your stock for higher prices."
-        confidence = random.randint(85, 96)
+        trend_direction = "Upward (तेजी)"
     elif slope < -8:
-        trend_direction = "Bearish (मंदी)"
-        recommendation_hi = "📉 बाजार में गिरावट की आशंका है। नुकसान से बचने के लिए फसल को अभी बेचें (Sell Now)।"
-        recommendation_en = "Bearish signal. Sell your commodities now to lock in prices."
-        confidence = random.randint(80, 94)
+        trend_direction = "Downward (मंदी)"
     else:
         trend_direction = "Stable (स्थिर)"
-        recommendation_hi = "⚖️ बाजार स्थिर है। आवक सामान्य है, अपनी वित्तीय आवश्यकतानुसार बिक्री करें।"
-        recommendation_en = "Market is stable. Sell as per your liquid financial needs."
-        confidence = random.randint(70, 85)
 
-    # Compute projections with regression slope and random seasonal noise
-    pred_1_day = int(base_price + slope * 1 + random.randint(-15, 15))
-    pred_3_day = int(base_price + slope * 3 + random.randint(-30, 30))
-    pred_7_day = int(base_price + slope * 7 + random.randint(-50, 50))
-
-    # Avoid negative prices
-    pred_1_day = max(100, pred_1_day)
-    pred_3_day = max(100, pred_3_day)
-    pred_7_day = max(100, pred_7_day)
-
+    base_price = prices[-1]
+    projections = {
+        "tomorrow": max(0, round(base_price + slope)),
+        "three_days": max(0, round(base_price + slope * 3)),
+        "seven_days": max(0, round(base_price + slope * 7)),
+    }
     return {
         "crop": crop_name,
-        "current_price": base_price,
+        "current_price": round(base_price),
         "trend": trend_direction,
         "slope": round(slope, 2),
-        "confidence": f"{confidence}%",
-        "predictions": {
-            "tomorrow": pred_1_day,
-            "three_days": pred_3_day,
-            "seven_days": pred_7_day
-        },
-        "recommendation_hi": recommendation_hi,
-        "recommendation_en": recommendation_en,
-        "generated_at": datetime.now().isoformat()
+        "confidence": f"{model_fit}% model fit",
+        "observation_count": n,
+        "predictions": projections,
+        "recommendation_hi": "यह केवल सत्यापित ऐतिहासिक भावों की रैखिक प्रवृत्ति है; खरीद-बिक्री की सलाह नहीं।",
+        "recommendation_en": "This is only a linear trend of verified historical prices, not trading advice.",
+        "generated_at": datetime.now().isoformat(),
     }
