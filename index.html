@@ -686,6 +686,77 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 📊 ARBITRAGE PROFIT & LOSS CALCULATOR (मंडी आबिट्राज लाभ-हानि कैलकुलेटर) 📊 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6 space-y-4">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <h3 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
+                        <i data-lucide="line-chart" class="text-emerald-600 w-5 h-5"></i>
+                        <span>व्यापारिक अंतर-मंडी लाभ-हानि कैलकुलेटर (Arbitrage Profit Analyzer)</span>
+                    </h3>
+                    <span class="text-[10px] bg-emerald-50 font-bold px-2 py-0.5 rounded text-emerald-700 border border-emerald-200 uppercase tracking-wider">Mandi Arbitrage</span>
+                </div>
+
+                <!-- Sourcing & Selling input grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700 font-medium">
+                    <!-- Sourcing Mandi -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">स्रोत्र मंडी (Sourcing Mandi)</label>
+                        <input type="text" id="arb-source" value="Khalilabad (खलीलाबाद)" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Sourcing Buy Price -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">खरीद भाव (Buy Rate ₹/Q)</label>
+                        <input type="number" id="arb-buy-price" oninput="calculateArbitrage()" value="2300" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Destination Mandi -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बिक्री मंडी (Destination Mandi)</label>
+                        <input type="text" id="arb-dest" value="Lucknow (लखनऊ)" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Destination Sale Price -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बिक्री भाव (Sale Rate ₹/Q)</label>
+                        <input type="number" id="arb-sale-price" oninput="calculateArbitrage()" value="2650" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700 font-medium">
+                    <!-- Quantity -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">कुल मात्रा (Quantity in Q)</label>
+                        <input type="number" id="arb-qty" oninput="calculateArbitrage()" value="100" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Transport/Freight Cost -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">परिवहन भाड़ा (Total Freight ₹)</label>
+                        <input type="number" id="arb-transport" oninput="calculateArbitrage()" value="8000" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Mandi Fee (Sourcing) -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">मंडी शुल्क + सेस (Mandi Tax %)</label>
+                        <input type="number" id="arb-tax-percent" oninput="calculateArbitrage()" value="2.0" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                    <!-- Unloading / Other Expenses -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">मजदूरी व अन्य खर्च (Other Exp. ₹)</label>
+                        <input type="number" id="arb-other" oninput="calculateArbitrage()" value="3000" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Final P&L Result Dashboard -->
+                <div id="arb-result-card" class="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center md:text-left">
+                        <span id="arb-status-badge" class="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">🟢 मुनाफे का सौदा (Net Profit)</span>
+                        <h4 class="text-lg font-black" id="arb-outcome-text">खलीलाबाद से लखनऊ माल बेचने पर शुद्ध मुनाफा:</h4>
+                        <p class="text-[11px] text-emerald-100">सारे खर्चे (भाड़ा, मंडी टैक्स, लोडिंग) काटकर अंतिम लाभ-हानि</p>
+                    </div>
+                    <div class="text-center md:text-right space-y-1">
+                        <span class="text-[10px] font-bold text-emerald-200 block uppercase">शुद्ध लाभ / हानि (Net Profit/Loss)</span>
+                        <span id="arb-net-amount" class="text-3xl font-black">₹ 24,000</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ───────────────── SECTION: WEATHER, ALERTS & INFO ───────────────── -->
@@ -1131,7 +1202,10 @@
             } else if (tabId === 'ranking') {
                 setTimeout(renderPriceRanking, 50);
             } else if (tabId === 'calculator') {
-                setTimeout(calculateBill, 50);
+                setTimeout(() => {
+                    calculateBill();
+                    calculateArbitrage();
+                }, 50);
             }
         }
 
@@ -1791,6 +1865,57 @@
             document.getElementById('res-transport-amt').innerText = `₹${transport.toFixed(2)}`;
             
             document.getElementById('res-net-payout').innerText = `₹${netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+        }
+
+        // ================= ADVACHED ARBITRAGE PROFIT & LOSS CALCULATOR (PHASE 4/5) =================
+        function calculateArbitrage() {
+            const buyPrice = parseFloat(document.getElementById('arb-buy-price').value) || 0;
+            const salePrice = parseFloat(document.getElementById('arb-sale-price').value) || 0;
+            const qty = parseFloat(document.getElementById('arb-qty').value) || 0;
+            const transport = parseFloat(document.getElementById('arb-transport').value) || 0;
+            const taxPercent = parseFloat(document.getElementById('arb-tax-percent').value) || 0;
+            const other = parseFloat(document.getElementById('arb-other').value) || 0;
+
+            const sourceName = document.getElementById('arb-source').value;
+            const destName = document.getElementById('arb-dest').value;
+
+            // 1. Sourcing Buying Cost
+            const buyCost = qty * buyPrice;
+            
+            // 2. Sourcing Mandi Fees
+            const taxAmt = (buyCost * taxPercent) / 100;
+            
+            // 3. Total expenses
+            const totalExpenses = buyCost + taxAmt + transport + other;
+            
+            // 4. Selling Proceeds
+            const saleProceeds = qty * salePrice;
+            
+            // 5. Net profit or loss
+            const netAmount = saleProceeds - totalExpenses;
+            const isProfit = netAmount >= 0;
+
+            // Update UI elements
+            const card = document.getElementById('arb-result-card');
+            const status = document.getElementById('arb-status-badge');
+            const amountEl = document.getElementById('arb-net-amount');
+            const textEl = document.getElementById('arb-outcome-text');
+
+            if (card && status && amountEl && textEl) {
+                if (isProfit) {
+                    card.className = "bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4 mt-4";
+                    status.innerText = "🟢 मुनाफे का सौदा (Net Profit)";
+                    status.className = "bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider";
+                    amountEl.innerText = `₹ ${Math.round(netAmount).toLocaleString('en-IN')}`;
+                    textEl.innerText = `${sourceName} से ${destName} माल बेचने पर शुद्ध मुनाफा:`;
+                } else {
+                    card.className = "bg-gradient-to-r from-red-500 to-orange-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4 mt-4";
+                    status.innerText = "🔴 घाटे का सौदा (Net Loss)";
+                    status.className = "bg-black/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider";
+                    amountEl.innerText = `₹ ${Math.round(Math.abs(netAmount)).toLocaleString('en-IN')}`;
+                    textEl.innerText = `${sourceName} से ${destName} माल बेचने पर शुद्ध घाटा (नुकसान):`;
+                }
+            }
         }
 
         // Safe PDF/Print wrapper for Invoices (WhatsApp webview compatible)
