@@ -2596,8 +2596,8 @@
             const sourceSelect = document.getElementById('arb-source');
             const destSelect = document.getElementById('arb-dest');
             
-            const sourceName = sourceSelect && sourceSelect.options.length > 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing Mandi';
-            const destName = destSelect && destSelect.options.length > 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination Mandi';
+            const sourceName = sourceSelect && sourceSelect.selectedIndex >= 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing Mandi';
+            const destName = destSelect && destSelect.selectedIndex >= 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination Mandi';
 
             const buyCost = qty * buyPrice;
             const taxAmt = (buyCost * taxPercent) / 100;
@@ -2640,8 +2640,8 @@
 
                 const sourceSelect = document.getElementById('arb-source');
                 const destSelect = document.getElementById('arb-dest');
-                const sourceName = sourceSelect && sourceSelect.options.length > 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing';
-                const destName = destSelect && destSelect.options.length > 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination';
+                const sourceName = sourceSelect && sourceSelect.selectedIndex >= 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing';
+                const destName = destSelect && destSelect.selectedIndex >= 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination';
 
                 const buyCost = qty * buyPrice;
                 const taxAmt = (buyCost * taxPercent) / 100;
