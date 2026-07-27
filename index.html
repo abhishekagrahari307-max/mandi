@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none';">
     <title>उत्तर प्रदेश मंडी भाव — Live UP Mandi Dashboard</title>
     
     <!-- PWA Meta Tags -->
@@ -22,17 +23,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
+        // Tailwind CDN can be blocked or slow on some networks. Keep the app
+        // booting even if the styling library is unavailable.
+        if (window.tailwind) {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: {
+                                50: '#f0fdf4',
+                                100: '#dcfce7',
+                                500: '#22c55e',
+                                600: '#16a34a',
+                                700: '#15803d',
+                                800: '#166534',
+                            }
                         }
                     }
                 }
@@ -204,6 +209,10 @@
             <button onclick="switchTab('ranking')" id="tab-btn-ranking" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="award" class="w-4 h-4 text-emerald-600 animate-pulse"></i>
                 <span data-translate="tab_ranking">जिला मूल्य रैंकिंग</span>
+            </button>
+            <button onclick="switchTab('auction')" id="tab-btn-auction" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
+                <i data-lucide="gavel" class="w-4 h-4"></i>
+                <span data-translate="tab_auction">लाइव नीलामी यार्ड</span>
             </button>
             <button onclick="switchTab('calculator')" id="tab-btn-calculator" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="calculator" class="w-4 h-4"></i>
@@ -519,6 +528,71 @@
                         </thead>
                         <tbody id="ranking-table-body" class="divide-y divide-slate-150 text-sm"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ───────────────── SECTION: LIVE AUCTION YARD ───────────────── -->
+        <div id="section-auction" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <span class="inline-flex items-center bg-emerald-500/15 text-emerald-300 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>
+                        Live Auction Yard
+                    </span>
+                    <h3 class="font-black text-xl">लाइव बोली और अनाज नीलामी (Real-time Bidding)</h3>
+                    <p class="text-xs text-slate-300 max-w-2xl">सक्रिय लॉट देखें, ऊँची बोली लगाएँ, और WebSocket उपलब्ध न होने पर भी सुरक्षित डेमो टिकर से अपडेट पाएं।</p>
+                </div>
+                <span id="ws-status" class="text-xs font-bold bg-slate-700/60 text-slate-200 border border-slate-600 px-3 py-1 rounded-full">Connecting...</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
+                            <i data-lucide="package-check" class="w-5 h-5 text-emerald-600"></i>
+                            <span>सक्रिय नीलामी लॉट (Active Lots)</span>
+                        </h4>
+                    </div>
+                    <div id="auction-lots-container" class="space-y-4">
+                        <div class="p-6 bg-white border border-slate-200 rounded-2xl text-center text-slate-400 text-sm">लॉट लोड हो रहे हैं...</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <form onsubmit="placeLiveBid(event)" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
+                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="gavel" class="w-5 h-5 text-emerald-600"></i>
+                            <span>नई बोली लगाएँ</span>
+                        </h4>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">व्यापारी नाम (Trader Name)</label>
+                                <input type="text" id="bidder-name" required value="Vijay Traders" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">लॉट संख्या (Lot Number)</label>
+                                <select id="bid-lot-number" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बोली भाव ₹/Q (Bid Rate)</label>
+                                <input type="number" id="bid-price" required min="1" step="5" value="2310" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md shadow-emerald-700/10">
+                            बोली जमा करें (Place Bid)
+                        </button>
+                    </form>
+
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+                        <h4 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="activity" class="w-5 h-5 text-emerald-600"></i>
+                            <span>लाइव बोली टिकर</span>
+                        </h4>
+                        <div id="bids-ticker-feed" class="divide-y divide-slate-100 max-h-80 overflow-y-auto custom-scrollbar text-xs">
+                            <div class="py-3 text-slate-400">अभी कोई बोली नहीं आई है।</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1039,11 +1113,20 @@
         let historicalData = {};
         let weatherData = [];
         let calcWeightUnit = 'q';
+        let globalBillDetails = null;
         let trendChartObj = null;
         let auctionWs = null;
 
+        function renderIcons() {
+            // lucide is loaded from a CDN. If that request fails, the dashboard
+            // must still load data instead of crashing before fetchDashboardData().
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
         function initializeApp() {
-            lucide.createIcons();
+            renderIcons();
             loadLanguage(currentLang);
             fetchDashboardData();
             
@@ -1128,7 +1211,7 @@
         }
 
         function switchTab(tabId) {
-            const sections = ['rates', 'trends', 'ranking', 'calculator', 'weather', 'info'];
+            const sections = ['rates', 'trends', 'ranking', 'auction', 'calculator', 'weather', 'info'];
             
             sections.forEach(sec => {
                 const secEl = document.getElementById(`section-${sec}`);
@@ -1145,7 +1228,12 @@
                 }
             });
 
-            document.getElementById(`section-${tabId}`).classList.remove('hidden');
+            const targetSection = document.getElementById(`section-${tabId}`);
+            if (!targetSection) {
+                console.warn(`Unknown tab requested: ${tabId}`);
+                return;
+            }
+            targetSection.classList.remove('hidden');
             
             const dBtnActive = document.getElementById(`tab-btn-${tabId}`);
             if (dBtnActive) {
@@ -1720,7 +1808,7 @@
 
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
-            lucide.createIcons();
+            renderIcons();
         }
 
         // Dynamic list sorting controller
@@ -1883,7 +1971,7 @@
             });
 
             tableBody.innerHTML = html || '<tr><td colspan="7" class="p-8 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
-            lucide.createIcons();
+            renderIcons();
         }
 
         function downloadRankingPDF() {
@@ -2088,7 +2176,7 @@
             `;
             
             feed.innerHTML = newLog + feed.innerHTML;
-            lucide.createIcons();
+            renderIcons();
         }
 
         function placeLiveBid(e) {
@@ -2161,7 +2249,7 @@
             recognition.onstart = () => {
                 micBtn.className = "absolute right-2 p-1.5 bg-red-100 rounded-md text-red-600 animate-pulse";
                 micIcon.innerHTML = `<i data-lucide="mic-off"></i>`;
-                lucide.createIcons();
+                renderIcons();
             };
 
             recognition.onspeechend = () => {
@@ -2178,7 +2266,7 @@
             recognition.onend = () => {
                 micBtn.className = "absolute right-2 p-1.5 hover:bg-slate-200 rounded-md text-slate-500 hover:text-emerald-600 transition";
                 micIcon.innerHTML = `<i data-lucide="mic"></i>`;
-                lucide.createIcons();
+                renderIcons();
             };
 
             recognition.onerror = () => {
@@ -2442,7 +2530,31 @@
             });
 
             container.innerHTML = html;
-            lucide.createIcons();
+            renderIcons();
+        }
+
+        function setCalcUnit(unit) {
+            calcWeightUnit = unit;
+            const units = ['q', 'kg', 'm'];
+            units.forEach(u => {
+                const btn = document.getElementById(`btn-unit-${u}`);
+                if (!btn) return;
+                if (u === unit) {
+                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition bg-emerald-50 border-emerald-500 text-emerald-700";
+                } else {
+                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50";
+                }
+            });
+            calculateBill();
+        }
+
+        function sendToCalculator(cropName, rate) {
+            const rateInput = document.getElementById('calc-rate');
+            if (rateInput && Number.isFinite(rate)) {
+                rateInput.value = Math.round(rate);
+            }
+            switchTab('calculator');
+            setTimeout(calculateBill, 50);
         }
 
         function calculateBill() {
@@ -2686,7 +2798,13 @@
 
         function downloadBillPDF() {
             try {
+                if (!globalBillDetails) {
+                    calculateBill();
+                }
                 const bill = globalBillDetails;
+                if (!bill) {
+                    throw new Error('Bill details are not available yet');
+                }
                 const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
                     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
@@ -2925,3 +3043,6 @@
                 window.print();
             }
         }
+    </script>
+</body>
+</html>
