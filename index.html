@@ -149,6 +149,10 @@
                 <i data-lucide="trending-up" class="w-4 h-4"></i>
                 <span data-translate="tab_trends">भाव ग्राफ (Trends)</span>
             </button>
+            <button onclick="switchTab('ranking')" id="tab-btn-ranking" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
+                <i data-lucide="award" class="w-4 h-4 text-emerald-600 animate-pulse"></i>
+                <span data-translate="tab_ranking">जिला मूल्य रैंकिंग</span>
+            </button>
             <button onclick="switchTab('auction')" id="tab-btn-auction" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="gavel" class="w-4 h-4 text-emerald-600"></i>
                 <span data-translate="tab_auction">लाइव नीलामी यार्ड</span>
@@ -156,10 +160,6 @@
             <button onclick="switchTab('prediction')" id="tab-btn-prediction" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="brain-circuit" class="w-4 h-4"></i>
                 <span data-translate="tab_prediction">AI भाव भविष्यवाणी</span>
-            </button>
-            <button onclick="switchTab('calculator')" id="tab-btn-calculator" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
-                <span data-translate="tab_calc">मंडी कैलकुलेटर</span>
             </button>
             <button onclick="switchTab('weather')" id="tab-btn-weather" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="cloud-sun" class="w-4 h-4"></i>
@@ -171,9 +171,7 @@
             </button>
         </div>
 
-        <!-- ───────────────── SECTION: LIVE RATES ───────────────── -->
-        <div id="section-rates" class="space-y-4">
-        <!-- 🌾 COMBINED WHEAT & RICE PRIMARY SECTION (मुख्य जिंस: गेहूं एवं चावल) 🌾 -->
+        <!-- 🌾 COMBINED WHEAT & RICE PRIMARY SECTION (मुख्य जिंस: गेहूं एवं चावल भाव प्रसार) 🌾 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Wheat Card (Highest vs Lowest in State) -->
             <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border-2 border-amber-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition relative overflow-hidden">
@@ -212,7 +210,7 @@
                         <span class="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-700">
                             <i data-lucide="sprout" class="w-5 h-5"></i>
                         </span>
-                        <h4 class="font-extrabold text-emerald-900 text-sm tracking-wide uppercase" data-translate="pinned_rice_title">चावल मूल्य सीमा (Rice Price Spread - All Districts)</h4>
+                        <h4 class="font-extrabold text-emerald-900 text-xs tracking-wide uppercase" data-translate="pinned_rice_title">चावल मूल्य सीमा (Rice Price Spread - All Districts)</h4>
                     </div>
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div class="bg-white/80 p-3 rounded-xl border border-emerald-100 shadow-inner">
@@ -230,8 +228,10 @@
             </div>
         </div>
 
-        <!-- Search & Filters -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <!-- ───────────────── SECTION: LIVE RATES ───────────────── -->
+        <div id="section-rates" class="space-y-4">
+            <!-- Search & Filters -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_search">फसल, मंडी या जिला खोजें</label>
                     <div class="relative flex items-center">
@@ -257,7 +257,6 @@
                 </div>
             </div>
 
-            <!-- Rates Table/Cards -->
             <!-- ⚡ LIVE SORTING SELECTION BAR (सॉर्टिंग बार) ⚡ -->
             <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-150 flex flex-wrap items-center justify-between gap-3 select-none">
                 <span class="text-xs font-bold text-slate-500 flex items-center space-x-1.5">
@@ -305,7 +304,6 @@
                                 <th class="py-3 px-4 text-right" data-translate="th_min">न्यूनतम</th>
                                 <th class="py-3 px-4 text-right" data-translate="th_modal">मॉडल (औसत)</th>
                                 <th class="py-3 px-4 text-right" data-translate="th_max">अधिकतम</th>
-                                <th class="py-3 px-4 text-center" data-translate="th_action">कैलकुलेटर</th>
                             </tr>
                         </thead>
                         <tbody id="rates-table-body" class="divide-y divide-slate-150 text-sm"></tbody>
@@ -346,11 +344,6 @@
                         <i data-lucide="bar-chart-3" class="w-4.5 h-4.5 text-emerald-600"></i>
                         <span data-translate="trends_dist_comparison">ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)</span>
                     </h4>
-                    <div class="relative h-64 md:h-96 w-full mt-8 pt-8 border-t border-slate-150">
-                    <h4 class="font-extrabold text-slate-800 text-sm mb-4 flex items-center space-x-2">
-                        <i data-lucide="bar-chart-3" class="w-4.5 h-4.5 text-emerald-600"></i>
-                        <span data-translate="trends_dist_comparison">ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)</span>
-                    </h4>
                     <div class="relative h-64 md:h-80 w-full">
                         <canvas id="districtsBarChart"></canvas>
                     </div>
@@ -380,9 +373,7 @@
                                 <th class="py-2.5 px-3 text-right">मॉडल औसत भाव (Modal Rate)</th>
                             </tr>
                         </thead>
-                        <tbody id="leaderboard-table-body" class="divide-y divide-slate-100">
-                            <!-- Populated dynamically by JS -->
-                        </tbody>
+                        <tbody id="leaderboard-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -391,7 +382,6 @@
         <!-- ───────────────── SECTION: LIVE AUCTION YARD (PHASE 5) ───────────────── -->
         <div id="section-auction" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
                 <!-- Active Lot Details -->
                 <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -401,23 +391,16 @@
                         </div>
                         <span class="text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-600" id="ws-status">Connecting WS...</span>
                     </div>
-
-                    <!-- Lot Grid -->
-                    <div id="auction-lots-container" class="space-y-4">
-                        <!-- Loaded dynamically or simulated -->
-                    </div>
+                    <div id="auction-lots-container" class="space-y-4"></div>
                 </div>
 
-                <!-- Live Bid Ticker & Input form -->
+                <!-- Live Bid Ticker -->
                 <div class="lg:col-span-1 space-y-6">
-                    
-                    <!-- Submit Bid form -->
                     <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-lg space-y-4 border border-slate-800">
                         <h4 class="font-extrabold text-sm uppercase text-emerald-400 flex items-center space-x-2">
                             <i data-lucide="gavel" class="w-4 h-4"></i>
                             <span>बोली लगाएं (Place Bid)</span>
                         </h4>
-                        
                         <form onsubmit="placeLiveBid(event)" class="space-y-3 text-xs text-slate-800">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">व्यापारी/आढ़ती नाम (Trader Name)</label>
@@ -441,18 +424,116 @@
                         </form>
                     </div>
 
-                    <!-- Live Bids Ticker Feed -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                         <h4 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5 border-b border-slate-100 pb-2">
                             <i data-lucide="scroll" class="w-4 h-4 text-emerald-600"></i>
                             <span>लाइव बोली टिकर (Live Bid Log)</span>
                         </h4>
-                        <div class="h-48 overflow-y-auto custom-scrollbar text-[11px] divide-y divide-slate-100" id="bids-ticker-feed">
-                            <!-- Injected dynamically -->
-                        </div>
+                        <div class="h-48 overflow-y-auto custom-scrollbar text-[11px] divide-y divide-slate-100" id="bids-ticker-feed"></div>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <!-- ───────────────── SECTION: LIVE ALL DISTRICT PRICE RANKING ───────────────── -->
+        <div id="section-ranking" class="hidden space-y-6">
+            <!-- Pinned Top 3 & Bottom Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- 🥇 1st Rank -->
+                <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-2 border-yellow-500/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-yellow-600 block uppercase">🥇 सर्वोच्च भाव (1st Rank)</span>
+                        <h4 id="rank-card-1-dist" class="text-base font-black text-slate-800">-</h4>
+                        <p id="rank-card-1-price" class="text-xl font-extrabold text-yellow-600">₹ -</p>
+                    </div>
+                    <div class="p-2.5 bg-yellow-500/10 rounded-lg border border-yellow-500/20 text-yellow-600">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <!-- 🥈 2nd Rank -->
+                <div class="bg-gradient-to-br from-slate-400/10 to-slate-400/5 border-2 border-slate-400/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-slate-500 block uppercase">🥈 द्वितीय भाव (2nd Rank)</span>
+                        <h4 id="rank-card-2-dist" class="text-base font-black text-slate-800">-</h4>
+                        <p id="rank-card-2-price" class="text-xl font-extrabold text-slate-500">₹ -</p>
+                    </div>
+                    <div class="p-2.5 bg-slate-400/10 rounded-lg border border-slate-400/20 text-slate-500">
+                        <i data-lucide="medal" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <!-- 🥉 3rd Rank -->
+                <div class="bg-gradient-to-br from-orange-400/10 to-orange-400/5 border-2 border-orange-400/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-orange-600 block uppercase">🥉 तृतीय भाव (3rd Rank)</span>
+                        <h4 id="rank-card-3-dist" class="text-base font-black text-slate-800">-</h4>
+                        <p id="rank-card-3-price" class="text-xl font-extrabold text-orange-600">₹ -</p>
+                    </div>
+                    <div class="p-2.5 bg-orange-400/10 rounded-lg border border-orange-400/20 text-orange-600">
+                        <i data-lucide="medal" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <!-- 📉 Lowest Price -->
+                <div class="bg-gradient-to-br from-red-500/10 to-red-500/5 border-2 border-red-500/30 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <span class="text-[10px] font-extrabold text-red-600 block uppercase">📉 न्यूनतम भाव (Lowest)</span>
+                        <h4 id="rank-card-lowest-dist" class="text-base font-black text-slate-800">-</h4>
+                        <p id="rank-card-lowest-price" class="text-xl font-extrabold text-red-600">₹ -</p>
+                    </div>
+                    <div class="p-2.5 bg-red-500/10 rounded-lg border border-red-500/20 text-red-600">
+                        <i data-lucide="arrow-down-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table controls -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3 flex-wrap gap-2">
+                    <!-- One-Click Commodity Filter -->
+                    <select id="rank-crop-select" onchange="renderPriceRanking()" class="py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg font-bold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </select>
+                    <!-- Search District -->
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-2.5 top-2 w-3.5 h-3.5 text-slate-400"></i>
+                        <input type="text" id="rank-search" oninput="renderPriceRanking()" placeholder="ज़िला खोजें..." class="pl-7 pr-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <!-- Toggles & Actions -->
+                <div class="flex items-center space-x-3 flex-wrap gap-2">
+                    <div class="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <button onclick="setRankingScope('all')" id="rank-scope-all" class="py-1 px-2.5 font-bold text-[10px] rounded transition bg-white text-slate-700 shadow-sm">सभी</button>
+                        <button onclick="setRankingScope('top10')" id="rank-scope-top" class="py-1 px-2.5 font-bold text-[10px] rounded transition text-slate-500 hover:text-slate-700">Top 10</button>
+                        <button onclick="setRankingScope('bottom10')" id="rank-scope-bottom" class="py-1 px-2.5 font-bold text-[10px] rounded transition text-slate-500 hover:text-slate-700">Bottom 10</button>
+                    </div>
+                    <button onclick="downloadRankingPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1.5 px-3 rounded-lg flex items-center space-x-1 shadow-sm transition">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>रैंकिंग PDF</span>
+                    </button>
+                    <!-- Auto-Refresh status bar -->
+                    <span class="inline-flex items-center bg-green-50 text-green-700 text-[10px] font-bold px-2 py-1 rounded border border-green-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1 animate-pulse"></span>
+                        <span>लाइव रीफ्रेश: सक्रिय</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Leaderboard Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar" id="print-area-ranking">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider">
+                                <th class="py-3 px-4 text-center">रैंक</th>
+                                <th class="py-3 px-4">ज़िला / District</th>
+                                <th class="py-3 px-4">मंडी (Mandi)</th>
+                                <th class="py-3 px-4">फसल (Commodity)</th>
+                                <th class="py-3 px-4 text-right">मॉडल भाव (Price)</th>
+                                <th class="py-3 px-4 text-center">प्रवृत्ति (Trend)</th>
+                                <th class="py-3 px-4 text-center">अपडेट का समय</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-table-body" class="divide-y divide-slate-150 text-sm"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -512,152 +593,10 @@
             </div>
         </div>
 
-        <!-- ───────────────── SECTION: CALCULATOR ───────────────── -->
-        <div id="section-calculator" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Inputs panel -->
-                <div class="lg:col-span-1 bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h3 class="font-bold text-slate-800 flex items-center space-x-2 border-b border-slate-100 pb-3">
-                        <i data-lucide="calculator" class="w-5 h-5 text-emerald-600"></i>
-                        <span data-translate="calc_input_title">मंडी बिल कैलकुलेटर</span>
-                    </h3>
-                    
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_weight_type">वजन की इकाई</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button type="button" onclick="setCalcUnit('q')" id="btn-unit-q" class="py-1.5 text-center rounded-lg border font-semibold text-xs transition bg-emerald-50 border-emerald-500 text-emerald-700">
-                                    क्विंटल (Q)
-                                </button>
-                                <button type="button" onclick="setCalcUnit('kg')" id="btn-unit-kg" class="py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50">
-                                    किलो (KG)
-                                </button>
-                                <button type="button" onclick="setCalcUnit('m')" id="btn-unit-m" class="py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50" title="1 मन = 40 किलोग्राम">
-                                    मन (Maund)
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_weight">कुल वजन</label>
-                                <input type="number" id="calc-weight" oninput="calculateBill()" value="10" min="0" step="any" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_rate">भाव (रु/क्विंटल)</label>
-                                <input type="number" id="calc-rate" oninput="calculateBill()" value="2400" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <div class="border-t border-slate-100 pt-3">
-                            <h4 class="text-xs font-bold text-slate-400 mb-2" data-translate="calc_heading_fees">कमीशन और अन्य खर्च</h4>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_comm">आढ़त कमीशन (%)</label>
-                                    <input type="number" id="calc-commission" oninput="calculateBill()" value="1.5" min="0" step="0.1" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_labor">पल्लेदारी (रु/बोरी)</label>
-                                    <input type="number" id="calc-labor" oninput="calculateBill()" value="15" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_bag_wt">प्रति बोरी वजन (KG)</label>
-                                <input type="number" id="calc-bag-size" oninput="calculateBill()" value="50" min="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_transport">भाड़ा/किराया (कुल रु)</label>
-                                <input type="number" id="calc-transport" oninput="calculateBill()" value="500" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1" data-translate="calc_lbl_cess">मंडी शुल्क + विकास सेस</label>
-                            <select id="calc-cess-rate" onchange="calculateBill()" class="w-full py-2 px-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="2.0" selected>2.0% (1.5% Mandi + 0.5% Cess)</option>
-                                <option value="0">कोई शुल्क नहीं (छूट)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Outputs panel -->
-                <div class="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between" id="calculator-bill-box">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                            <div class="flex flex-col">
-                                <span class="text-xs tracking-wider uppercase font-bold text-emerald-400" data-translate="calc_bill_receipt">मंडी बिक्री रसीद (मेमो)</span>
-                                <span class="text-[10px] text-slate-400">Vijay Kumar Traders — UP Mandi</span>
-                            </div>
-                            <button onclick="downloadBillPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 px-3 rounded-lg flex items-center space-x-1.5 shadow-sm transition">
-                                <i data-lucide="download" class="w-4 h-4"></i>
-                                <span data-translate="btn_download_bill">बिल PDF</span>
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-3">
-                            <div>
-                                <span class="block text-slate-400 text-xs" data-translate="calc_res_total_wt">कुल वजन (Q)</span>
-                                <span id="res-total-q" class="text-lg font-bold">0.00 Q</span>
-                                <span id="res-total-kg" class="block text-xs text-slate-400">(0 KG)</span>
-                            </div>
-                            <div>
-                                <span class="block text-slate-400 text-xs" data-translate="calc_res_bags">कुल बोरियां</span>
-                                <span id="res-bags" class="text-lg font-bold">0</span>
-                                <span class="block text-xs text-slate-400">@ 50 kg/bag</span>
-                            </div>
-                            <div>
-                                <span class="block text-slate-400 text-xs" data-translate="calc_res_rate">मूल्य / क्विंटल</span>
-                                <span id="res-rate" class="text-lg font-bold">₹ 0.00</span>
-                            </div>
-                            <div>
-                                <span class="block text-slate-400 text-xs" data-translate="calc_res_gross">कुल माल का मूल्य</span>
-                                <span id="res-gross-total" class="text-lg font-bold text-yellow-400">₹ 0.00</span>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-slate-700/80 pt-4 space-y-2">
-                            <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider" data-translate="calc_res_deductions">कटौतियां (खर्च) (-)</h4>
-                            <div class="flex justify-between text-sm text-slate-300">
-                                <span data-translate="calc_res_comm_amt">आढ़त कमीशन (Commission)</span>
-                                <span id="res-comm-amt">₹ 0.00</span>
-                            </div>
-                            <div class="flex justify-between text-sm text-slate-300">
-                                <span data-translate="calc_res_labor_amt">मजदूरी / पल्लेदारी (Labor)</span>
-                                <span id="res-labor-amt">₹ 0.00</span>
-                            </div>
-                            <div class="flex justify-between text-sm text-slate-300">
-                                <span data-translate="calc_res_mandi_tax">मंडी शुल्क व सेस (Mandi Tax)</span>
-                                <span id="res-mandi-tax">₹ 0.00</span>
-                            </div>
-                            <div class="flex justify-between text-sm text-slate-300">
-                                <span data-translate="calc_res_transport_amt">परिवहन भाड़ा (Transport)</span>
-                                <span id="res-transport-amt">₹ 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-slate-700/80 pt-4 mt-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="block text-emerald-400 text-xs font-bold uppercase tracking-wide" data-translate="calc_res_net_payout">किसान/व्यापारी को भुगतान (Net Payout)</span>
-                                <p class="text-xs text-slate-400" data-translate="calc_res_net_desc">सभी कटौतियों को घटाने के बाद शुद्ध राशि</p>
-                            </div>
-                            <span id="res-net-payout" class="text-2xl sm:text-3.5xl font-black text-emerald-400">₹ 0.00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- ───────────────── SECTION: WEATHER, ALERTS & INFO ───────────────── -->
         <div id="section-weather" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Left: WhatsApp Alerts Box -->
+                <!-- WhatsApp Alerts -->
                 <div class="lg:col-span-1 bg-gradient-to-br from-emerald-600 to-green-700 text-white p-5 rounded-2xl shadow-lg space-y-4">
                     <div class="flex items-center space-x-2">
                         <i data-lucide="bell-ring" class="w-6 h-6 text-yellow-300 animate-bounce"></i>
@@ -699,34 +638,13 @@
                     </form>
                 </div>
 
-                <!-- Right: Weather Grid -->
+                <!-- Weather -->
                 <div class="lg:col-span-2 space-y-4">
                     <h3 class="font-extrabold text-slate-800 text-sm uppercase flex items-center space-x-2">
                         <i data-lucide="cloud-sun" class="text-emerald-600 w-5 h-5"></i>
                         <span>कृषि क्षेत्र मौसम (Agricultural Weather Info)</span>
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="weather-cards-container"></div>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="font-bold text-slate-800 flex items-center space-x-2 border-b border-slate-100 pb-3">
-                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-500"></i>
-                    <span data-translate="adv_title">कृषि मौसम और फसल सुरक्षा सलाह</span>
-                </h3>
-                <div class="space-y-3">
-                    <div class="border-l-4 border-emerald-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-emerald-800" data-translate="adv_wheat_title">🌾 गेहूं (Wheat)</span>
-                        <p data-translate="adv_wheat_desc">मौसम सामान्य होने के कारण फसल कटाई के बाद खुले आसमान के नीचे पड़े दानों को ढककर सुरक्षित रखें।</p>
-                    </div>
-                    <div class="border-l-4 border-amber-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-amber-800" data-translate="adv_potato_title">🥔 आलू (Potato)</span>
-                        <p data-translate="adv_potato_desc">शीतगृह (Cold Storage) में आलू भंडारण करते समय हवा का आवागमन सुनिश्चित करें। भाव में मामूली सुधार आने की उम्मीद है।</p>
-                    </div>
-                    <div class="border-l-4 border-sky-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-sky-800" data-translate="adv_paddy_title">🌾 धान नर्सरी (Paddy Nursery)</span>
-                        <p data-translate="adv_paddy_desc">यदि भारी वर्षा की संभावना हो, तो नर्सरी से पानी के निकास की उचित व्यवस्था रखें ताकि पौधे सुरक्षित रहें।</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -746,20 +664,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bg-slate-900 text-slate-100 p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="space-y-1 text-center md:text-left">
-                    <h3 class="font-bold text-lg text-emerald-400">Vijay Kumar Traders</h3>
-                    <p class="text-xs text-slate-400" data-translate="contact_sub">कानपुर गल्ला मंडी — आपका विश्वसनीय व्यापारिक भागीदार</p>
-                    <p class="text-xs text-slate-400">📧 customercare@mandi-up.gov.in (Official Support Link)</p>
-                </div>
-                <div class="flex space-x-2">
-                    <a href="tel:+919876543210" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-2 px-4 rounded-lg flex items-center space-x-1.5 transition">
-                        <i data-lucide="phone-call" class="w-4 h-4"></i>
-                        <span data-translate="contact_call">संपर्क करें</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
     </main>
@@ -774,17 +678,13 @@
             <i data-lucide="trending-up" class="w-5 h-5"></i>
             <span class="text-[10px] font-bold mt-1" data-translate="mob_trends">रूझान</span>
         </button>
+        <button onclick="switchTab('ranking')" id="mob-btn-ranking" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
+            <i data-lucide="award" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold mt-1">रैंकिंग</span>
+        </button>
         <button onclick="switchTab('auction')" id="mob-btn-auction" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
             <i data-lucide="gavel" class="w-5 h-5"></i>
             <span class="text-[10px] font-bold mt-1">नीलामी</span>
-        </button>
-        <button onclick="switchTab('prediction')" id="mob-btn-prediction" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
-            <i data-lucide="brain-circuit" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold mt-1">भविष्य</span>
-        </button>
-        <button onclick="switchTab('calculator')" id="mob-btn-calculator" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
-            <i data-lucide="calculator" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold mt-1" data-translate="mob_calc">कैल्क</span>
         </button>
         <button onclick="switchTab('weather')" id="mob-btn-weather" class="flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600">
             <i data-lucide="cloud-sun" class="w-5 h-5"></i>
@@ -794,211 +694,13 @@
 
     <!-- App JavaScript -->
     <script>
-        const TRANSLATIONS = {
-            hi: {
-                title_main: "उत्तर प्रदेश मंडी भाव",
-                title_sub: "Vijay Kumar Traders — डिजिटल मंडी सेवा",
-                live_badge: "ताज़ा भाव अपडेटेड",
-                welcome_title: "किसान और व्यापारियों का डिजिटल साथी",
-                welcome_desc: "उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
-                stat_update: "आखिरी अपडेट",
-                stat_count: "सक्रिय मंडियां",
-                stat_hot: "शीर्ष फसल",
-                stat_avg: "औसत मंडी शुल्क",
-                offline_title: "आप अभी ऑफलाइन हैं",
-                offline_desc: "इंटरनेट कनेक्शन न होने के कारण आपको सेव किया हुआ पुराना (कैश) मंडी भाव दिखाया जा रहा है।",
-                tab_rates: "मंडी भाव (Live)",
-                tab_trends: "भाव ग्राफ (Trends)",
-                tab_calc: "मंडी कैलकुलेटर",
-                tab_weather: "मौसम और सलाह",
-                tab_info: "मंडी नियमावली",
-                tab_prediction: "AI भाव भविष्यवाणी",
-                tab_auction: "लाइव नीलामी यार्ड",
-                filter_search: "फसल, मंडी या जिला खोजें",
-                filter_district: "जिला चुनें",
-                filter_commodity: "फसल चुनें",
-                opt_all_districts: "सभी 75 जिले",
-                opt_all_crops: "सभी फसलें",
-                rates_heading: "मंडी भाव सूची (रु/क्विंटल)",
-                th_district: "जिला",
-                th_mandi: "मंडी नाम",
-                th_crop: "फसल (जिंस)",
-                th_variety: "किस्म",
-                th_grade: "ग्रेड",
-                th_arrivals: "दैनिक आवक",
-                th_min: "न्यूनतम",
-                th_modal: "मॉडल (औसत)",
-                th_max: "अधिकतम",
-                th_action: "कैलकुलेटर",
-                empty_rates: "कोई परिणाम नहीं मिला। कृपया अपनी खोज बदलें।",
-                trends_title: "कीमत का उतार-चढ़ाव (7-दिन का ट्रेंड)",
-                trends_subtitle: "चुनी गई फसल के पिछले सप्ताह के औसत भाव का ग्राफ",
-                trends_select_crop: "फसल चुनें",
-                insight_title: "मार्केट इनसाइट (Trade Insight)",
-                insight_desc: "इस समय रबी फसलों (जैसे गेहूं और सरसों) की आवक सामान्य रहने के कारण बाजार में स्थिरता बनी हुई है। बारिश के मौसम के कारण सब्जियों की कीमतों में 5-10% की तेजी देखी जा सकती है।",
-                calc_input_title: "मंडी बिल कैलकुलेटर",
-                calc_lbl_weight_type: "वजन की इकाई",
-                calc_lbl_weight: "कुल वजन",
-                calc_lbl_rate: "भाव (रु/क्विंटल)",
-                calc_heading_fees: "कमीशन और अन्य खर्च",
-                calc_lbl_comm: "आढ़त कमीशन (%)",
-                calc_lbl_labor: "पल्लेदारी (रु/बोरी)",
-                calc_lbl_bag_wt: "प्रति बोरी वजन (KG)",
-                calc_lbl_transport: "भाड़ा/किराया (कुल रु)",
-                calc_lbl_cess: "मंडी शुल्क + विकास सेस",
-                calc_bill_receipt: "मंडी बिक्री रसीद (मेमो)",
-                calc_res_total_wt: "कुल वजन (Q)",
-                calc_res_bags: "कुल बोरियां",
-                calc_res_rate: "मूल्य / क्विंटल",
-                calc_res_gross: "कुल माल का मूल्य",
-                calc_res_deductions: "कटौतियां (खर्च) (-)",
-                calc_res_comm_amt: "आढ़त कमीशन (Commission)",
-                calc_res_labor_amt: "मजदूरी / पल्लेदारी (Labor)",
-                calc_res_mandi_tax: "मंडी शुल्क व सेस (Mandi Tax)",
-                calc_res_transport_amt: "परिवहन भाड़ा (Transport)",
-                calc_res_net_payout: "किसान/व्यापारी को भुगतान (Net Payout)",
-                calc_res_net_desc: "सभी कटौतियों को घटाने के बाद शुद्ध राशि",
-                adv_title: "कृषि मौसम और फसल सुरक्षा सलाह",
-                adv_wheat_title: "🌾 गेहूं (Wheat)",
-                adv_wheat_desc: "मौसम सामान्य होने के कारण फसल कटाई के बाद खुले आसमान के नीचे पड़े दानों को ढककर सुरक्षित रखें।",
-                adv_potato_title: "🥔 आलू (Potato)",
-                adv_potato_desc: "शीतगृह (Cold Storage) में आलू भंडारण करते समय हवा का आवागमन सुनिश्चित करें। भाव में मामूली सुधार आने की उम्मीद है।",
-                adv_paddy_title: "🌾 धान नर्सरी (Paddy Nursery)",
-                adv_paddy_desc: "यदि भारी वर्षा की संभावना हो, तो नर्सरी से पानी के निकास की उचित व्यवस्था रखें ताकि पौधे सुरक्षित रहें।",
-                info_main_title: "उत्तर प्रदेश कृषि मंडी नियमावली",
-                info_fees_title: "मंडी शुल्क एवं विकास सेस (Mandi Fees)",
-                info_fees_desc: "उत्तर प्रदेश राज्य कृषि उत्पादन मंडी परिषद के नियमों के अनुसार वर्तमान में कुल मंडी शुल्क 1.5% एवं विकास सेस 0.5% (कुल 2%) देय होता है। कुछ अधिसूचित फसलों या मंडियों में सरकार की विशेष छूट भी हो सकती है।",
-                info_bill_title: "अधिनियम संख्या 1964 की धारा",
-                info_bill_desc: "मंडी प्रांगण के अंदर होने वाले प्रत्येक क्रय-विक्रय का प्रपत्र-6 (मंडी गेट पास) और प्रपत्र-9 (मंडी रसीद) जारी किया जाना अनिवार्य है। इससे किसानों को उनके उत्पाद का उचित मूल्य मिलने की कानूनी गारंटी मिलती है।",
-                contact_sub: "कानपुर गल्ला मंडी — आपका विश्वसनीय व्यापारिक भागीदार",
-                contact_call: "संपर्क करें",
-                mob_rates: "मंडी भाव",
-                mob_trends: "रूझान",
-                mob_calc: "कैल्क",
-                mob_weather: "मौसम",
-                mob_info: "नियम",
-                temp_text: "तापमान",
-                humidity_text: "आर्द्रता",
-                wind_text: "हवा",
-                recommendation: "सलाह",
-                adv_sunny: "मौसम साफ है। फसल सुखाने या भंडारण के लिए उत्तम समय है।",
-                adv_rainy: "बारिश की संभावना। कटी हुई फसल को सुरक्षित गोदाम में रखें।",
-                btn_download_pdf: "मंडी भाव PDF",
-                btn_download_bill: "बिल PDF",
-                trends_dist_comparison: "ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)",
-                pinned_wheat_title: "मुख्य अनाज: गेहूं भाव (Wheat Today)",
-                pinned_rice_title: "मुख्य अनाज: चावल भाव (Rice Today)",
-                per_quintal: "प्रति क्विंटल",
-                btn_quick_calc: "कैलकुलेटर",
-                leaderboard_title: "गेहूं एवं चावल मंडी मूल्य लीडरबोर्ड (अधिकतम से न्यूनतम भाव)",
-                badge_top_arbitrage: "बाजार मूल्य विश्लेषण"
-            },
-            en: {
-                title_main: "UP Mandi Rates",
-                title_sub: "Vijay Kumar Traders — Digital Mandi Service",
-                live_badge: "LATEST PRICES UPDATED",
-                welcome_title: "Your Digital Mandi Partner",
-                welcome_desc: "Official prices for grains, vegetables, fruits, pulses, and oilseeds from all 75 districts in Uttar Pradesh. Stay updated with market trends.",
-                stat_update: "Last Updated",
-                stat_count: "Active Mandis",
-                stat_hot: "Hot Crop",
-                stat_avg: "Avg. Mandi Tax",
-                offline_title: "You are currently offline",
-                offline_desc: "Showing cached data due to lack of internet connection.",
-                tab_rates: "Mandi Rates (Live)",
-                tab_trends: "Price Trends (Charts)",
-                tab_calc: "Mandi Calculator",
-                tab_weather: "Weather Advisory",
-                tab_info: "Rules & Regulations",
-                tab_prediction: "AI Price Prediction",
-                tab_auction: "Live Auction Yard",
-                filter_search: "Search Crop, Mandi or District",
-                filter_district: "Select District",
-                filter_commodity: "Select Crop",
-                opt_all_districts: "All 75 Districts",
-                opt_all_crops: "All Crops",
-                rates_heading: "Mandi Prices List (INR/Quintal)",
-                th_district: "District",
-                th_mandi: "Mandi Name",
-                th_crop: "Crop / Commodity",
-                th_variety: "Variety",
-                th_grade: "Grade",
-                th_arrivals: "Daily Arrivals",
-                th_min: "Min Price",
-                th_modal: "Modal (Avg)",
-                th_max: "Max Price",
-                th_action: "Calculator",
-                empty_rates: "No records found. Please update your filters.",
-                trends_title: "Price Trends (7-Day History)",
-                trends_subtitle: "Historical average rates of the selected crop over the past week",
-                trends_select_crop: "Select Crop",
-                insight_title: "Market Insights",
-                insight_desc: "Prices of Rabi crops (like wheat and mustard) remain stable. Vegetable prices may appreciate by 5-10% due to seasonal rain.",
-                calc_input_title: "Mandi Bill Calculator",
-                calc_lbl_weight_type: "Weight Unit",
-                calc_lbl_weight: "Total Weight",
-                calc_lbl_rate: "Rate (₹/Quintal)",
-                calc_heading_fees: "Commission & Expenses",
-                calc_lbl_comm: "Commission (%)",
-                calc_lbl_labor: "Labor (₹/Bag)",
-                calc_lbl_bag_wt: "Weight per Bag (KG)",
-                calc_lbl_transport: "Transport Cost (Total)",
-                calc_lbl_cess: "Mandi Tax & Cess",
-                calc_bill_receipt: "Mandi Sale Receipt (Memo)",
-                calc_res_total_wt: "Total Weight (Q)",
-                calc_res_bags: "Total Bags",
-                calc_res_rate: "Rate per Quintal",
-                calc_res_gross: "Gross Material Value",
-                calc_res_deductions: "Deductions / Expenses (-)",
-                calc_res_comm_amt: "Commission Charges",
-                calc_res_labor_amt: "Labor / Handling Fees",
-                calc_res_mandi_tax: "Mandi Tax & Cess",
-                calc_res_transport_amt: "Transport / Freight",
-                calc_res_net_payout: "Net Payout to Farmer/Trader",
-                calc_res_net_desc: "Final amount after subtracting all deductions",
-                adv_title: "Agri-Weather & Crop Advisory",
-                adv_wheat_title: "🌾 Wheat",
-                adv_wheat_desc: "Weather is optimal. Ensure grains stored in open grounds are fully covered to prevent unexpected rain damage.",
-                adv_potato_title: "🥔 Potato",
-                adv_potato_desc: "Ensure good ventilation while storing potatoes in Cold Storages. Moderate price appreciation is expected soon.",
-                adv_paddy_title: "🌾 Paddy Nursery",
-                adv_paddy_desc: "If heavy rains are forecast, make sure drainage channels in nurseries are clear of obstructions.",
-                info_main_title: "Uttar Pradesh Agriculture Mandi Rules",
-                info_fees_title: "Mandi Fees and Development Cess",
-                info_fees_desc: "According to the rules of UP State Agricultural Produce Mandi Parishad, mandi fee of 1.5% and development cess of 0.5% (total 2.0%) are applicable. Government concessions may apply to specific commodities.",
-                info_bill_title: "Section of Act of 1964",
-                info_bill_desc: "It is legally mandatory to issue Form-6 (Mandi Gate Pass) and Form-9 (Mandi Receipt) for every purchase and sale inside the mandi complex to ensure fair transactions.",
-                contact_sub: "Kanpur Galla Mandi — Your Trusted Trading Partner",
-                contact_call: "Contact Us",
-                mob_rates: "Rates",
-                mob_trends: "Trends",
-                mob_calc: "Calc",
-                mob_weather: "Weather",
-                mob_info: "Rules",
-                temp_text: "Temperature",
-                humidity_text: "Humidity",
-                wind_text: "Wind",
-                recommendation: "Advisory",
-                adv_sunny: "Clear sky. Excellent weather for drying crops or storage.",
-                adv_rainy: "Showers expected. Move harvested crops to indoor warehouse.",
-                btn_download_pdf: "Mandi Rates PDF",
-                btn_download_bill: "Bill PDF",
-                trends_dist_comparison: "District-wise Price Comparison - Min vs Max (₹/Quintal)",
-                pinned_wheat_title: "Primary Staple: Wheat Rate",
-                pinned_rice_title: "Primary Staple: Rice Rate",
-                per_quintal: "per Quintal",
-                btn_quick_calc: "Quick Calc",
-                leaderboard_title: "Wheat & Rice Mandi Leaderboard (Highest to Lowest Prices)",
-                badge_top_arbitrage: "Price Arbitrage"
-            }
-        };
-
         let currentLang = 'hi';
         let currentSortMode = 'district';
+        let currentRankingScope = 'all'; // 'all', 'top10', 'bottom10'
+
         let latestData = [];
         let historicalData = {};
         let weatherData = [];
-        let calcWeightUnit = 'q';
         let trendChartObj = null;
         let auctionWs = null;
 
@@ -1016,7 +718,6 @@
                             installingWorker.onstatechange = () => {
                                 if (installingWorker.state === 'installed') {
                                     if (navigator.serviceWorker.controller) {
-                                        console.log('New version found, clearing cache and reloading...');
                                         window.location.reload(true);
                                     }
                                 }
@@ -1025,6 +726,9 @@
                     })
                     .catch(err => console.log('Service Worker Failed to Register', err));
             }
+
+            // SET AUTO REFRESH DYNAMICALLY EVERY 2 MINUTES (120,000 ms) TO SIMULATE REAL-TIME COMMODITY FEED!
+            setInterval(fetchDashboardData, 120000);
 
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
@@ -1049,11 +753,10 @@
             renderWeather();
             updatePinnedStaples();
             renderStaplesLeaderboard();
+            renderPriceRanking();
             if (trendChartObj) {
                 renderTrendChart();
             }
-            calculateBill();
-            fetchAIPrediction();
         }
 
         function loadLanguage(lang) {
@@ -1079,7 +782,7 @@
         }
 
         function switchTab(tabId) {
-            const sections = ['rates', 'trends', 'auction', 'prediction', 'calculator', 'weather', 'info'];
+            const sections = ['rates', 'trends', 'auction', 'ranking', 'prediction', 'weather', 'info'];
             
             sections.forEach(sec => {
                 document.getElementById(`section-${sec}`).classList.add('hidden');
@@ -1113,6 +816,8 @@
                 setTimeout(fetchAIPrediction, 50);
             } else if (tabId === 'auction') {
                 setTimeout(initLiveAuctionYard, 50);
+            } else if (tabId === 'ranking') {
+                setTimeout(renderPriceRanking, 50);
             }
         }
 
@@ -1165,6 +870,7 @@
                 renderWeather();
                 updatePinnedStaples();
                 renderStaplesLeaderboard();
+                renderPriceRanking();
                 
                 if (refreshIcon) {
                     setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
@@ -1180,47 +886,98 @@
             fetchDashboardData();
         }
 
+        function populateDropdowns() {
+            const distSelect = document.getElementById('filter-district');
+            const cropSelect = document.getElementById('filter-commodity');
+            const trendCropSelect = document.getElementById('trend-crop-select');
+            const predictCropSelect = document.getElementById('predict-crop-select');
+            const rankCropSelect = document.getElementById('rank-crop-select');
+
+            const subDist = document.getElementById('sub-dist');
+            const subCrop = document.getElementById('sub-crop');
+
+            const currentDistValue = distSelect.value;
+            const currentCropValue = cropSelect.value;
+            const currentTrendValue = trendCropSelect.value;
+            const currentPredictValue = predictCropSelect.value;
+            const currentRankValue = rankCropSelect.value;
+
+            const uniqueDistricts = [];
+            const districtKeys = new Set();
+            const uniqueCrops = [];
+            const cropKeys = new Set();
+
+            latestData.forEach(r => {
+                if (!districtKeys.has(r.district)) {
+                    districtKeys.add(r.district);
+                    uniqueDistricts.push({ en: r.district, hi: r.district_hi });
+                }
+                if (!cropKeys.has(r.commodity)) {
+                    cropKeys.add(r.commodity);
+                    uniqueCrops.push({ en: r.commodity, hi: r.commodity_hi });
+                }
+            });
+
+            const buildOptions = (selectEl, defaultText, list) => {
+                selectEl.innerHTML = `<option value="all">${defaultText}</option>`;
+                list.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(item => {
+                    selectEl.innerHTML += `<option value="${item.en}">${item[currentLang]}</option>`;
+                });
+            };
+
+            buildOptions(distSelect, TRANSLATIONS[currentLang].opt_all_districts, uniqueDistricts);
+            buildOptions(cropSelect, TRANSLATIONS[currentLang].opt_all_crops, uniqueCrops);
+            buildOptions(subDist, currentLang === 'hi' ? 'सभी जिले' : 'All Districts', uniqueDistricts);
+            buildOptions(subCrop, currentLang === 'hi' ? 'सभी फसलें' : 'All Crops', uniqueCrops);
+
+            trendCropSelect.innerHTML = "";
+            predictCropSelect.innerHTML = "";
+            rankCropSelect.innerHTML = "";
+            uniqueCrops.forEach((c, index) => {
+                const opt = `<option value="${c.en}" ${index === 0 ? 'selected' : ''}>${c[currentLang]}</option>`;
+                trendCropSelect.innerHTML += opt;
+                predictCropSelect.innerHTML += opt;
+                rankCropSelect.innerHTML += opt;
+            });
+
+            if (currentDistValue) distSelect.value = currentDistValue;
+            if (currentCropValue) cropSelect.value = currentCropValue;
+            if (currentTrendValue) trendCropSelect.value = currentTrendValue;
+            if (currentPredictValue) predictCropSelect.value = currentPredictValue;
+            if (currentRankValue) rankCropSelect.value = currentRankValue;
+        }
+
         // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
         function updatePinnedStaples() {
-            // 1. Calculate dynamic state-wide Min and Max for Wheat (गेहूं)
             const wheatRecords = latestData.filter(r => r.commodity === 'Wheat');
             if (wheatRecords.length > 0) {
-                // Sort ascending to find min and max
                 wheatRecords.sort((a, b) => a.modal_price - b.modal_price);
-                
                 const minRec = wheatRecords[0];
                 const maxRec = wheatRecords[wheatRecords.length - 1];
-                
                 const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
                 const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
                 
                 document.getElementById('pinned-wheat-min').innerText = `₹ ${minRec.modal_price}/Q`;
                 document.getElementById('pinned-wheat-min-mandi').innerText = minMandi;
-                
                 document.getElementById('pinned-wheat-max').innerText = `₹ ${maxRec.modal_price}/Q`;
                 document.getElementById('pinned-wheat-max-mandi').innerText = maxMandi;
             }
 
-            // 2. Calculate dynamic state-wide Min and Max for Rice (चावल)
             const riceRecords = latestData.filter(r => r.commodity === 'Rice');
             if (riceRecords.length > 0) {
                 riceRecords.sort((a, b) => a.modal_price - b.modal_price);
-                
                 const minRec = riceRecords[0];
                 const maxRec = riceRecords[riceRecords.length - 1];
-                
                 const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
                 const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
                 
                 document.getElementById('pinned-rice-min').innerText = `₹ ${minRec.modal_price}/Q`;
                 document.getElementById('pinned-rice-min-mandi').innerText = minMandi;
-                
                 document.getElementById('pinned-rice-max').innerText = `₹ ${maxRec.modal_price}/Q`;
                 document.getElementById('pinned-rice-max-mandi').innerText = maxMandi;
             }
         }
 
-        // Quick add staple to calculator
         function quickAddStaple(cropName) {
             const records = latestData.filter(r => r.commodity === cropName);
             if (records.length > 0) {
@@ -1234,13 +991,8 @@
             const body = document.getElementById('leaderboard-table-body');
             if (!body) return;
 
-            // Filter out only Wheat and Rice records
             const staples = latestData.filter(r => r.commodity === 'Wheat' || r.commodity === 'Rice');
-
-            // Sort strictly from highest modal price to lowest modal price (descending)
             staples.sort((a, b) => b.modal_price - a.modal_price);
-
-            // Take top 15 records for an elite, high-value leaderboard display
             const topStaples = staples.slice(0, 15);
 
             let html = '';
@@ -1281,62 +1033,6 @@
             });
 
             body.innerHTML = html || '<tr><td colspan="6" class="py-4 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
-        }
-
-        function populateDropdowns() {
-            const distSelect = document.getElementById('filter-district');
-            const cropSelect = document.getElementById('filter-commodity');
-            const trendCropSelect = document.getElementById('trend-crop-select');
-            const predictCropSelect = document.getElementById('predict-crop-select');
-
-            const subDist = document.getElementById('sub-dist');
-            const subCrop = document.getElementById('sub-crop');
-
-            const currentDistValue = distSelect.value;
-            const currentCropValue = cropSelect.value;
-            const currentTrendValue = trendCropSelect.value;
-            const currentPredictValue = predictCropSelect.value;
-
-            const uniqueDistricts = [];
-            const districtKeys = new Set();
-            const uniqueCrops = [];
-            const cropKeys = new Set();
-
-            latestData.forEach(r => {
-                if (!districtKeys.has(r.district)) {
-                    districtKeys.add(r.district);
-                    uniqueDistricts.push({ en: r.district, hi: r.district_hi });
-                }
-                if (!cropKeys.has(r.commodity)) {
-                    cropKeys.add(r.commodity);
-                    uniqueCrops.push({ en: r.commodity, hi: r.commodity_hi });
-                }
-            });
-
-            const buildOptions = (selectEl, defaultText, list) => {
-                selectEl.innerHTML = `<option value="all">${defaultText}</option>`;
-                list.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(item => {
-                    selectEl.innerHTML += `<option value="${item.en}">${item[currentLang]}</option>`;
-                });
-            };
-
-            buildOptions(distSelect, TRANSLATIONS[currentLang].opt_all_districts, uniqueDistricts);
-            buildOptions(cropSelect, TRANSLATIONS[currentLang].opt_all_crops, uniqueCrops);
-            buildOptions(subDist, currentLang === 'hi' ? 'सभी जिले' : 'All Districts', uniqueDistricts);
-            buildOptions(subCrop, currentLang === 'hi' ? 'सभी फसलें' : 'All Crops', uniqueCrops);
-
-            trendCropSelect.innerHTML = "";
-            predictCropSelect.innerHTML = "";
-            uniqueCrops.forEach((c, index) => {
-                const opt = `<option value="${c.en}" ${index === 0 ? 'selected' : ''}>${c[currentLang]}</option>`;
-                trendCropSelect.innerHTML += opt;
-                predictCropSelect.innerHTML += opt;
-            });
-
-            if (currentDistValue) distSelect.value = currentDistValue;
-            if (currentCropValue) cropSelect.value = currentCropValue;
-            if (currentTrendValue) trendCropSelect.value = currentTrendValue;
-            if (currentPredictValue) predictCropSelect.value = currentPredictValue;
         }
 
         function getFilteredRecords() {
@@ -1407,9 +1103,7 @@
                 const varietyName = (currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety) || 'FAQ';
                 const gradeName = (currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade) || 'FAQ';
                 const arrivalsText = `${r.arrivals || 0} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : (r.arrivals_unit || 'Tonnes')}`;
-                const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
-                // Display District Header row ONLY when sorted district-wise
                 if (currentSortMode === 'district' && distName !== lastDistrict) {
                     tableHtml += `
                         <tr class="bg-emerald-50/70 border-y border-emerald-100/60">
@@ -1440,12 +1134,6 @@
                         <td class="py-3 px-4 text-right text-slate-600">₹${r.min_price}</td>
                         <td class="py-3 px-4 text-right font-black text-slate-800 text-base">₹${r.modal_price}</td>
                         <td class="py-3 px-4 text-right text-slate-600">₹${r.max_price}</td>
-                        <td class="py-3 px-4 text-center">
-                            <button onclick="sendToCalculator('${r.commodity}', ${r.modal_price})" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold py-1 px-3 rounded-md transition inline-flex items-center space-x-1">
-                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
-                                <span>${btnLabel}</span>
-                            </button>
-                        </td>
                     </tr>
                 `;
 
@@ -1479,10 +1167,6 @@
                         </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-medium">📅 ${r.arrival_date}</span>
-                            <button onclick="sendToCalculator('${r.commodity}', ${r.modal_price})" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 px-3 rounded-md transition flex items-center space-x-1">
-                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
-                                <span>${currentLang === 'hi' ? 'कैलकुलेटर में जोड़ें' : 'Add to Calc'}</span>
-                            </button>
                         </div>
                     </div>
                 `;
@@ -1514,10 +1198,201 @@
             renderRatesTable();
         }
 
-        function sendToCalculator(cropName, rateValue) {
-            document.getElementById('calc-rate').value = rateValue;
-            switchTab('calculator');
-            calculateBill();
+        // ================= NEW CORE REVOLUTIONARY FEATURE: LIVE ALL DISTRICT PRICE RANKING (REPLACED CALCULATOR) =================
+        function setRankingScope(scope) {
+            currentRankingScope = scope;
+            
+            const scopes = ['all', 'top10', 'bottom10'];
+            scopes.forEach(s => {
+                const btn = document.getElementById(`rank-scope-${s === 'all' ? 'all' : (s === 'top10' ? 'top' : 'bottom')}`);
+                if (s === scope) {
+                    btn.className = "py-1 px-2.5 font-bold text-[10px] rounded transition bg-white text-slate-700 shadow-sm";
+                } else {
+                    btn.className = "py-1 px-2.5 font-bold text-[10px] rounded transition text-slate-500 hover:text-slate-700";
+                }
+            });
+            renderPriceRanking();
+        }
+
+        function renderPriceRanking() {
+            const tableBody = document.getElementById('ranking-table-body');
+            if (!tableBody) return;
+
+            const selectedCrop = document.getElementById('rank-crop-select').value;
+            const searchVal = document.getElementById('rank-search').value.toLowerCase();
+
+            // 1. Filter records matching crop & search query
+            let records = latestData.filter(r => {
+                const matchesCrop = (selectedCrop === 'all' || r.commodity === selectedCrop);
+                const matchesSearch = 
+                    r.district.toLowerCase().includes(searchVal) ||
+                    r.district_hi.toLowerCase().includes(searchVal) ||
+                    r.mandi.toLowerCase().includes(searchVal) ||
+                    r.mandi_hi.toLowerCase().includes(searchVal);
+                return matchesCrop && matchesSearch;
+            });
+
+            // 2. Sort DESCENDING by modal_price primarily to establish live rankings
+            records.sort((a, b) => b.modal_price - a.modal_price);
+
+            // 3. Render Top 3 and Bottom cards at the top
+            if (records.length >= 1) {
+                const top1 = records[0];
+                document.getElementById('rank-card-1-dist').innerText = currentLang === 'hi' ? `${top1.district_hi} (${top1.mandi_hi})` : `${top1.district} (${top1.mandi})`;
+                document.getElementById('rank-card-1-price').innerText = `₹ ${top1.modal_price}/Q`;
+            } else {
+                document.getElementById('rank-card-1-dist').innerText = "-";
+                document.getElementById('rank-card-1-price').innerText = "₹ -";
+            }
+
+            if (records.length >= 2) {
+                const top2 = records[1];
+                document.getElementById('rank-card-2-dist').innerText = currentLang === 'hi' ? `${top2.district_hi} (${top2.mandi_hi})` : `${top2.district} (${top2.mandi})`;
+                document.getElementById('rank-card-2-price').innerText = `₹ ${top2.modal_price}/Q`;
+            } else {
+                document.getElementById('rank-card-2-dist').innerText = "-";
+                document.getElementById('rank-card-2-price').innerText = "₹ -";
+            }
+
+            if (records.length >= 3) {
+                const top3 = records[2];
+                document.getElementById('rank-card-3-dist').innerText = currentLang === 'hi' ? `${top3.district_hi} (${top3.mandi_hi})` : `${top3.district} (${top3.mandi})`;
+                document.getElementById('rank-card-3-price').innerText = `₹ ${top3.modal_price}/Q`;
+            } else {
+                document.getElementById('rank-card-3-dist').innerText = "-";
+                document.getElementById('rank-card-3-price').innerText = "₹ -";
+            }
+
+            if (records.length > 0) {
+                const lowest = records[records.length - 1];
+                document.getElementById('rank-card-lowest-dist').innerText = currentLang === 'hi' ? `${lowest.district_hi} (${lowest.mandi_hi})` : `${lowest.district} (${lowest.mandi})`;
+                document.getElementById('rank-card-lowest-price').innerText = `₹ ${lowest.modal_price}/Q`;
+            } else {
+                document.getElementById('rank-card-lowest-dist').innerText = "-";
+                document.getElementById('rank-card-lowest-price').innerText = "₹ -";
+            }
+
+            // Apply Scope Filter (All, Top 10, Bottom 10)
+            let renderedList = [...records];
+            if (currentRankingScope === 'top10') {
+                renderedList = records.slice(0, 10);
+            } else if (currentRankingScope === 'bottom10') {
+                renderedList = records.slice(-10).reverse(); // show lowest 10
+            }
+
+            // Calculate thresholds for price color-coding (🟢 high, 🟡 medium, 🔴 low)
+            let maxVal = records.length > 0 ? records[0].modal_price : 0;
+            let minVal = records.length > 0 ? records[records.length - 1].modal_price : 0;
+            let range = maxVal - minVal;
+            let highThreshold = minVal + range * 0.7; // Top 30%
+            let lowThreshold = minVal + range * 0.3;  // Bottom 30%
+
+            let html = '';
+            renderedList.forEach((r, idx) => {
+                const rank = records.indexOf(r) + 1;
+                const distName = currentLang === 'hi' ? r.district_hi : r.district;
+                const mandiName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
+                const cropName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                
+                // Color coding logic
+                let pillClass = '';
+                let trendIcon = '';
+                if (r.modal_price >= highThreshold) {
+                    pillClass = "bg-green-100 text-green-800 font-bold border border-green-200";
+                    trendIcon = '<i data-lucide="trending-up" class="w-4 h-4 text-green-600 inline mr-1"></i> ↑';
+                } else if (r.modal_price <= lowThreshold) {
+                    pillClass = "bg-red-100 text-red-800 font-bold border border-red-200";
+                    trendIcon = '<i data-lucide="trending-down" class="w-4 h-4 text-red-600 inline mr-1"></i> ↓';
+                } else {
+                    pillClass = "bg-yellow-100 text-yellow-800 font-bold border border-yellow-200";
+                    trendIcon = '<i data-lucide="minus" class="w-4 h-4 text-yellow-600 inline mr-1"></i> ⚖️';
+                }
+
+                // Rank highlights
+                let rankClass = "bg-slate-100 text-slate-700";
+                if (rank === 1) rankClass = "bg-yellow-500 text-slate-900 font-extrabold shadow-sm";
+                else if (rank === 2) rankClass = "bg-slate-300 text-slate-900 font-extrabold shadow-sm";
+                else if (rank === 3) rankClass = "bg-orange-300 text-slate-900 font-extrabold shadow-sm";
+
+                const dateStr = r.arrival_date || "Today";
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-4 text-center">
+                            <span class="inline-block w-6 h-6 rounded-full leading-6 text-center font-bold text-xs ${rankClass}">${rank}</span>
+                        </td>
+                        <td class="py-3 px-4 font-black text-slate-900">
+                            <span class="flex items-center space-x-1">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>${distName}</span>
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-600 font-semibold">${mandiName}</td>
+                        <td class="py-3 px-4 text-emerald-800 font-bold">${cropName}</td>
+                        <td class="py-3 px-4 text-right">
+                            <span class="px-2.5 py-1 rounded-full text-xs ${pillClass}">
+                                ₹ ${r.modal_price.toLocaleString('en-IN')}/Q
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center font-bold text-xs">${trendIcon}</td>
+                        <td class="py-3 px-4 text-center text-slate-400 text-xs">
+                            <span class="flex items-center justify-center space-x-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                <span>${dateStr}</span>
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html || '<tr><td colspan="7" class="p-8 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
+            lucide.createIcons();
+        }
+
+        // Export Ranking Sheet to beautiful A4 PDF
+        function downloadRankingPDF() {
+            const bodyHtml = document.getElementById('print-area-ranking').innerHTML;
+            const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-xs";
+            pdfContainer.style.width = "750px";
+
+            const headerHtml = `
+                <div class="text-center font-bold text-[10px] text-slate-400 mb-2">॥ श्री गणेशाय नमः ॥</div>
+                <div class="border-b-4 border-emerald-600 pb-3 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl font-black text-emerald-800">Vijay Kumar Traders</h1>
+                        <p class="text-[10px] text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — लाइव जिला रैंकिंग रिपोर्ट</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase">ऑडिटेड मूल्य सूचकांक</span>
+                        <p class="text-[9px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-center text-sm font-bold text-slate-700 underline uppercase my-2">
+                        ${currentLang === 'hi' ? 'लाइव उत्तर प्रदेश मंडी जिला-वार मूल्य रैंकिंग पत्रक' : 'LIVE UP MANDI DISTRICT PRICE RANKING REPORT'}
+                    </h2>
+                </div>
+                <div class="mt-4">
+                    ${bodyHtml}
+                </div>
+            `;
+
+            pdfContainer.innerHTML = headerHtml;
+
+            const opt = {
+                margin:       8,
+                filename:     `UP_Mandi_Price_Ranking_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(pdfContainer).set(opt).save();
         }
 
         // ================= FIRST PILLAR: LIVE AUCTION REAL-TIME ENGINE =================
@@ -1529,7 +1404,6 @@
             const wsHost = window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`;
             const wsStatus = document.getElementById('ws-status');
 
-            // 1. Fetch current active lots from database REST API
             fetch(`${host}/api/v2/auction/lots`)
                 .then(res => res.json())
                 .then(lots => {
@@ -1537,7 +1411,6 @@
                     renderAuctionLots();
                 })
                 .catch(() => {
-                    // Fallback simulated lot for GitHub static environment
                     liveAuctionLots = [{
                         lot_number: "LOT-2026-101",
                         farmer_name: "Ramesh Singh (Kanpur)",
@@ -1550,13 +1423,11 @@
                     renderAuctionLots();
                 });
 
-            // 2. Establish Real-Time WebSocket Connection
             if (auctionWs) {
                 auctionWs.close();
             }
 
             try {
-                // Connect as anonymous bidder
                 const rInt = Math.floor(Math.random() * 900) + 100;
                 auctionWs = new WebSocket(`${wsHost}/api/v2/auction/ws/bidder_${rInt}`);
 
@@ -1569,7 +1440,6 @@
                 auctionWs.onmessage = (event) => {
                     const data = JSON.parse(event.data);
                     if (data.event === "NEW_BID") {
-                        // Update local lot highest bid instantly
                         const lot = liveAuctionLots.find(l => l.lot_number === data.lot_number);
                         if (lot) {
                             lot.highest_bid = data.highest_bid;
@@ -1593,7 +1463,6 @@
             }
         }
 
-        // Highly advanced real-time simulation logic for static GitHub Pages (when WS server is not reachable)
         function fallbackSimulationMode() {
             const wsStatus = document.getElementById('ws-status');
             wsStatus.innerText = "⚡ Simulated Live Ticker";
@@ -1606,13 +1475,12 @@
 
             if (simulationInterval) clearInterval(simulationInterval);
 
-            // Simulation interval - place a new simulated bid every 4 to 8 seconds randomly!
             simulationInterval = setInterval(() => {
                 if (liveAuctionLots.length === 0) return;
                 
                 const randomLot = liveAuctionLots[Math.floor(Math.random() * liveAuctionLots.length)];
                 const randomTrader = mockTraders[Math.floor(Math.random() * mockTraders.length)];
-                const bidIncrement = Math.floor(Math.random() * 4) * 5 + 5; // increment by 5, 10, 15, or 20 rupees
+                const bidIncrement = Math.floor(Math.random() * 4) * 5 + 5;
                 
                 randomLot.highest_bid += bidIncrement;
                 randomLot.highest_bidder = randomTrader;
@@ -1643,7 +1511,6 @@
                             </div>
                         </div>
 
-                        <!-- Highest Bid Display -->
                         <div class="bg-emerald-50 border border-emerald-100/50 p-4 rounded-xl text-center md:w-48 w-full space-y-1">
                             <span class="text-[10px] font-bold text-emerald-600 block uppercase tracking-wide">सर्वोच्च बोली (Highest Bid)</span>
                             <p class="text-2xl font-black text-emerald-800" id="lot-bid-${lot.lot_number}">₹${lot.highest_bid}/Q</p>
@@ -1654,11 +1521,12 @@
             });
 
             container.innerHTML = html;
-            selectDropdown.innerHTML = dropdownHtml;
+            if (selectDropdown) selectDropdown.innerHTML = dropdownHtml;
         }
 
         function logBidTicker(trader, lotNumber, bidAmount) {
             const feed = document.getElementById('bids-ticker-feed');
+            if (!feed) return;
             const now = new Date();
             const timeStr = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
@@ -1697,7 +1565,6 @@
                 trader_name: trader
             };
 
-            // Post bid to API
             fetch(`${host}/api/v2/auction/bid`, {
                 method: 'POST',
                 headers: {
@@ -1706,21 +1573,19 @@
                 body: JSON.stringify(payload)
             })
             .then(res => {
-                if (!res.ok) throw new Error("Bid rejected");
+                if (!res.ok) throw new Error();
                 return res.json();
             })
             .then(() => {
-                // If WS is not active, simulate update manually for the user
                 if (!auctionWs || auctionWs.readyState !== WebSocket.OPEN) {
                     lot.highest_bid = price;
                     lot.highest_bidder = trader;
                     renderAuctionLots();
                     logBidTicker(trader, lotNum, price);
                 }
-                document.getElementById('bid-price').value = price + 5; // auto increment input by 5 for next quick bid
+                document.getElementById('bid-price').value = price + 5;
             })
             .catch(() => {
-                // Static environment sandbox mockup
                 lot.highest_bid = price;
                 lot.highest_bidder = trader;
                 renderAuctionLots();
@@ -1738,7 +1603,7 @@
             }
 
             const recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN'; // Set language to Hindi
+            recognition.lang = 'hi-IN';
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
@@ -1783,7 +1648,7 @@
 
             fetch(`${host}/api/v2/prediction/${crop}`)
                 .then(res => {
-                    if (!res.ok) throw new Error("API not active");
+                    if (!res.ok) throw new Error();
                     return res.json();
                 })
                 .then(data => {
@@ -1848,7 +1713,7 @@
                 body: JSON.stringify(payload)
             })
             .then(res => {
-                if (!res.ok) throw new Error("Subscription failed");
+                if (!res.ok) throw new Error();
                 return res.json();
             })
             .then(data => {
@@ -2031,302 +1896,6 @@
 
             container.innerHTML = html;
             lucide.createIcons();
-        }
-
-        function setCalcUnit(unit) {
-            calcWeightUnit = unit;
-            const units = ['q', 'kg', 'm'];
-            units.forEach(u => {
-                const btn = document.getElementById(`btn-unit-${u}`);
-                if (u === unit) {
-                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition bg-emerald-50 border-emerald-500 text-emerald-700";
-                } else {
-                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50";
-                }
-            });
-            calculateBill();
-        }
-
-        let globalBillDetails = {};
-
-        function calculateBill() {
-            const rawWeight = parseFloat(document.getElementById('calc-weight').value) || 0;
-            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
-            const commPercent = parseFloat(document.getElementById('calc-commission').value) || 0;
-            const laborPerBag = parseFloat(document.getElementById('calc-labor').value) || 0;
-            const bagSize = parseFloat(document.getElementById('calc-bag-size').value) || 50;
-            const transport = parseFloat(document.getElementById('calc-transport').value) || 0;
-            const cessPercent = parseFloat(document.getElementById('calc-cess-rate').value) || 0;
-
-            let totalQ = 0;
-            let totalKg = 0;
-
-            if (calcWeightUnit === 'q') {
-                totalQ = rawWeight;
-                totalKg = rawWeight * 100;
-            } else if (calcWeightUnit === 'kg') {
-                totalQ = rawWeight / 100;
-                totalKg = rawWeight;
-            } else if (calcWeightUnit === 'm') {
-                totalKg = rawWeight * 40;
-                totalQ = totalKg / 100;
-            }
-
-            const totalBags = Math.ceil(totalKg / bagSize);
-            const grossVal = totalQ * rate;
-            const commAmt = (grossVal * commPercent) / 100;
-            const laborAmt = totalBags * laborPerBag;
-            const taxAmt = (grossVal * cessPercent) / 100;
-            const totalExpenses = commAmt + laborAmt + taxAmt + transport;
-            const netPayout = Math.max(0, grossVal - totalExpenses);
-
-            globalBillDetails = {
-                rawWeight, calcWeightUnit, rate, commPercent, commAmt, laborPerBag, 
-                totalBags, bagSize, laborAmt, transport, cessPercent, taxAmt, grossVal, totalExpenses, netPayout
-            };
-
-            document.getElementById('res-total-q').innerText = `${totalQ.toFixed(2)} Q`;
-            document.getElementById('res-total-kg').innerText = `(${totalKg.toFixed(0)} KG)`;
-            document.getElementById('res-bags').innerText = totalBags;
-            document.getElementById('res-rate').innerText = `₹${rate.toFixed(2)}`;
-            document.getElementById('res-gross-total').innerText = `₹${grossVal.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
-            
-            document.getElementById('res-comm-amt').innerText = `₹${commAmt.toFixed(2)}`;
-            document.getElementById('res-labor-amt').innerText = `₹${laborAmt.toFixed(2)}`;
-            document.getElementById('res-mandi-tax').innerText = `₹${taxAmt.toFixed(2)}`;
-            document.getElementById('res-transport-amt').innerText = `₹${transport.toFixed(2)}`;
-            
-            document.getElementById('res-net-payout').innerText = `₹${netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-        }
-
-        function downloadRatesPDF() {
-            const filteredRecords = getFilteredRecords();
-            const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
-                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
-            const pdfContainer = document.createElement('div');
-            pdfContainer.className = "p-6 bg-white text-slate-900 space-y-4 text-xs";
-            pdfContainer.style.width = "790px";
-
-            const headerHtml = `
-                <div class="text-center font-bold text-[10px] text-slate-400 mb-2">॥ श्री गणेशाय नमः ॥</div>
-                <div class="border-b-4 border-emerald-600 pb-3 flex items-center justify-between">
-                    <div>
-                        <h1 class="text-xl font-black text-emerald-800">Vijay Kumar Traders</h1>
-                        <p class="text-[10px] text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — डिजिटल मंडी सेवा</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">आधिकारिक मंडी भाव सूची</span>
-                        <p class="text-[9px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="text-center text-sm font-bold text-slate-700 underline uppercase my-1">
-                        ${currentLang === 'hi' ? 'दैनिक उत्तर प्रदेश कृषि मंडी भाव एवं आवक सूची' : 'DAILY UP AGRICULTURAL MANDI RATES & ARRIVALS LIST'}
-                    </h2>
-                </div>
-            `;
-
-            let rowsHtml = '';
-            filteredRecords.forEach(r => {
-                const dName = currentLang === 'hi' ? r.district_hi : r.district;
-                const mName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
-                const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
-                const vName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
-                const gName = currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade;
-                const aText = `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : r.arrivals_unit}`;
-
-                rowsHtml += `
-                    <tr class="border-b border-slate-200 text-[10px]">
-                        <td class="py-2 px-2 font-medium">${dName}</td>
-                        <td class="py-2 px-2 font-bold">${mName}</td>
-                        <td class="py-2 px-2 text-emerald-700 font-semibold">${cName}</td>
-                        <td class="py-2 px-2 text-slate-500">${vName}</td>
-                        <td class="py-2 px-2 text-slate-400">${gName}</td>
-                        <td class="py-2 px-2 text-right text-slate-600">${aText}</td>
-                        <td class="py-2 px-2 text-right">₹${r.min_price}</td>
-                        <td class="py-2 px-2 text-right font-bold text-slate-800">₹${r.modal_price}</td>
-                        <td class="py-2 px-2 text-right">₹${r.max_price}</td>
-                    </tr>
-                `;
-            });
-
-            const tableHtml = `
-                <table class="w-full text-left border-collapse border border-slate-300">
-                    <thead>
-                        <tr class="bg-slate-100 border-b border-slate-300 text-slate-700 text-[9px] font-extrabold uppercase">
-                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'जिला' : 'District'}</th>
-                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'मंडी नाम' : 'Mandi Name'}</th>
-                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'फसल (जिंस)' : 'Crop'}</th>
-                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'किस्म (Variety)' : 'Variety'}</th>
-                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'ग्रेड' : 'Grade'}</th>
-                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'दैनिक आवक' : 'Arrivals'}</th>
-                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</th>
-                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'मॉडल (औसत)' : 'Modal'}</th>
-                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rowsHtml}
-                    </tbody>
-                </table>
-            `;
-
-            const footerHtml = `
-                <div class="border-t border-slate-200 pt-4 mt-6 flex justify-between text-[9px] text-slate-400">
-                    <div>
-                        <p>© Vijay Kumar Traders - Kanpur. All rights reserved.</p>
-                        <p>यह सूची Agmarknet और उत्तर प्रदेश मंडी परिषद के डेटा पर आधारित है।</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-emerald-700">डिजिटल किसान सेवा</p>
-                        <p>धन्यवाद, आपका व्यापार मंगलमय हो।</p>
-                    </div>
-                </div>
-            `;
-
-            pdfContainer.innerHTML = headerHtml + tableHtml + footerHtml;
-
-            const opt = {
-                margin:       8,
-                filename:     `UP_Mandi_Bhav_List_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().from(pdfContainer).set(opt).save();
-        }
-
-        function downloadBillPDF() {
-            const bill = globalBillDetails;
-            const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
-                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
-            const pdfContainer = document.createElement('div');
-            pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-sm";
-            pdfContainer.style.width = "750px";
-
-            const unitText = bill.calcWeightUnit === 'q' ? 'क्विंटल (Quintal)' : (bill.calcWeightUnit === 'kg' ? 'किलोग्राम (KG)' : 'मन (Maund = 40kg)');
-
-            const contentHtml = `
-                <div class="text-center font-bold text-[10px] text-slate-400 mb-2">॥ श्री गणेशाय नमः ॥</div>
-                <div class="border-b-4 border-slate-800 pb-4 flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-black text-slate-900">Vijay Kumar Traders</h1>
-                        <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">मंडी बिक्री पर्ची (Cash Memo)</span>
-                        <p class="text-[10px] text-slate-400 mt-1">दिनांक: ${dateStr}</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                    <div>
-                        <span class="text-[10px] text-slate-400 font-bold block uppercase">व्यापारी / आढ़ती</span>
-                        <p class="font-bold text-slate-800">Vijay Kumar Traders, Kanpur</p>
-                        <p class="text-xs text-slate-500">लाइसेंस संख्या: UP-KN-2026/1093</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-slate-400 font-bold block uppercase">किसान / ग्राहक विवरण</span>
-                        <p class="font-bold text-slate-800">स्वयं (Self/Farmer)</p>
-                        <p class="text-xs text-slate-500">मंडी यार्ड: कानपुर मुख्य यार्ड</p>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="font-bold text-slate-800 border-b border-slate-300 pb-2 mb-3 uppercase tracking-wider text-xs">सौदा और वजन का विवरण (Transaction Details)</h3>
-                    <table class="w-full text-left border-collapse border border-slate-300">
-                        <thead>
-                            <tr class="bg-slate-100 text-[11px] font-bold text-slate-700 uppercase border-b border-slate-300">
-                                <th class="py-2 px-3">विवरण (Description)</th>
-                                <th class="py-2 px-3 text-right">वजन (Weight)</th>
-                                <th class="py-2 px-3 text-right">बोरी संख्या (Bags)</th>
-                                <th class="py-2 px-3 text-right">दर (Rate / Q)</th>
-                                <th class="py-2 px-3 text-right">कुल मूल्य (Gross Total)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-xs border-b border-slate-200">
-                                <td class="py-3 px-3 font-semibold text-slate-800">कृषि जिंस बिक्री सौदा (${unitText})</td>
-                                <td class="py-3 px-3 text-right font-medium">${bill.rawWeight} ${bill.calcWeightUnit.toUpperCase()}</td>
-                                <td class="py-3 px-3 text-right">${bill.totalBags} बोरियां (@${bill.bagSize}kg)</td>
-                                <td class="py-3 px-3 text-right">₹${bill.rate.toFixed(2)}</td>
-                                <td class="py-3 px-3 text-right font-bold text-slate-900">₹${bill.grossVal.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6 mt-6">
-                    <div>
-                        <h4 class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 uppercase tracking-wider text-[11px]">नियम व शर्तें (Terms)</h4>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">
-                            1. यह रसीद यूपी कृषि उत्पादन मंडी अधिनियम 1964 के तहत जारी एक डिजिटल गणना रसीद है।<br>
-                            2. मंडी शुल्क (1.5%) एवं विकास सेस (0.5%) कुल 2% मंडी परिषद के नियमानुसार काटा गया है।<br>
-                            3. पल्लेदारी / मजदूरी दरें सरकारी मानकों के अनुरूप हैं।
-                        </p>
-                    </div>
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 uppercase tracking-wider text-[11px] text-right">कटौतियां और खर्च (Deductions)</h4>
-                        <div class="flex justify-between text-xs text-slate-600">
-                            <span>आढ़त कमीशन (${bill.commPercent}%):</span>
-                            <span>(-) ₹${bill.commAmt.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-xs text-slate-600">
-                            <span>मजदूरी / पल्लेदारी (₹${bill.laborPerBag}/बोरी):</span>
-                            <span>(-) ₹${bill.laborAmt.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-xs text-slate-600">
-                            <span>मंडी शुल्क व विकास सेस (${bill.cessPercent ? bill.cessPercent+'%' : '0%'}):</span>
-                            <span>(-) ₹${bill.taxAmt.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-xs text-slate-600">
-                            <span>परिवहन भाड़ा (Transport):</span>
-                            <span>(-) ₹${bill.transport.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-xs font-bold text-red-700 border-t border-slate-200 pt-2">
-                            <span>कुल कटौतियां (Total Expenses):</span>
-                            <span>₹${bill.totalExpenses.toLocaleString('en-IN', {maximumFractionDigits:2})}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border-t-2 border-slate-800 pt-4 flex items-center justify-between mt-8">
-                    <div>
-                        <span class="text-xs font-bold uppercase block text-emerald-800">किसान/व्यापारी को शुद्ध भुगतान (Net Payout)</span>
-                        <p class="text-[10px] text-slate-400">सभी कटौतियों को घटाने के बाद शुद्ध देय राशि</p>
-                    </div>
-                    <span class="text-2xl font-black text-emerald-800">₹${bill.netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}</span>
-                </div>
-
-                <div class="border-t border-slate-200 pt-6 mt-12 flex justify-between items-center">
-                    <div class="text-[9px] text-slate-400 space-y-1">
-                        <p>यह एक computer-generated रसीद है, हस्ताक्षर की आवश्यकता नहीं है।</p>
-                        <p class="font-bold text-slate-600 mt-1">🔐 डिजिटल सत्यापन QR कोड (Scan to Verify Bill)</p>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VERIFY:VKT-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.round(bill.netPayout)}|NET:${bill.netPayout.toFixed(0)}|SECURE_VERIFIED" class="w-16 h-16 border border-slate-200 p-1 rounded mt-1 bg-white inline-block">
-                    </div>
-                    <div class="text-center w-40">
-                        <div class="h-10 border-b border-slate-300 mb-1"></div>
-                        <span class="text-[10px] font-bold text-slate-500">हस्ताक्षर आढ़ती (Sign)</span>
-                    </div>
-                </div>
-            `;
-
-            pdfContainer.innerHTML = contentHtml;
-
-            const opt = {
-                margin:       10,
-                filename:     `Mandi_Sale_Receipt_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().from(pdfContainer).set(opt).save();
         }
     </script>
 </body>
