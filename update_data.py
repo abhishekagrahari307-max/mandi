@@ -47,11 +47,42 @@ MANDI_PARISHAD_DIRECTORY_URL = "https://dashboard.mandiprojects.in/MandiDetails.
 # Official state ticker published by the UP Directorate of Agricultural
 # Marketing. It is a STATE-LEVEL benchmark, never an individual mandi rate.
 UP_KRISHI_VIPRAN_URL = "https://www.upkrishivipran.in/Default.aspx"
-UPDATE_SLOTS_IST = ("00:30", "04:30", "08:30", "12:30", "16:30", "20:30")
+UPDATE_SLOTS_IST = ("06:30", "12:30", "16:30", "20:30")
 # A market price is published only when this many configured government price
 # feeds report the same market, commodity, date and modal price.
 MIN_PRICE_SOURCE_MATCHES = 3
+SOURCE_SNAPSHOT_RECORD_LIMIT = 5000
 USER_AGENT = "UP-Mandi-Dashboard/4.0 (+https://github.com/abhishekagrahari307-max/mandi)"
+
+# Prices from these official feeds are also published in separate, clearly
+# labelled source views. They are never averaged or presented as cross-verified
+# unless the independent three-source gate above succeeds.
+PRICE_FEED_SPECS = (
+    {
+        "id": "data_gov_in",
+        "name": "data.gov.in OGD price API",
+        "name_hi": "data.gov.in सरकारी मूल्य API",
+        "source_url": "https://data.gov.in/",
+    },
+    {
+        "id": "agmarknet",
+        "name": "AGMARKNET public price report",
+        "name_hi": "AGMARKNET सार्वजनिक मूल्य रिपोर्ट",
+        "source_url": AGMARKNET_HOME_URL,
+    },
+    {
+        "id": "enam_trade",
+        "name": "e-NAM authorised trade feed",
+        "name_hi": "e-NAM अधिकृत ट्रेड फीड",
+        "source_url": ENAM_PORTAL_URL,
+    },
+    {
+        "id": "up_emandi_trade",
+        "name": "UP e-Mandi authorised trade feed",
+        "name_hi": "UP e-Mandi अधिकृत ट्रेड फीड",
+        "source_url": "https://emandi.up.gov.in/",
+    },
+)
 
 DISTRICT_HI = {
     "Agra": "आगरा", "Aligarh": "अलीगढ़", "Ambedkar Nagar": "अम्बेडकर नगर",
@@ -434,6 +465,96 @@ def select_publishable_records(
         row.get("district") or "", row.get("mandi") or "", row.get("commodity") or ""
     ))
     return published, len(grouped)
+
+
+def build_source_prices_snapshot(
+    feed_results: dict[str, dict[str, Any]],
+    previous: dict[str, Any] | None = None,
+    checked_at: str | None = None,
+) -> dict[str, Any]:
+    """Keep every official price feed separate without averaging its prices.
+
+    A successful feed is labelled ``live``. If a refresh fails after a previous
+    successful fetch, that feed's last official records are retained as
+    ``cached`` and the failed check remains visible in ``latest_check_status``.
+    Each stored row is explicitly single-source and therefore cannot be mistaken
+    for a record that passed the strict three-source publication gate.
+    """
+    checked_at = checked_at or now_ist().isoformat()
+    previous_feeds = {
+        feed.get("id"): feed
+        for feed in (previous or {}).get("feeds", [])
+        if isinstance(feed, dict) and feed.get("id")
+    }
+    feeds: list[dict[str, Any]] = []
+
+    for spec in PRICE_FEED_SPECS:
+        feed_id = spec["id"]
+        result = feed_results.get(feed_id) or {"status": "not_checked", "records": []}
+        current_records = result.get("records") or []
+        previous_feed = previous_feeds.get(feed_id) or {}
+        previous_records = previous_feed.get("records") or []
+        current_status = str(result.get("status") or "unavailable")
+
+        if current_records:
+            raw_records = current_records
+            display_status = "live"
+            data_updated_at = checked_at
+        elif previous_records:
+            raw_records = previous_records
+            display_status = "cached"
+            data_updated_at = previous_feed.get("data_updated_at") or previous_feed.get("updated_at")
+        else:
+            raw_records = []
+            display_status = current_status
+            data_updated_at = None
+
+        total_record_count = (
+            len(raw_records)
+            if current_records
+            else int(previous_feed.get("total_record_count") or len(raw_records))
+        )
+        stored_records: list[dict[str, Any]] = []
+        for raw in raw_records[:SOURCE_SNAPSHOT_RECORD_LIMIT]:
+            record = dict(raw)
+            record.update({
+                "source_id": feed_id,
+                "source": spec["name"],
+                "source_reported": True,
+                "verification_sources": [spec["name"]],
+                "verification_count": 1,
+                "cross_verified": False,
+                "three_source_verified": False,
+            })
+            stored_records.append(record)
+
+        feeds.append({
+            **spec,
+            "status": display_status,
+            "latest_check_status": current_status,
+            "message": result.get("message"),
+            "data_updated_at": data_updated_at,
+            "total_record_count": total_record_count,
+            "stored_record_count": len(stored_records),
+            "records_truncated": total_record_count > len(stored_records),
+            "records": stored_records,
+        })
+
+    return {
+        "last_checked_at": checked_at,
+        "policy": (
+            "Each feed is displayed separately exactly as reported. Prices are not "
+            "averaged or merged. These rows are single-source observations; only "
+            "data/latest.json contains prices that passed the three-source gate."
+        ),
+        "policy_hi": (
+            "हर feed का भाव उसके अपने नाम से अलग दिखाया गया है। भावों को मिलाया या "
+            "औसत नहीं किया जाता। ये single-source भाव हैं; तीन-source जाँच पास भाव "
+            "केवल data/latest.json में होते हैं।"
+        ),
+        "record_limit_per_feed": SOURCE_SNAPSHOT_RECORD_LIMIT,
+        "feeds": feeds,
+    }
 
 
 def fetch_agmarknet_up() -> list[dict[str, Any]]:
@@ -964,6 +1085,10 @@ def main() -> None:
     all_india_records: list[dict[str, Any]] = []
     source_name = ""
     candidate_feeds: list[tuple[str, list[dict[str, Any]]]] = []
+    source_price_results: dict[str, dict[str, Any]] = {
+        spec["id"]: {"status": "not_checked", "records": []}
+        for spec in PRICE_FEED_SPECS
+    }
 
     # Source 1: official OGD API generated from AGMARKNET.
     try:
@@ -975,6 +1100,7 @@ def main() -> None:
         if not data_gov_up:
             raise RuntimeError("official API returned no Uttar Pradesh records")
         candidate_feeds.append(("data.gov.in", data_gov_up))
+        source_price_results["data_gov_in"] = {"status": "live", "records": data_gov_up}
         sources.append({"name": "data.gov.in", "status": "ok", "records": len(data_gov_up)})
         try:
             all_india_records = fetch_data_gov(api_key, max_records=25000)
@@ -982,6 +1108,10 @@ def main() -> None:
         except Exception as exc:
             sources.append({"name": "data.gov.in state feed", "status": "error", "message": str(exc)})
     except Exception as exc:
+        data_gov_status = "not_configured" if not api_key else ("not_checked" if offline else "error")
+        source_price_results["data_gov_in"] = {
+            "status": data_gov_status, "records": [], "message": str(exc)
+        }
         sources.append({"name": "data.gov.in", "status": "error", "message": str(exc)})
 
     # AGMARKNET portal availability, recorded independently of price parsing.
@@ -1016,26 +1146,37 @@ def main() -> None:
             if not agmarknet_up:
                 raise RuntimeError("AGMARKNET returned no parseable records")
             candidate_feeds.append(("AGMARKNET", agmarknet_up))
+            source_price_results["agmarknet"] = {"status": "live", "records": agmarknet_up}
             sources.append({"name": "AGMARKNET", "status": "ok", "records": len(agmarknet_up)})
         except Exception as exc:
+            source_price_results["agmarknet"] = {
+                "status": "error", "records": [], "message": str(exc)
+            }
             sources.append({"name": "AGMARKNET", "status": "error", "message": str(exc)})
     else:
+        source_price_results["agmarknet"] = {
+            "status": "not_checked", "records": [], "message": "offline repository refresh"
+        }
         sources.append({"name": "AGMARKNET", "status": "not_checked", "message": "offline repository refresh"})
 
     # Sources 3 and 4: optional approved JSON feeds. These adapters never use
     # portal usernames/passwords and clearly report when no authorised feed was
     # supplied by e-NAM or UP e-Mandi.
     authorised_price_sources = (
-        ("e-NAM trade feed", "ENAM_TRADE_FEED_URL", "ENAM_TRADE_API_KEY"),
-        ("UP e-Mandi trade feed", "UP_EMANDI_TRADE_FEED_URL", "UP_EMANDI_TRADE_API_KEY"),
+        ("enam_trade", "e-NAM trade feed", "ENAM_TRADE_FEED_URL", "ENAM_TRADE_API_KEY"),
+        ("up_emandi_trade", "UP e-Mandi trade feed", "UP_EMANDI_TRADE_FEED_URL", "UP_EMANDI_TRADE_API_KEY"),
     )
-    for display_name, url_env, key_env in authorised_price_sources:
+    for feed_id, display_name, url_env, key_env in authorised_price_sources:
         feed_url = os.environ.get(url_env, "").strip()
         feed_key = os.environ.get(key_env, "").strip()
         if not feed_url:
+            source_price_results[feed_id] = {"status": "not_configured", "records": []}
             sources.append({"name": display_name, "status": "not_configured", "records": 0})
             continue
         if offline:
+            source_price_results[feed_id] = {
+                "status": "not_checked", "records": [], "message": "offline repository refresh"
+            }
             sources.append({"name": display_name, "status": "not_checked", "records": 0})
             continue
         try:
@@ -1043,9 +1184,20 @@ def main() -> None:
             if not records:
                 raise RuntimeError("authorised feed returned no parseable price records")
             candidate_feeds.append((display_name, records))
+            source_price_results[feed_id] = {"status": "live", "records": records}
             sources.append({"name": display_name, "status": "ok", "records": len(records)})
         except Exception as exc:
+            source_price_results[feed_id] = {
+                "status": "error", "records": [], "message": str(exc)
+            }
             sources.append({"name": display_name, "status": "error", "message": str(exc)})
+
+    previous_source_prices = read_json(DATA_DIR / "source_prices.json", {})
+    if not isinstance(previous_source_prices, dict):
+        previous_source_prices = {}
+    source_prices = build_source_prices_snapshot(
+        source_price_results, previous=previous_source_prices, checked_at=checked_at
+    )
 
     connected_feed_names = [name for name, records in candidate_feeds if records]
     if candidate_feeds:
@@ -1211,7 +1363,7 @@ def main() -> None:
             f"A mandi price is published only when at least {MIN_PRICE_SOURCE_MATCHES} configured "
             "government price feeds report the same market, commodity, date and modal price."
         ),
-        "update_frequency": "6 times daily",
+        "update_frequency": "4 times daily",
         "update_slots_ist": list(UPDATE_SLOTS_IST),
         "records": up_records,
     }
@@ -1227,7 +1379,7 @@ def main() -> None:
     history = update_history(up_records, reset=not previous_verified)
     sources_payload = {
         "last_checked_at": checked_at,
-        "update_frequency": "6 times daily",
+        "update_frequency": "4 times daily",
         "update_slots_ist": list(UPDATE_SLOTS_IST),
         "sources": sources,
         "official_portals": OFFICIAL_PORTALS,
@@ -1236,6 +1388,7 @@ def main() -> None:
     }
 
     write_json_atomic(DATA_DIR / "latest.json", latest_payload)
+    write_json_atomic(DATA_DIR / "source_prices.json", source_prices)
     write_json_atomic(DATA_DIR / "history.json", history)
     write_json_atomic(DATA_DIR / "state_prices.json", state_prices)
     write_json_atomic(DATA_DIR / "mandis.json", directory)
@@ -1246,6 +1399,7 @@ def main() -> None:
         f"Updated dashboard: {len(up_records)} UP prices, {len(state_prices['states'])} states, "
         f"{len(directory['mandis'])} mandis, {len(parishad_rows)} Mandi Parishad directory rows, "
         f"{len(state_ticker)} state benchmark commodities, "
+        f"{sum(feed['stored_record_count'] for feed in source_prices['feeds'])} source-labelled prices, "
         f"{len(auction['lots'])} official auction lots."
     )
 
