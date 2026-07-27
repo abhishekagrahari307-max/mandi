@@ -1,12 +1,12 @@
 import os
 import json
-import random
 import urllib.request
 import re
 import hashlib
+import logging
+import secrets
 from datetime import datetime, timedelta
-from typing import List, Dict
-from fastapi import FastAPI, Depends, HTTPException, status, Security, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, status, Request, WebSocket
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
@@ -21,6 +21,50 @@ import database as db
 import prediction as pred_engine
 import alerts as alert_engine
 
+logger = logging.getLogger(__name__)
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
+IS_PRODUCTION = ENVIRONMENT in {"prod", "production"}
+
+
+def _load_jwt_secret() -> str:
+    """Load the JWT signing key without ever falling back to a public constant."""
+    configured_secret = os.environ.get("JWT_SECRET", "").strip()
+    if configured_secret:
+        if len(configured_secret.encode("utf-8")) < 32:
+            raise RuntimeError("JWT_SECRET must be at least 32 bytes")
+        return configured_secret
+    if IS_PRODUCTION:
+        raise RuntimeError("JWT_SECRET is required when ENVIRONMENT=production")
+
+    logger.warning(
+        "JWT_SECRET is not configured; using an ephemeral development key. "
+        "Existing sessions will be invalid after restart."
+    )
+    return secrets.token_urlsafe(48)
+
+
+SECRET_KEY = _load_jwt_secret()
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com").strip() or None
+
+if ADMIN_PASSWORD:
+    admin_password_bytes = ADMIN_PASSWORD.encode("utf-8")
+    if not 12 <= len(admin_password_bytes) <= 72:
+        raise RuntimeError("ADMIN_PASSWORD must be between 12 and 72 bytes")
+elif IS_PRODUCTION:
+    raise RuntimeError("ADMIN_PASSWORD is required when ENVIRONMENT=production")
+
+cors_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000"
+    ).split(",")
+    if origin.strip()
+]
+if "*" in cors_origins:
+    raise RuntimeError("CORS_ORIGINS must list explicit origins; wildcard access is not allowed")
+
 # Initialize Database
 db.init_db()
 
@@ -30,17 +74,16 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS for cross-origin live connections
+# Permit only explicitly configured browser origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "9ef842f824b44749a978d0c17b101cff356e9")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -80,11 +123,11 @@ class InvoiceCreate(BaseModel):
     crop_name: str = Field(..., min_length=2, max_length=100)
     weight: float = Field(..., gt=0)
     rate: float = Field(..., gt=0)
-    commission_percent: float = Field(default=1.5, ge=0, le=10.0)
-    labor_per_bag: float = Field(default=15.0, ge=0)
+    commission_percent: float = Field(default=0.0, ge=0, le=10.0)
+    labor_per_bag: float = Field(default=0.0, ge=0)
     bag_size_kg: float = Field(default=50.0, gt=0)
     transport_cost: float = Field(default=0.0, ge=0)
-    cess_percent: float = Field(default=2.0, ge=0, le=5.0)
+    cess_percent: float = Field(default=0.0, ge=0, le=10.0)
 
 # LIVE AUCTION PYDANTIC SCHEMAS (PHASE 5)
 class AuctionLotCreate(BaseModel):
@@ -143,8 +186,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    issued_at = datetime.utcnow()
+    expire = issued_at + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"iat": issued_at, "exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Depends(get_db)):
@@ -162,7 +206,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Dep
         raise credentials_exception
         
     user = db_sess.query(db.User).filter(db.User.username == username).first()
-    if user is None:
+    if user is None or not user.is_active:
         raise credentials_exception
     return user
 
@@ -183,17 +227,41 @@ def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, 
 def seed_database():
     session = db.SessionLocal()
     try:
-        # Seed default admin user
-        admin_exists = session.query(db.User).filter(db.User.username == "admin").first()
-        if not admin_exists:
-            admin_user = db.User(
-                username="admin",
-                hashed_password=get_password_hash("admin123"),
-                email="admin@mandi-up.gov.in",
-                role="admin"
-            )
-            session.add(admin_user)
+        # Create or update the configured administrator. There is deliberately
+        # no built-in password: production startup already requires one.
+        if ADMIN_PASSWORD:
+            admin_user = session.query(db.User).filter(
+                db.User.username == ADMIN_USERNAME
+            ).first()
+            if admin_user is None:
+                admin_user = db.User(
+                    username=ADMIN_USERNAME,
+                    hashed_password=get_password_hash(ADMIN_PASSWORD),
+                    email=ADMIN_EMAIL,
+                    role="admin",
+                    is_active=True,
+                )
+                session.add(admin_user)
+            elif not verify_password(ADMIN_PASSWORD, admin_user.hashed_password):
+                admin_user.hashed_password = get_password_hash(ADMIN_PASSWORD)
+                admin_user.email = ADMIN_EMAIL
+                admin_user.role = "admin"
+                admin_user.is_active = True
+
+            # Disable the formerly hard-coded account when a differently named
+            # administrator is configured in an existing database.
+            if ADMIN_USERNAME != "admin":
+                legacy_admin = session.query(db.User).filter(
+                    db.User.username == "admin"
+                ).first()
+                if legacy_admin is not None:
+                    legacy_admin.is_active = False
             session.commit()
+        else:
+            logger.warning(
+                "ADMIN_PASSWORD is not configured; no administrator account "
+                "will be created in development mode."
+            )
             
         # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
@@ -202,7 +270,9 @@ def seed_database():
             if os.path.exists(latest_file):
                 with open(latest_file, "r", encoding="utf-8") as f:
                     latest_data = json.load(f)
-                    records = latest_data.get("records", [])
+                    records = latest_data.get("records", []) if latest_data.get("verified") else []
+                    if not records:
+                        logger.warning("Skipping rate seed: no verified official snapshot is available")
                     for r in records:
                         m_record = db.MandiRecord(
                             district=r.get("district"),
@@ -215,9 +285,9 @@ def seed_database():
                             variety_hi=r.get("variety_hi", "सामान्य (FAQ)"),
                             grade=r.get("grade", "FAQ"),
                             grade_hi=r.get("grade_hi", "FAQ"),
-                            arrivals=r.get("arrivals", 0),
-                            arrivals_unit=r.get("arrivals_unit", "Tonnes"),
-                            arrivals_unit_hi=r.get("arrivals_unit_hi", "टन"),
+                            arrivals=r.get("arrivals"),
+                            arrivals_unit=r.get("arrivals_unit"),
+                            arrivals_unit_hi=r.get("arrivals_unit_hi"),
                             min_price=r.get("min_price"),
                             max_price=r.get("max_price"),
                             modal_price=r.get("modal_price"),
@@ -227,59 +297,17 @@ def seed_database():
                         session.add(m_record)
                 session.commit()
 
-        # Seed an initial Active Auction Lot if none exists (for demo)
-        auction_count = session.query(db.AuctionLot).count()
-        if auction_count == 0:
-            lot = db.AuctionLot(
-                lot_number="LOT-2026-101",
-                farmer_name="Ramesh Singh (Kanpur)",
-                crop_name="Wheat (गेहूं)",
-                quantity=45.0,
-                starting_rate=2300.0,
-                highest_bid=2300.0,
-                status="active"
-            )
-            session.add(lot)
-            session.commit()
-            
     except Exception as e:
         print(f"Error seeding database: {e}")
     finally:
         session.close()
-
-# ================= WEBSOCKETS CONNECTION MANAGER (LIVE AUCTION) =================
-
-class AuctionConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        print(f"Connected: Total active bidders = {len(self.active_connections)}")
-
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-            print(f"Disconnected: Active bidders left = {len(self.active_connections)}")
-
-    async def broadcast(self, message: dict):
-        """Broadcasts real-time auction event to all active connected bidders."""
-        for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except Exception:
-                # Handle disconnected dead connections gracefully
-                pass
-
-manager = AuctionConnectionManager()
 
 # ================= REST API ENDPOINTS =================
 
 @app.post("/api/v2/auth/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = Depends(get_db)):
     user = db_sess.query(db.User).filter(db.User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not user.is_active or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -334,78 +362,30 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "avg_modal_price": round(avg_val, 2)
     }
 
-@app.post("/api/v2/rates", status_code=status.HTTP_201_CREATED)
-def create_rate(
-    rate: RateCreate, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role not in ["admin", "trader", "staff"]:
-        raise HTTPException(status_code=403, detail="Role unauthorized to insert rates")
-        
-    m_record = db.MandiRecord(**pydantic_to_dict(rate))
-    db_sess.add(m_record)
-    db_sess.commit()
-    db_sess.refresh(m_record)
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "CREATE_RATE", 
-        f"Inserted new rate for {rate.commodity} in {rate.mandi} (₹{rate.modal_price})", request
+@app.post("/api/v2/rates")
+def create_rate(current_user: db.User = Depends(get_current_user)):
+    """Official price records are read-only and cannot be entered manually."""
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Manual rates are disabled; prices must come from a verified government feed",
     )
-    return {"message": "Mandi rate added successfully!", "record": sqlalchemy_to_dict(m_record)}
+
 
 @app.put("/api/v2/rates/{record_id}")
-def update_rate(
-    record_id: int, 
-    updated: RateCreate, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role not in ["admin", "trader"]:
-        raise HTTPException(status_code=403, detail="Role unauthorized to modify rates")
-        
-    record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Mandi record not found")
-        
-    for key, value in pydantic_to_dict(updated).items():
-        setattr(record, key, value)
-        
-    db_sess.commit()
-    db_sess.refresh(record)
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "UPDATE_RATE", 
-        f"Modified record ID {record_id} - New Modal Price: ₹{updated.modal_price}", request
+def update_rate(record_id: int, current_user: db.User = Depends(get_current_user)):
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Manual rate edits are disabled; refresh the verified government feed",
     )
-    return {"message": "Mandi rate updated successfully!", "record": sqlalchemy_to_dict(record)}
+
 
 @app.delete("/api/v2/rates/{record_id}")
-def delete_rate(
-    record_id: int, 
-    request: Request,
-    current_user: db.User = Depends(get_current_user), 
-    db_sess: Session = Depends(get_db)
-):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Strictly Admin only operation")
-        
-    record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Mandi record not found")
-        
-    deleted_commodity = record.commodity
-    deleted_mandi = record.mandi
-    db_sess.delete(record)
-    db_sess.commit()
-    
-    write_audit_log(
-        db_sess, current_user.id, current_user.username, "DELETE_RATE", 
-        f"Deleted record ID {record_id} ({deleted_commodity} at {deleted_mandi})", request
+def delete_rate(record_id: int, current_user: db.User = Depends(get_current_user)):
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Official feed records are read-only",
     )
-    return {"message": f"Record with ID {record_id} deleted successfully!"}
+
 
 @app.post("/api/v2/update")
 def trigger_system_update(
@@ -416,10 +396,20 @@ def trigger_system_update(
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Role unauthorized to trigger scrapers")
         
-    print("Force Update Engine Triggered via Admin Panel...")
+    print("Official update pipeline triggered via Admin Panel...")
     import update_data as updater
-    records = updater.generate_mock_data()
-    
+    updater.main()
+    with open("data/latest.json", "r", encoding="utf-8") as handle:
+        latest_payload = json.load(handle)
+    if not latest_payload.get("verified") or not latest_payload.get("is_live"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No fresh verified government snapshot was available; database was not changed",
+        )
+    records = latest_payload.get("records", [])
+    if not records:
+        raise HTTPException(status_code=503, detail="Official update returned no records")
+
     db_sess.query(db.MandiRecord).delete()
     for r in records:
         m_record = db.MandiRecord(
@@ -474,14 +464,27 @@ def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
 @app.get("/api/v2/prediction/{crop}")
 def get_price_prediction(crop: str):
     history_file = "data/history.json"
-    if not os.path.exists(history_file):
+    latest_file = "data/latest.json"
+    if not os.path.exists(history_file) or not os.path.exists(latest_file):
         raise HTTPException(status_code=404, detail="Historical records not found")
-        
-    with open(history_file, "r", encoding="utf-8") as f:
-        history_data = json.load(f)
-        
-    prediction_results = pred_engine.predict_future_prices(history_data, crop)
-    return prediction_results
+
+    with open(latest_file, "r", encoding="utf-8") as handle:
+        latest_metadata = json.load(handle)
+    if not latest_metadata.get("verified"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Predictions are disabled until verified official price history is available",
+        )
+
+    with open(history_file, "r", encoding="utf-8") as handle:
+        history_data = json.load(handle)
+    try:
+        return pred_engine.predict_future_prices(history_data, crop)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
 
 @app.post("/api/v2/alerts/subscribe")
 def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get_db)):
@@ -506,13 +509,22 @@ def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get
     db_sess.add(new_sub)
     db_sess.commit()
     
-    welcome_text = "🌾 <b>Welcome to UP Mandi Price Alerts!</b> 🌾\nVijay Kumar Traders has registered your phone. You will receive daily rate summaries as soon as Agmarknet rates update! Thank you."
+    welcome_text = "🌾 <b>Welcome to UP Mandi Price Alerts!</b> 🌾\nYour subscription was saved. Alerts contain only available verified rates."
+    delivered = False
     if sub.contact_type == "telegram":
-        alert_engine.send_telegram_alert(sub.contact_value, welcome_text)
+        delivered = alert_engine.send_telegram_alert(sub.contact_value, welcome_text)
     elif sub.contact_type == "whatsapp":
-        alert_engine.send_whatsapp_alert(sub.contact_value, welcome_text)
-        
-    return {"status": "success", "message": "सफलतापूर्वक मूल्य अलर्ट के लिए पंजीकरण हो गया है!"}
+        delivered = alert_engine.send_whatsapp_alert(sub.contact_value, welcome_text)
+
+    return {
+        "status": "subscribed",
+        "welcome_delivered": delivered,
+        "message": (
+            "Subscription saved and welcome alert delivered."
+            if delivered
+            else "Subscription saved; alert provider is unavailable or not configured."
+        ),
+    }
 
 @app.post("/api/v2/alerts/broadcast")
 def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
@@ -547,10 +559,10 @@ def create_financial_invoice(
     net_payout = max(0.0, gross_val - total_expenses)
 
     date_prefix = datetime.utcnow().strftime("%Y%m%d")
-    random_suffix = random.randint(1000, 9999)
-    inv_number = f"VKT-{date_prefix}-{random_suffix}"
+    unique_suffix = secrets.token_hex(2).upper()
+    inv_number = f"VKT-{date_prefix}-{unique_suffix}"
 
-    raw_hash_data = f"{inv_number}|{invoice.farmer_name}|{invoice.crop_name}|{net_payout:.2f}|mandi_secure_v2"
+    raw_hash_data = f"{inv_number}|{invoice.farmer_name}|{invoice.crop_name}|{net_payout:.2f}|internal_estimate_v1"
     verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()[:16].upper()
 
     db_invoice = db.Invoice(
@@ -574,11 +586,11 @@ def create_financial_invoice(
 
     write_audit_log(
         db_sess, current_user.id, current_user.username, "ISSUE_BILL",
-        f"Generated official invoice {inv_number} for {invoice.farmer_name} - Net Payout: ₹{net_payout:.2f}", request
+        f"Generated internal estimate {inv_number} for {invoice.farmer_name} - Net Payout: ₹{net_payout:.2f}", request
     )
     return {
         "status": "success",
-        "message": "Official invoice saved and signed successfully!",
+        "message": "Internal calculation estimate saved; this is not a government mandi receipt or tax invoice.",
         "invoice": sqlalchemy_to_dict(db_invoice)
     }
 
@@ -603,86 +615,46 @@ def get_financial_reports(current_user: db.User = Depends(get_current_user), db_
         "recent_invoices": [sqlalchemy_to_dict(invoice) for invoice in invoices[-10:]]
     }
 
-# ================= FIRST PILLAR: WEBSOCKET LIVE AUCTION ENGINE (PHASE 5) =================
+# ================= OFFICIAL e-NAM AUCTION SNAPSHOT =================
 
 @app.get("/api/v2/auction/lots")
-def get_active_auction_lots(db_sess: Session = Depends(get_db)):
-    """Returns list of currently active grain/crop lots inside the bidding yard."""
-    lots = db_sess.query(db.AuctionLot).filter(db.AuctionLot.status == "active").all()
-    return [sqlalchemy_to_dict(lot) for lot in lots]
+def get_active_auction_lots():
+    """Return the latest authorised e-NAM snapshot without inventing lots."""
+    try:
+        with open("data/auction.json", "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return {
+            "status": "temporarily_unavailable",
+            "message_en": "The authorised e-NAM feed is unavailable.",
+            "message_hi": "अधिकृत e-NAM feed उपलब्ध नहीं है।",
+            "portal_url": "https://www.enam.gov.in/web/",
+            "lots": [],
+        }
+
 
 @app.post("/api/v2/auction/bid")
-async def submit_auction_bid(bid: BidSubmit, db_sess: Session = Depends(get_db)):
-    """
-    Submits a secure real-time price bid for a specific active lot.
-    Verifies on server-side that the bid is strictly higher than previous bid.
-    Broadcasts the newly placed bid instantly to all active bidders via WebSockets!
-    """
-    lot = db_sess.query(db.AuctionLot).filter(
-        db.AuctionLot.lot_number == bid.lot_number,
-        db.AuctionLot.status == "active"
-    ).first()
-    
-    if not lot:
-        raise HTTPException(status_code=404, detail="Active lot not found inside the bidding yard")
-        
-    if bid.bid_amount <= lot.highest_bid:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Bidding rate must be strictly higher than current highest bid of ₹{lot.highest_bid}/Q"
-        )
-        
-    # Update Lot's highest bid
-    lot.highest_bid = bid.bid_amount
-    lot.highest_bidder = bid.trader_name
-    db_sess.commit()
-    db_sess.refresh(lot)
-    
-    # Broadcast updated bid payload to all active WebSocket listeners instantly!
-    broadcast_payload = {
-        "event": "NEW_BID",
-        "lot_number": lot.lot_number,
-        "crop_name": lot.crop_name,
-        "farmer_name": lot.farmer_name,
-        "highest_bid": lot.highest_bid,
-        "highest_bidder": lot.highest_bidder,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-    await manager.broadcast(broadcast_payload)
-    
-    return {
-        "status": "success",
-        "message": f"Successfully placed bid of ₹{bid.bid_amount}/Q!",
-        "lot": sqlalchemy_to_dict(lot)
-    }
+async def submit_auction_bid(bid: BidSubmit):
+    """Never accept a local or simulated bid for an official auction."""
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "message": "Bids must be authenticated and submitted on the official e-NAM portal.",
+            "portal_url": "https://www.enam.gov.in/web/",
+        },
+    )
 
-# WEBSOCKET REAL-TIME BIDDING GATEWAY
+
 @app.websocket("/api/v2/auction/ws/{username}")
 async def websocket_auction_endpoint(websocket: WebSocket, username: str):
-    """
-    Real-Time WebSocket gateway connection endpoint.
-    Bidder connections are saved in active pool and managed in real-time.
-    """
-    await manager.connect(websocket)
-    try:
-        # Send initial success greeting
-        await websocket.send_json({
-            "event": "WELCOME",
-            "message": f"Welcome {username}! Connected to Vijay Kumar Traders Live Auction Yard WS.",
-            "timestamp": datetime.utcnow().isoformat()
-        })
-        
-        while True:
-            # Maintain active connection stream and listen for incoming bids on WS channel
-            data = await websocket.receive_text()
-            # If a client sends direct WebSocket message
-            print(f"Received WS message from {username}: {data}")
-            
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        print(f"WebSocket Error with user {username}: {e}")
-        manager.disconnect(websocket)
+    """Close the legacy simulated socket and direct users to official e-NAM."""
+    await websocket.accept()
+    await websocket.send_json({
+        "event": "OFFICIAL_PORTAL_REQUIRED",
+        "message": "Real bids are available only through authenticated e-NAM access.",
+        "portal_url": "https://www.enam.gov.in/web/",
+    })
+    await websocket.close(code=1008)
 
 # ================= SERVER HEALTH ENDPOINTS =================
 
@@ -729,5 +701,3 @@ if os.path.isdir("data"):
     app.mount("/data", StaticFiles(directory="data"), name="data")
 if os.path.isdir("images"):
     app.mount("/images", StaticFiles(directory="images"), name="images")
-if os.path.isdir("uploads"):
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

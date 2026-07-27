@@ -1,0 +1,9 @@
+{
+  "status": "configuration_required",
+  "message_hi": "लाइव लॉट देखने के लिए अधिकृत e-NAM feed की आवश्यकता है। कोई नकली लॉट नहीं दिखाया गया है।",
+  "message_en": "An authorised e-NAM feed is required for live lots. No simulated lots are shown.",
+  "updated_at": null,
+  "portal_url": "https://www.enam.gov.in/web/",
+  "trade_url": "https://enam.gov.in/web/dashboard/trade-data",
+  "lots": []
+}

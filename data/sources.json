@@ -1,0 +1,46 @@
+{
+  "last_checked_at": "2026-07-27T15:03:36.724743+05:30",
+  "update_frequency": "6 times daily",
+  "update_slots_ist": [
+    "00:30",
+    "04:30",
+    "08:30",
+    "12:30",
+    "16:30",
+    "20:30"
+  ],
+  "sources": [
+    {
+      "name": "data.gov.in",
+      "status": "error",
+      "message": "DATA_GOV_IN_API_KEY is not configured"
+    },
+    {
+      "name": "AGMARKNET",
+      "status": "not_checked",
+      "message": "offline repository refresh"
+    },
+    {
+      "name": "e-NAM trade feed",
+      "status": "not_configured",
+      "records": 0
+    },
+    {
+      "name": "UP e-Mandi trade feed",
+      "status": "not_configured",
+      "records": 0
+    },
+    {
+      "name": "UP e-Mandi contacts",
+      "status": "unavailable",
+      "records": 0,
+      "url": null
+    },
+    {
+      "name": "e-NAM authorised auction feed",
+      "status": "not_configured",
+      "records": 0
+    }
+  ],
+  "policy": "No simulated prices, arrivals, contacts, lots, or bids are generated."
+}

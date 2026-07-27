@@ -30,11 +30,11 @@
             <form onsubmit="handleLogin(event)" class="space-y-4 text-sm">
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">यूजरनेम (Username)</label>
-                    <input type="text" id="username" required value="admin" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                    <input type="text" id="username" required autocomplete="username" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">पासवर्ड (Password)</label>
-                    <input type="password" id="password" required value="admin123" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                    <input type="password" id="password" required autocomplete="current-password" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 px-4 rounded-lg text-white transition shadow-lg shadow-emerald-900/20 mt-2">
                     प्रवेश करें (Login)
@@ -103,7 +103,7 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
                     <div>
                         <span class="block text-xs font-bold text-slate-400 uppercase">ऑटो सिंक आवृति</span>
-                        <span class="text-lg font-extrabold text-white mt-1 block">4 बार दैनिक (Daily)</span>
+                        <span class="text-lg font-extrabold text-white mt-1 block">6 बार दैनिक (Daily)</span>
                     </div>
                     <div class="p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
                         <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-400"></i>
@@ -157,10 +157,7 @@
                                 <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
                                 <span>डेटाबेस दरें प्रबंधन (Rates Manager)</span>
                             </h3>
-                            <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3.5 rounded-lg text-xs transition flex items-center space-x-1 shadow-lg">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                                <span>नया रेट जोड़ें (Add Custom)</span>
-                            </button>
+                            <span class="bg-blue-500/10 text-blue-300 border border-blue-500/20 font-bold py-1.5 px-3.5 rounded-lg text-xs">🔒 Official feed • Read only</span>
                         </div>
 
                         <!-- Table Search -->
@@ -294,8 +291,10 @@
             const host = window.location.origin;
             document.getElementById('excel-url').innerText = `${host}/api/v2/excel/sync`;
 
-            // Check if token exists in storage
-            const stored = localStorage.getItem("mandi_jwt_token");
+            // Keep the access token only for this browser tab. Remove tokens
+            // persisted by older releases so they do not survive a browser restart.
+            localStorage.removeItem("mandi_jwt_token");
+            const stored = sessionStorage.getItem("mandi_jwt_token");
             if (stored) {
                 JWT_TOKEN = stored;
                 showPanel();
@@ -325,7 +324,7 @@
             })
             .then(data => {
                 JWT_TOKEN = data.access_token;
-                localStorage.setItem("mandi_jwt_token", JWT_TOKEN);
+                sessionStorage.setItem("mandi_jwt_token", JWT_TOKEN);
                 document.getElementById('login-error').classList.add('hidden');
                 showPanel();
             })
@@ -338,7 +337,7 @@
         // Logout
         function handleLogout() {
             JWT_TOKEN = "";
-            localStorage.removeItem("mandi_jwt_token");
+            sessionStorage.removeItem("mandi_jwt_token");
             document.getElementById('admin-panel').classList.add('hidden');
             document.getElementById('login-container').classList.remove('hidden');
             document.documentElement.className = "h-full bg-slate-900";
@@ -382,14 +381,7 @@
                                 <td class="py-2.5 px-4 text-slate-300">${r.mandi_hi}</td>
                                 <td class="py-2.5 px-4 text-emerald-400 font-bold">${r.commodity_hi}</td>
                                 <td class="py-2.5 px-4 text-right font-extrabold text-white">₹${r.modal_price}</td>
-                                <td class="py-2.5 px-4 text-center space-x-2">
-                                    <button onclick='editRate(${JSON.stringify(r)})' class="p-1 hover:bg-emerald-500/20 rounded border border-transparent hover:border-emerald-500/30 text-emerald-400 transition inline-block">
-                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="deleteRate(${r.id})" class="p-1 hover:bg-red-500/20 rounded border border-transparent hover:border-red-500/30 text-red-400 transition inline-block">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </td>
+                                <td class="py-2.5 px-4 text-center text-blue-300 font-bold text-[10px]">Verified feed</td>
                             </tr>
                         `;
                     });
@@ -425,7 +417,7 @@
                 loadRates();
             })
             .catch(err => {
-                alert("स्क्रैपिंग पूर्ण हुई या समय सीमा समाप्त हो गई (सरकारी सर्वर एरर)। रीलोड करके डेटा देखें।");
+                alert("Official update असफल रही। कोई नया data save नहीं हुआ; पिछला verified snapshot सुरक्षित है।");
             })
             .finally(() => {
                 icon.classList.remove('animate-spin');
