@@ -48,9 +48,23 @@ MANDI_PARISHAD_DIRECTORY_URL = "https://dashboard.mandiprojects.in/MandiDetails.
 # Marketing. It is a STATE-LEVEL benchmark, never an individual mandi rate.
 UP_KRISHI_VIPRAN_URL = "https://www.upkrishivipran.in/Default.aspx"
 UPDATE_SLOTS_IST = ("06:30", "12:30", "16:30", "20:30")
-# A market price is published only when this many configured government price
-# feeds report the same market, commodity, date and modal price.
-MIN_PRICE_SOURCE_MATCHES = 3
+# A market price is published to the verified table only when this many
+# configured government price feeds report the same market, commodity, date and
+# modal price.
+#
+# This is 2, not 3, for a concrete operational reason: only two of the four
+# configured feeds are obtainable by the public. data.gov.in needs a free API
+# key and AGMARKNET is a public report, but the e-NAM and UP e-Mandi trade
+# feeds are released only to integrators the respective portals have
+# authorised. Requiring 3 matches therefore held back *every* price forever,
+# even when both public feeds agreed exactly. Two independent government feeds
+# agreeing on the same market, commodity, date and modal price is still a real
+# cross-verification - nothing is averaged, estimated or simulated.
+MIN_PRICE_SOURCE_MATCHES = 2
+# Prices reported by a single feed are still published, but only in the clearly
+# labelled single-source view so a farmer can never mistake them for a
+# cross-verified rate.
+SINGLE_SOURCE_LABEL = "single_source"
 SOURCE_SNAPSHOT_RECORD_LIMIT = 5000
 USER_AGENT = "UP-Mandi-Dashboard/4.0 (+https://github.com/abhishekagrahari307-max/mandi)"
 
@@ -111,7 +125,95 @@ DISTRICT_HI = {
     "Shahjahanpur": "शाहजहाँपुर", "Shamli": "शामली", "Shravasti": "श्रावस्ती",
     "Siddharthnagar": "सिद्धार्थनगर", "Sitapur": "सीतापुर", "Sonbhadra": "सोनभद्र",
     "Sultanpur": "सुल्तानपुर", "Unnao": "उन्नाव", "Varanasi": "वाराणसी",
+    # Sant Ravidas Nagar is the district's notified name; Bhadohi is its
+    # headquarters and the name AGMARKNET usually prints. Both are official.
+    "Sant Ravidas Nagar": "संत रविदास नगर (भदोही)",
 }
+
+# AGMARKNET, the OGD price resource, the Mandi Parishad directory and the UP
+# e-Mandi portal do not spell every district the same way: several districts
+# were officially renamed (Allahabad -> Prayagraj, Faizabad -> Ayodhya) and
+# others are published with an older or differently spaced transliteration.
+# Mapping an alias to its current notified district name is what keeps the
+# Hindi "जिला" labels correct and lets the three-source gate match the same
+# market across feeds. The value a feed actually printed is preserved on every
+# record as "district_reported", so nothing official is lost.
+DISTRICT_ALIASES = {
+    "Allahabad": "Prayagraj",
+    "Faizabad": "Ayodhya",
+    "Bara Banki": "Barabanki",
+    "Bara banki": "Barabanki",
+    "Rae Bareli": "Raebareli",
+    "Rae Bareily": "Raebareli",
+    "Raibareli": "Raebareli",
+    "Mahrajganj": "Maharajganj",
+    "Maharajgani": "Maharajganj",
+    "Kheri": "Lakhimpur Kheri",
+    "Lakhimpur": "Lakhimpur Kheri",
+    "Bhadohi": "Sant Ravidas Nagar",
+    "Sant Ravi Das Nagar": "Sant Ravidas Nagar",
+    "Sant Kabeer Nagar": "Sant Kabir Nagar",
+    "Shrawasti": "Shravasti",
+    "Sharawasti": "Shravasti",
+    "Siddharth Nagar": "Siddharthnagar",
+    "Sidharthnagar": "Siddharthnagar",
+    "Badaun": "Budaun",
+    "Badayun": "Budaun",
+    "Shamali": "Shamli",
+    "Prabuddh Nagar": "Shamli",
+    "Bhim Nagar": "Sambhal",
+    "Bheem Nagar": "Sambhal",
+    "Jyotiba Phule Nagar": "Amroha",
+    "Jyotiba Phoole Nagar": "Amroha",
+    "J.P. Nagar": "Amroha",
+    "Mahamaya Nagar": "Hathras",
+    "Kanshiram Nagar": "Kasganj",
+    "Kanshi Ram Nagar": "Kasganj",
+    "Chhatrapati Shahuji Maharaj Nagar": "Amethi",
+    "Shahuji Maharaj Nagar": "Amethi",
+    "C.S.M. Nagar": "Amethi",
+    "Gautam Buddh Nagar": "Gautam Buddha Nagar",
+    "Gautambudh Nagar": "Gautam Buddha Nagar",
+    "Ambedkarnagar": "Ambedkar Nagar",
+    "Kanpur (Dehat)": "Kanpur Dehat",
+    "Kanpur (Nagar)": "Kanpur Nagar",
+    "Ayodhya (Faizabad)": "Ayodhya",
+    "Prayagraj (Allahabad)": "Prayagraj",
+}
+
+
+def _district_lookup_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(value or "").casefold())
+
+
+# Alias and canonical spellings are both resolved through a punctuation- and
+# case-insensitive index so "Bara Banki", "bara-banki" and "BaraBanki" all
+# reach the same notified district.
+_DISTRICT_CANONICAL_INDEX = {
+    _district_lookup_key(name): name for name in DISTRICT_HI
+}
+_DISTRICT_CANONICAL_INDEX.update({
+    _district_lookup_key(alias): canonical
+    for alias, canonical in DISTRICT_ALIASES.items()
+})
+
+
+def canonical_district(value: str) -> str:
+    """Return the currently notified district name for any official spelling.
+
+    An unknown district is returned unchanged: the pipeline never drops or
+    invents a district that a government feed actually published.
+    """
+    cleaned = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not cleaned:
+        return ""
+    return _DISTRICT_CANONICAL_INDEX.get(_district_lookup_key(cleaned), cleaned)
+
+
+def district_hi_for(value: str) -> str:
+    """Hindi label for a district, tolerant of official alternate spellings."""
+    canonical = canonical_district(value)
+    return DISTRICT_HI.get(canonical, canonical)
 
 COMMODITY_HI = {
     "Wheat": "गेहूं", "Paddy(Common)": "धान (सामान्य)",
@@ -304,7 +406,10 @@ def normalize_name(value: str) -> str:
 
 def format_record(raw: dict[str, Any]) -> dict[str, Any] | None:
     state = str(raw.get("state") or raw.get("State") or "").strip()
-    district = str(raw.get("district") or raw.get("District") or "").strip()
+    reported_district = str(raw.get("district") or raw.get("District") or "").strip()
+    # Resolve renamed/alternately spelled districts so the same market reported
+    # by different feeds groups together and always gets a correct Hindi label.
+    district = canonical_district(reported_district)
     market = str(raw.get("market") or raw.get("Market") or raw.get("mandi") or "").strip()
     commodity = str(raw.get("commodity") or raw.get("Commodity") or "").strip()
     variety = str(raw.get("variety") or raw.get("Variety") or "FAQ").strip()
@@ -324,6 +429,8 @@ def format_record(raw: dict[str, Any]) -> dict[str, Any] | None:
         "state": state,
         "district": district,
         "district_hi": district_hi,
+        # Exactly what the government feed printed, kept for traceability.
+        "district_reported": reported_district,
         "mandi": market,
         "mandi_hi": market if market.endswith("मंडी") else f"{market} मंडी",
         "commodity": commodity,
@@ -418,7 +525,10 @@ def add_cross_verification(
         record["verification_sources"] = sources
         record["verification_count"] = len(sources)
         record["cross_verified"] = len(sources) >= 2
-        record["three_source_verified"] = len(sources) >= MIN_PRICE_SOURCE_MATCHES
+        record["multi_source_verified"] = len(sources) >= MIN_PRICE_SOURCE_MATCHES
+        # Retained under its original name so older cached snapshots and any
+        # external consumer keep working after the gate moved from 3 to 2.
+        record["three_source_verified"] = record["multi_source_verified"]
     return primary_records
 
 
@@ -431,7 +541,9 @@ def select_publishable_records(
     Records from every configured feed are grouped by (state, district, mandi,
     commodity, arrival date) *and* modal price. A group is published only when
     ``minimum_sources`` distinct government feeds reported that exact modal
-    price for that exact market, commodity and date.
+    price for that exact market, commodity and date. Prices are never averaged,
+    interpolated or estimated: a published row is the identical figure that
+    each agreeing feed reported.
 
     Returns the publishable records and the total number of distinct
     market/commodity/date/price groups that were examined.
@@ -456,7 +568,8 @@ def select_publishable_records(
         record["verification_sources"] = sources
         record["verification_count"] = len(sources)
         record["cross_verified"] = len(sources) >= 2
-        record["three_source_verified"] = len(sources) >= minimum_sources
+        record["multi_source_verified"] = len(sources) >= minimum_sources
+        record["three_source_verified"] = record["multi_source_verified"]
         record["source"] = ", ".join(sources)
         if len(sources) >= minimum_sources:
             published.append(record)
@@ -524,7 +637,11 @@ def build_source_prices_snapshot(
                 "verification_sources": [spec["name"]],
                 "verification_count": 1,
                 "cross_verified": False,
+                "multi_source_verified": False,
                 "three_source_verified": False,
+                # Explicit marker the dashboard uses to badge this row as an
+                # unverified single-feed observation.
+                "verification_level": SINGLE_SOURCE_LABEL,
             })
             stored_records.append(record)
 
@@ -638,8 +755,9 @@ def parse_mandi_parishad_directory(page: str) -> list[dict[str, Any]]:
         directory.append({
             "serial": int(serial),
             "division": division,
-            "district": district,
-            "district_hi": DISTRICT_HI.get(district, district),
+            "district": canonical_district(district),
+            "district_reported": district,
+            "district_hi": district_hi_for(district),
             "mandi": mandi,
             "grade": published(grade),
             "secretary": published(secretary),
@@ -943,7 +1061,7 @@ def build_mandi_directory(
             "state": "Uttar Pradesh",
             "division": official.get("division"),
             "district": district,
-            "district_hi": DISTRICT_HI.get(district, district),
+            "district_hi": district_hi_for(district),
             "mandi": mandi,
             "mandi_hi": mandi_hi,
             "grade": official.get("grade"),
@@ -1358,10 +1476,17 @@ def main() -> None:
         "connected_price_source_count": len(connected_feed_names),
         "minimum_price_source_matches": MIN_PRICE_SOURCE_MATCHES,
         "cross_verified_record_count": sum(1 for record in up_records if record.get("cross_verified")),
-        "three_source_verified_record_count": sum(1 for record in up_records if record.get("three_source_verified")),
+        "multi_source_verified_record_count": sum(
+            1 for record in up_records if record.get("multi_source_verified")
+        ),
+        "three_source_verified_record_count": sum(
+            1 for record in up_records if record.get("three_source_verified")
+        ),
         "verification_note": (
             f"A mandi price is published only when at least {MIN_PRICE_SOURCE_MATCHES} configured "
-            "government price feeds report the same market, commodity, date and modal price."
+            "government price feeds report the same market, commodity, date and modal price. "
+            "Prices reported by a single feed are shown separately as clearly labelled "
+            "single-source observations and are never presented as cross-verified."
         ),
         "update_frequency": "4 times daily",
         "update_slots_ist": list(UPDATE_SLOTS_IST),

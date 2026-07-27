@@ -36,7 +36,7 @@ class OfficialDataIntegrityTests(unittest.TestCase):
         self.assertIsNone(record["arrivals"])
         self.assertTrue(record["verified"])
 
-    def test_prices_publish_only_with_three_matching_government_feeds(self):
+    def test_prices_publish_only_with_matching_government_feeds(self):
         base = {
             "state": "Uttar Pradesh", "district": "Kanpur Nagar",
             "market": "Kanpur Grain", "commodity": "Wheat",
@@ -45,33 +45,64 @@ class OfficialDataIntegrityTests(unittest.TestCase):
         }
         record = update_data.format_record(base)
 
-        # Two agreeing feeds are not enough for publication.
+        # A single feed is never enough: one source cannot cross-verify itself.
         published, examined = update_data.select_publishable_records([
             ("data.gov.in", [dict(record)]),
-            ("AGMARKNET", [dict(record)]),
         ])
         self.assertEqual(published, [])
         self.assertEqual(examined, 1)
 
-        # Three agreeing feeds publish exactly one record.
+        # Two agreeing government feeds publish exactly one record. Only two of
+        # the four configured feeds are publicly obtainable, so this is the
+        # strictest gate that can ever pass in practice.
         published, examined = update_data.select_publishable_records([
             ("data.gov.in", [dict(record)]),
             ("AGMARKNET", [dict(record)]),
-            ("e-NAM trade feed", [dict(record)]),
         ])
         self.assertEqual(len(published), 1)
-        self.assertEqual(published[0]["verification_count"], 3)
-        self.assertTrue(published[0]["three_source_verified"])
+        self.assertEqual(published[0]["verification_count"], 2)
+        self.assertTrue(published[0]["multi_source_verified"])
+        # The published modal price is the exact figure both feeds reported.
+        self.assertEqual(published[0]["modal_price"], 2450)
 
-        # A differing modal price forms a separate group and is not published.
+        # A differing modal price forms a separate group; neither single-source
+        # group is published and the two prices are never averaged.
         divergent = update_data.format_record(dict(base, modal_price=2600))
         published, examined = update_data.select_publishable_records([
             ("data.gov.in", [dict(record)]),
-            ("AGMARKNET", [dict(record)]),
-            ("e-NAM trade feed", [dict(divergent)]),
+            ("AGMARKNET", [dict(divergent)]),
         ])
         self.assertEqual(published, [])
         self.assertEqual(examined, 2)
+
+    def test_publication_gate_matches_the_documented_minimum(self):
+        """The gate constant, payload and documentation must agree."""
+        self.assertEqual(update_data.MIN_PRICE_SOURCE_MATCHES, 2)
+        payload = json.loads((ROOT / "data/sources.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            payload["minimum_price_source_matches"],
+            update_data.MIN_PRICE_SOURCE_MATCHES,
+        )
+
+    def test_single_source_rows_are_never_marked_cross_verified(self):
+        """A lone feed's price may be shown, but never as a verified rate."""
+        record = update_data.format_record({
+            "state": "Uttar Pradesh", "district": "Kanpur Nagar",
+            "market": "Kanpur Grain", "commodity": "Wheat",
+            "modal_price": 2450, "min_price": 2400, "max_price": 2500,
+            "arrival_date": "27/07/2026",
+        })
+        snapshot = update_data.build_source_prices_snapshot({
+            "data_gov_in": {"status": "live", "records": [record]},
+            "agmarknet": {"status": "not_configured", "records": []},
+            "enam_trade": {"status": "not_configured", "records": []},
+            "up_emandi_trade": {"status": "not_configured", "records": []},
+        }, checked_at="2026-07-27T20:30:00+05:30")
+        row = {feed["id"]: feed for feed in snapshot["feeds"]}["data_gov_in"]["records"][0]
+        self.assertEqual(row["verification_count"], 1)
+        self.assertFalse(row["cross_verified"])
+        self.assertFalse(row["multi_source_verified"])
+        self.assertEqual(row["verification_level"], update_data.SINGLE_SOURCE_LABEL)
 
     def test_source_prices_remain_separate_without_averaging(self):
         base = {
@@ -123,14 +154,16 @@ class OfficialDataIntegrityTests(unittest.TestCase):
             ("arrival_date", "26/07/2026"),
         ):
             other = update_data.format_record(dict(template, **{differing_field: value}))
-            published, _ = update_data.select_publishable_records([
+            # The two feeds describe *different* rows, so neither reaches the
+            # two-source minimum and nothing may be published.
+            published, examined = update_data.select_publishable_records([
                 ("data.gov.in", [dict(record)]),
-                ("AGMARKNET", [dict(record)]),
-                ("e-NAM trade feed", [dict(other)]),
+                ("AGMARKNET", [dict(other)]),
             ])
             self.assertEqual(
                 published, [], f"a mismatched {differing_field} must not publish a price"
             )
+            self.assertEqual(examined, 2)
 
     def test_mandi_parishad_directory_parser_keeps_official_fields(self):
         page = """
@@ -285,8 +318,121 @@ class OfficialDataIntegrityTests(unittest.TestCase):
         self.assertIn("AGMARKNET portal", names)
         self.assertIn("UP Mandi Parishad directory", names)
         self.assertIn("UP Krishi Vipran state benchmark", names)
-        self.assertEqual(payload["minimum_price_source_matches"], 3)
+        self.assertEqual(
+            payload["minimum_price_source_matches"],
+            update_data.MIN_PRICE_SOURCE_MATCHES,
+        )
         self.assertEqual(payload["update_slots_ist"], list(update_data.UPDATE_SLOTS_IST))
+
+
+class DistrictNormalisationTests(unittest.TestCase):
+    """Regression tests for the "Jila" (जिला) naming defects."""
+
+    def test_every_notified_district_has_a_hindi_label(self):
+        """All 75 UP districts must resolve to a Hindi name."""
+        self.assertGreaterEqual(len(update_data.DISTRICT_HI), 75)
+        for english, hindi in update_data.DISTRICT_HI.items():
+            self.assertTrue(hindi.strip(), f"{english} has no Hindi label")
+
+    def test_renamed_districts_resolve_to_the_current_official_name(self):
+        for reported, expected in (
+            ("Allahabad", "Prayagraj"),
+            ("Faizabad", "Ayodhya"),
+            ("Bara Banki", "Barabanki"),
+            ("Rae Bareli", "Raebareli"),
+            ("Bhadohi", "Sant Ravidas Nagar"),
+            ("Kheri", "Lakhimpur Kheri"),
+            ("Jyotiba Phule Nagar", "Amroha"),
+            ("Kanshiram Nagar", "Kasganj"),
+        ):
+            self.assertEqual(update_data.canonical_district(reported), expected)
+            # Each alias must also produce a real Hindi label, never a blank.
+            self.assertTrue(update_data.district_hi_for(reported).strip())
+
+    def test_district_matching_ignores_case_and_punctuation(self):
+        for variant in ("kanpur nagar", "KANPUR  NAGAR", "Kanpur-Nagar"):
+            self.assertEqual(update_data.canonical_district(variant), "Kanpur Nagar")
+
+    def test_unknown_district_is_preserved_not_dropped(self):
+        """A district the pipeline does not know must survive unchanged."""
+        self.assertEqual(update_data.canonical_district("New Notified Zila"), "New Notified Zila")
+        self.assertEqual(update_data.district_hi_for("New Notified Zila"), "New Notified Zila")
+
+    def test_records_keep_the_exact_spelling_the_feed_reported(self):
+        record = update_data.format_record({
+            "state": "Uttar Pradesh", "district": "Allahabad", "market": "Mandi",
+            "commodity": "Wheat", "modal_price": 2450, "arrival_date": "27/07/2026",
+        })
+        self.assertEqual(record["district"], "Prayagraj")
+        self.assertEqual(record["district_hi"], "प्रयागराज")
+        # Traceability: what the government feed actually printed is retained.
+        self.assertEqual(record["district_reported"], "Allahabad")
+
+    def test_two_feeds_using_different_official_spellings_cross_verify(self):
+        """The real reason prices stayed hidden: aliases never grouped."""
+        base = {
+            "state": "Uttar Pradesh", "market": "Kanpur Grain", "commodity": "Wheat",
+            "modal_price": 2450, "min_price": 2400, "max_price": 2500,
+            "arrival_date": "27/07/2026",
+        }
+        old_name = update_data.format_record(dict(base, district="Allahabad"))
+        new_name = update_data.format_record(dict(base, district="Prayagraj"))
+        published, examined = update_data.select_publishable_records([
+            ("data.gov.in", [old_name]),
+            ("AGMARKNET", [new_name]),
+        ])
+        self.assertEqual(examined, 1, "the same district must form one group")
+        self.assertEqual(len(published), 1)
+        self.assertEqual(published[0]["district"], "Prayagraj")
+
+
+class DashboardResilienceTests(unittest.TestCase):
+    """Guard the front-end against the crashes found in the dashboard."""
+
+    SOURCE = (ROOT / "index.html").read_text(encoding="utf-8")
+
+    def test_language_helpers_exist(self):
+        """Missing Hindi labels must go through the safe fallback helpers."""
+        for helper in ("function displayName(", "function optionLabel(",
+                       "function searchableText(", "function compareLabels("):
+            self.assertIn(helper, self.SOURCE)
+
+    def test_dropdowns_never_sort_on_a_raw_language_key(self):
+        """`a[currentLang].localeCompare` crashed the whole जिला dropdown."""
+        self.assertNotIn("a[currentLang].localeCompare", self.SOURCE)
+        self.assertNotIn("list.sort((a,b) => a[currentLang]", self.SOURCE)
+
+    def test_search_filters_do_not_call_tolowercase_on_raw_fields(self):
+        """A null district_hi used to abort rendering with a TypeError."""
+        for fragile in ("r.district_hi.toLowerCase()", "r.mandi_hi.toLowerCase()",
+                        "r.commodity_hi.toLowerCase()"):
+            self.assertNotIn(fragile, self.SOURCE)
+
+    def test_district_group_header_spans_every_column(self):
+        """The rate table has 9 columns; a stale colspan broke the layout."""
+        self.assertNotIn('colspan="10"', self.SOURCE)
+        self.assertIn('colspan="9"', self.SOURCE)
+
+    def test_update_time_bar_is_present(self):
+        for marker in ("id=\"update-time-bar\"", "id=\"update-time-main\"",
+                       "id=\"update-time-next\"", "function renderUpdateTimeBar("):
+            self.assertIn(marker, self.SOURCE)
+
+    def test_empty_rate_table_explains_the_cause(self):
+        self.assertIn("function explainWhyNoPrices(", self.SOURCE)
+        self.assertIn("DATA_GOV_IN_API_KEY", self.SOURCE)
+
+    def test_single_source_rows_are_badged_in_the_table(self):
+        self.assertIn("collectSingleSourceRecords", self.SOURCE)
+        self.assertIn("usingSingleSourceFallback", self.SOURCE)
+        self.assertIn("cross-verified नहीं", self.SOURCE)
+
+    def test_sidebar_does_not_average_across_commodities(self):
+        """Averaging wheat with potato produced a meaningless "mandi rate"."""
+        self.assertNotIn(
+            "prices.reduce((sum, price) => sum + price, 0) / prices.length",
+            self.SOURCE,
+        )
 
 
 class DeterministicServicesTests(unittest.TestCase):

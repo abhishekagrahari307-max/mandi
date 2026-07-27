@@ -13,6 +13,8 @@
 - **🧮 मंडी बिल कैलकुलेटर (Interactive Calculator):** कुल वजन, भाव, आढ़त कमीशन, मजदूरी/पल्लेदारी, मंडी टैक्स और भाड़ा घटाकर किसान/व्यापारी का शुद्ध भुगतान (Net Payout) सेकंडों में निकालें।
 - **🏷️ स्रोत-वार सरकारी भाव:** data.gov.in, AGMARKNET, e-NAM और UP e-Mandi के अपने-अपने reported भाव अलग cards में देखें—कोई mixing या averaging नहीं।
 - **📈 सत्यापित मूल्य ग्राफ (Verified Price Trends):** सफल सरकारी snapshots से बने वास्तविक ऐतिहासिक भाव देखें।
+- **🕒 भाव अपडेट समय बार (Header):** हर पेज के ऊपर साफ दिखता है कि भाव **कब** अपडेट हुआ, portals की **अंतिम जाँच** कब हुई, **अगला अपडेट** कब है और दैनिक IST slots क्या हैं।
+- **📍 जिला नाम सुधार (District normalisation):** Allahabad→Prayagraj, Faizabad→Ayodhya, Bara Banki→Barabanki, Bhadohi→Sant Ravidas Nagar जैसी सरकारी वर्तनी/नाम-परिवर्तन अपने-आप एक ही जनपद में मिलाए जाते हैं, ताकि हर जिले का सही हिन्दी नाम दिखे और अलग-अलग feeds का मिलान हो सके।
 - **🏛️ पूरी मंडी निर्देशिका:** मंडी, जिला, जिंस, भाव सीमा, उपलब्ध स्थानीय अधिकारी संपर्क, केंद्रीय helpdesk और official links।
 - **⚖️ अधिनियम और नियमावली:** U.P. Krishi Utpadan Mandi Adhiniyam 1964, Niyamawali 1965, अध्याय और धारा-सूची के official India Code links।
 - **🔨 e-NAM नीलामी:** अधिकृत feed मिलने पर जिला एवं lot-wise read-only live snapshot; वास्तविक bid केवल authenticated e-NAM portal पर। कोई simulated lot/bid नहीं।
@@ -32,7 +34,7 @@
 ├── sw.js                       # सर्विस वर्कर (ऑफ़लाइन कैशिंग के लिए)
 ├── update_data.py              # Official multi-source data pipeline (no simulation)
 ├── data/
-│   ├── latest.json             # 3-source gate पास UP verified prices
+│   ├── latest.json             # 2-source gate पास UP verified prices
 │   ├── source_prices.json      # हर official feed के अलग single-source prices
 │   ├── state_prices.json       # State/district/mandi price summary
 │   ├── mandis.json             # Mandi directory and available contacts
@@ -102,21 +104,69 @@ bash deploy.sh
 
 ## ⚙️ आधिकारिक डेटा एकीकरण (Real data from Govt of India)
 
-यदि आप **data.gov.in** के वास्तविक रीयल-टाइम डेटा को जोड़ना चाहते हैं, तो:
-1. [data.gov.in](https://data.gov.in/) पर साइन अप करें और अपनी **API Key** प्राप्त करें।
-2. अपने GitHub रिपॉजिटरी की **Settings -> Secrets and variables -> Actions** में जाएं।
-3. एक नया Secret बनाएं:
-   - **Name:** `DATA_GOV_IN_API_KEY`
-   - **Value:** *[आपकी API Key]*
-4. इसके बाद dashboard दिन में 4 बार (06:30, 12:30, 16:30, 20:30 IST) official
-   OGD/AGMARKNET rates refresh करेगा। Key न होने या portal failure पर updater **कोई random/simulated rate नहीं बनाता**; UI last verified snapshot या स्पष्ट unavailable/unverified status दिखाता है।
+### 🔑 भाव नहीं दिख रहे? सबसे पहले यह करें — DATA_GOV_IN_API_KEY सेट करें
 
-### 3-source publication gate (कड़ा नियम)
+Dashboard पर भाव न दिखने का **सबसे आम कारण** यही है कि `DATA_GOV_IN_API_KEY`
+configure नहीं है। यह key **मुफ़्त** है। पूरा तरीका:
 
-**कोई भी मंडी भाव तभी प्रकाशित होता है जब कम से कम 3 configured सरकारी price feeds एक ही
-market + commodity + date + modal price बताएं।** 1 या 2 feeds के match पर record रोक दिया
-जाता है—अनुमान या औसत नहीं बनाया जाता (`update_data.select_publishable_records`,
-`MIN_PRICE_SOURCE_MATCHES = 3`).
+**चरण 1 — API key लें (5 मिनट, मुफ़्त)**
+1. [https://data.gov.in](https://data.gov.in/) खोलें → ऊपर दाईं ओर **Sign Up / Register** पर क्लिक करें।
+2. नाम, email और mobile भरकर account बनाएं और email/OTP से verify करें।
+3. Login करने के बाद ऊपर दाईं ओर अपने **profile / My Account** में जाएं।
+4. **APIs** या **My API Key** section खोलें — वहाँ एक लंबी key दिखेगी
+   (उदाहरण: `579b464db66ec23bdd0000018...`)। उसे **Copy** कर लें।
+
+**चरण 2 — key को GitHub repository secret में डालें**
+1. अपनी GitHub repository खोलें → **Settings** tab।
+2. बाएँ menu में **Secrets and variables** → **Actions** पर क्लिक करें।
+3. हरे बटन **New repository secret** पर क्लिक करें।
+4. भरें:
+   - **Name:** `DATA_GOV_IN_API_KEY`  ← बिल्कुल यही spelling, capital letters में
+   - **Secret:** चरण 1 में copy की हुई key paste करें
+5. **Add secret** दबाएं।
+
+> ⚠️ Key को कभी `README`, code, screenshot या chat में paste न करें — केवल
+> GitHub Secret में रखें। Secret डालने के बाद वह दोबारा दिखता नहीं, केवल बदला जा सकता है।
+
+**चरण 3 — तुरंत चलाकर देखें**
+1. repository के **Actions** tab में जाएं।
+2. बाईं ओर **Multi-Daily Mandi Price Update** workflow चुनें।
+3. दाईं ओर **Run workflow** → फिर से **Run workflow** दबाएं।
+4. Run हरा (✓) होने पर dashboard refresh करें — भाव आ जाने चाहिए।
+
+**चरण 4 — जाँचें कि key काम कर रही है**
+Dashboard के **"राज्य-वार भाव"** tab में नीचे **Government Source Monitor** देखें:
+- `data.gov.in` की status **`ok`** होनी चाहिए।
+- अगर अब भी `error: DATA_GOV_IN_API_KEY is not configured` दिखे तो secret का
+  नाम गलत है (spelling/spacing जाँचें)।
+- अगर `error: 401/403` दिखे तो key गलत या expire है — data.gov.in से नई लें।
+
+इसके बाद dashboard दिन में 4 बार (06:30, 12:30, 16:30, 20:30 IST) official
+OGD/AGMARKNET rates refresh करेगा। Key न होने या portal failure पर updater
+**कोई random/simulated rate नहीं बनाता**; UI last verified snapshot या स्पष्ट
+unavailable/unverified status दिखाता है।
+
+### 2-source publication gate (कड़ा नियम)
+
+**कोई भी मंडी भाव मुख्य सत्यापित तालिका में तभी प्रकाशित होता है जब कम से कम 2 configured
+सरकारी price feeds एक ही market + commodity + date + modal price बताएं**
+(`update_data.select_publishable_records`, `MIN_PRICE_SOURCE_MATCHES = 2`)।
+भावों का औसत, अनुमान या interpolation कभी नहीं बनाया जाता — प्रकाशित भाव वही
+संख्या है जो दोनों feeds ने बताई।
+
+> **यह पहले 3 क्यों था और अब 2 क्यों है?** configured चार feeds में से केवल दो ही
+> आम जनता को मिल सकते हैं: `data.gov.in` (मुफ़्त API key) और AGMARKNET (public
+> report)। बाकी दो — e-NAM और UP e-Mandi trade feeds — केवल उन्हीं integrators को
+> मिलते हैं जिन्हें संबंधित सरकारी portal ने authorise किया हो। इसलिए 3 का नियम
+> व्यवहार में **हर भाव को हमेशा के लिए रोक देता था**, चाहे दोनों public feeds बिल्कुल
+> एक जैसा भाव बताएं। दो स्वतंत्र सरकारी feeds का exact match अब भी असली
+> cross-verification है।
+
+**एकल-स्रोत (single-source) भाव:** अगर किसी भाव को केवल 1 feed ने बताया है तो वह
+मुख्य verified तालिका में नहीं जाता, लेकिन dashboard उसे छिपाता भी नहीं। ऐसा भाव
+**`⚠ 1 स्रोत — cross-verified नहीं`** badge और उस सरकारी feed के नाम के साथ दिखाया
+जाता है, ताकि किसान/व्यापारी उसे कभी सत्यापित भाव न समझें। सौदे से पहले संबंधित
+मंडी समिति से पुष्टि करने की सलाह UI में दी जाती है।
 
 Pipeline इन सरकारी sources को अलग-अलग monitor करता है:
 
@@ -127,14 +177,14 @@ Pipeline इन सरकारी sources को अलग-अलग monitor �
 
 इन चारों के अपने reported records `data/source_prices.json` में **अलग-अलग** रखे और dashboard
 पर source label के साथ दिखाए जाते हैं। इनमें averaging, merging या missing भाव का अनुमान नहीं
-लगाया जाता। ये single-source observations हैं; 3-source exact-match gate पास records ही
+लगाया जाता। ये single-source observations हैं; 2-source exact-match gate पास records ही
 `data/latest.json` की सत्यापित मुख्य तालिका में जाते हैं। Feed की नई जाँच fail होने पर उसका आखिरी
 official snapshot `cached` label के साथ रह सकता है।
 
-तीसरे और चौथे feed public APIs नहीं हैं। इनके URLs/keys संबंधित सरकारी portal द्वारा approved
+तीसरा और चौथा feed public APIs नहीं हैं। इनके URLs/keys संबंधित सरकारी portal द्वारा approved
 integrator को मिलने के बाद GitHub Actions secrets में जोड़ें; chat या repository में credentials
-न लिखें। जब तक 3 feeds configured नहीं होते, dashboard "insufficient_sources" status दिखाता है
-और कोई भाव प्रकाशित नहीं करता।
+न लिखें। जब तक 2 feeds configured नहीं होते, dashboard "insufficient_sources" status दिखाता है
+और मुख्य तालिका में कोई भाव प्रकाशित नहीं करता (single-source भाव लेबल के साथ अलग दिखते हैं)।
 
 `.github/workflows/update.yml` इन सभी optional secrets (`ENAM_TRADE_*`, `UP_EMANDI_TRADE_*`,
 `ENAM_AUCTION_*`, `DATA_GOV_RESOURCE_ID`) को updater तक पास करता है। जो secret set नहीं है वह
@@ -155,7 +205,7 @@ integrator को मिलने के बाद GitHub Actions secrets मे
 `https://www.upkrishivipran.in/Default.aspx` का official ticker पढ़ा जाता है और
 `scope: "state_benchmark"`, `is_mandi_rate: false` के साथ store होता है। UI इसे अलग indigo
 कार्ड में **"State-level benchmark — not an individual mandi rate"** लेबल के साथ दिखाता है।
-यह कभी मंडी-वार तालिका, state summary या 3-source gate में नहीं मिलाया जाता।
+यह कभी मंडी-वार तालिका, state summary या 2-source gate में नहीं मिलाया जाता।
 
 ### e-NAM live lots
 

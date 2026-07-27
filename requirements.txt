@@ -6,5 +6,8 @@ python-multipart>=0.0.9
 greenlet>=3.0.3
 bcrypt>=4.0.0
 websockets>=12.0
-# FastAPI/Starlette TestClient dependency for local and CI health/API checks
+# FastAPI/Starlette TestClient dependency for local and CI health/API checks.
+# Starlette 1.x asks for `httpx2` (not `httpx`) as its TestClient transport and
+# warns when the older `httpx` is used instead. This is intentional - do not
+# "correct" it to httpx.
 httpx2>=2.9.0,<3.0

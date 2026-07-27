@@ -167,6 +167,42 @@
         </div>
     </header>
 
+    <!-- ═══════════ PRICE UPDATE TIME BAR (भाव अपडेट समय) ═══════════ -->
+    <!-- Shows exactly when the official rates were last refreshed, when the
+         portals were last checked, and when the next scheduled refresh is. -->
+    <section id="update-time-bar" class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="update-time-pulse" class="relative flex h-3 w-3 flex-shrink-0">
+                        <span id="update-time-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span id="update-time-dot" class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" id="update-time-label">भाव अपडेट समय (Price Updated At)</p>
+                        <p id="update-time-main" class="text-base md:text-lg font-black text-slate-900 leading-tight">—</p>
+                        <p id="update-time-relative" class="text-[11px] font-semibold text-emerald-700"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 lg:gap-3 text-center">
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase" id="update-time-checked-label">अंतिम जाँच</p>
+                        <p id="update-time-checked" class="text-[11px] font-bold text-slate-700 mt-0.5">—</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase" id="update-time-next-label">अगला अपडेट</p>
+                        <p id="update-time-next" class="text-[11px] font-bold text-slate-700 mt-0.5">—</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 col-span-2 sm:col-span-1">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase" id="update-time-slots-label">दैनिक समय (IST)</p>
+                        <p id="update-time-slots" class="text-[11px] font-bold text-slate-700 mt-0.5">—</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Main Content Area -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-5 sm:px-6 lg:px-8 space-y-6">
         
@@ -357,7 +393,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_district">जिला चुनें</label>
                     <select id="filter-district" onchange="applyFilters()" class="w-full py-2 px-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                        <option value="all" data-translate="opt_all_districts">सभी 75 जिले</option>
+                        <option value="all" data-translate="opt_all_districts">सभी जिले</option>
                     </select>
                 </div>
                 <div>
@@ -425,7 +461,9 @@
 
                 <div id="rates-empty-state" class="hidden p-8 text-center space-y-3">
                     <i data-lucide="search-code" class="w-12 h-12 text-slate-300 mx-auto"></i>
-                    <p class="font-medium text-slate-600" data-translate="empty_rates">कोई परिणाम नहीं मिला। कृपया अपनी खोज बदलें।</p>
+                    <p id="rates-empty-title" class="font-medium text-slate-600" data-translate="empty_rates">कोई परिणाम नहीं मिला। कृपया अपनी खोज बदलें।</p>
+                    <p id="rates-empty-reason" class="text-xs text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+                    <a id="rates-empty-help" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-xs font-bold text-emerald-700 underline">Government Source Monitor देखें →</a>
                 </div>
             </div>
         </div>
@@ -1058,7 +1096,7 @@
                 filter_search: "फसल, मंडी या जिला खोजें",
                 filter_district: "जिला चुनें",
                 filter_commodity: "फसल चुनें",
-                opt_all_districts: "सभी 75 जिले",
+                opt_all_districts: "सभी जिले",
                 opt_all_crops: "सभी फसलें",
                 rates_heading: "3-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)",
                 th_district: "जिला",
@@ -1158,7 +1196,7 @@
                 filter_search: "Search Crop, Mandi or District",
                 filter_district: "Select District",
                 filter_commodity: "Select Crop",
-                opt_all_districts: "All 75 Districts",
+                opt_all_districts: "All Districts",
                 opt_all_crops: "All Crops",
                 rates_heading: "Three-source verified mandi prices (INR/Quintal)",
                 th_district: "District",
@@ -1231,6 +1269,41 @@
         let calcWeightUnit = 'q';
         let globalBillDetails = null;
         let trendChartObj = null;
+        // True when the verified table was empty and the dashboard is showing
+        // clearly-labelled single-source government rows instead.
+        let usingSingleSourceFallback = false;
+
+        // Collect every single-feed observation, de-duplicated per
+        // market/commodity/date. Prices are never averaged: when two feeds
+        // disagree on the same market both rows are kept, each under its own
+        // source name, exactly as reported.
+        function collectSingleSourceRecords() {
+            const feeds = Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : [];
+            const seen = new Map();
+            feeds.forEach(feed => {
+                if (feed.status !== 'live' && feed.status !== 'cached') return;
+                (Array.isArray(feed.records) ? feed.records : []).forEach(record => {
+                    if (!record || !Number.isFinite(Number(record.modal_price))) return;
+                    const key = [
+                        record.district, record.mandi, record.commodity,
+                        record.arrival_date, record.modal_price, feed.id
+                    ].join('|');
+                    if (seen.has(key)) return;
+                    seen.set(key, {
+                        ...record,
+                        source: record.source || feed.name,
+                        source_id: record.source_id || feed.id,
+                        verification_count: 1,
+                        cross_verified: false,
+                        multi_source_verified: false,
+                        three_source_verified: false,
+                        verification_level: 'single_source',
+                        feed_status: feed.status
+                    });
+                });
+            });
+            return Array.from(seen.values());
+        }
 
         function renderIcons() {
             // lucide is loaded from a CDN. If that request fails, the dashboard
@@ -1264,6 +1337,10 @@
             }
 
             setInterval(fetchDashboardData, 120000);
+            // Keep "updated X min ago" and the "next update" countdown honest
+            // between data refreshes.
+            renderUpdateTimeBar(latestMetadata);
+            setInterval(() => renderUpdateTimeBar(latestMetadata), 30000);
 
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
@@ -1286,6 +1363,139 @@
             }
         }
 
+        // ================= PRICE UPDATE TIME BAR =================
+        // Renders the header strip that answers "भाव कब अपडेट हुआ?" using only
+        // the timestamps the official pipeline actually wrote. When no verified
+        // price has ever been published, it says so instead of showing a time
+        // that would imply a rate exists.
+        // NOTE: declared with `var` (not `const`) because initializeApp() can
+        // run above this line when the DOM is already parsed; a `const` here
+        // would be in its temporal dead zone and throw a ReferenceError.
+        var IST_TIME_ZONE = 'Asia/Kolkata';
+
+        function parseTimestamp(value) {
+            if (!value) return null;
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.valueOf()) ? null : parsed;
+        }
+
+        function formatIst(date, withDate = true) {
+            if (!date) return null;
+            const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+            const time = date.toLocaleTimeString(locale, {
+                hour: '2-digit', minute: '2-digit', hour12: true, timeZone: IST_TIME_ZONE
+            });
+            if (!withDate) return `${time} IST`;
+            const day = date.toLocaleDateString(locale, {
+                day: '2-digit', month: 'short', year: 'numeric', timeZone: IST_TIME_ZONE
+            });
+            return `${day}, ${time} IST`;
+        }
+
+        function relativeFromNow(date) {
+            if (!date) return '';
+            const diffMinutes = Math.round((Date.now() - date.getTime()) / 60000);
+            if (diffMinutes < 0) return '';
+            if (diffMinutes < 1) return currentLang === 'hi' ? 'अभी अपडेट हुआ' : 'updated just now';
+            if (diffMinutes < 60) {
+                return currentLang === 'hi' ? `${diffMinutes} मिनट पहले` : `${diffMinutes} min ago`;
+            }
+            const hours = Math.floor(diffMinutes / 60);
+            if (hours < 24) {
+                return currentLang === 'hi' ? `${hours} घंटे पहले` : `${hours} hr ago`;
+            }
+            const days = Math.floor(hours / 24);
+            return currentLang === 'hi' ? `${days} दिन पहले` : `${days} day(s) ago`;
+        }
+
+        // Next scheduled refresh, derived from the documented IST slots.
+        function nextRefreshLabel(slots) {
+            if (!Array.isArray(slots) || !slots.length) return null;
+            const nowIst = new Date(new Date().toLocaleString('en-US', { timeZone: IST_TIME_ZONE }));
+            const nowMinutes = nowIst.getHours() * 60 + nowIst.getMinutes();
+            const parsedSlots = slots
+                .map(slot => {
+                    const [h, m] = String(slot).split(':').map(Number);
+                    return Number.isFinite(h) && Number.isFinite(m) ? { slot, minutes: h * 60 + m } : null;
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.minutes - b.minutes);
+            if (!parsedSlots.length) return null;
+
+            const upcoming = parsedSlots.find(entry => entry.minutes > nowMinutes);
+            const target = upcoming || parsedSlots[0];
+            const minutesAway = upcoming
+                ? target.minutes - nowMinutes
+                : (24 * 60 - nowMinutes) + target.minutes;
+            const hours = Math.floor(minutesAway / 60);
+            const mins = minutesAway % 60;
+            const away = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            return `${target.slot} IST (${away})`;
+        }
+
+        function renderUpdateTimeBar(latest) {
+            const mainEl = document.getElementById('update-time-main');
+            if (!mainEl) return;
+            const meta = latest || {};
+            const relativeEl = document.getElementById('update-time-relative');
+            const checkedEl = document.getElementById('update-time-checked');
+            const nextEl = document.getElementById('update-time-next');
+            const slotsEl = document.getElementById('update-time-slots');
+            const dotEl = document.getElementById('update-time-dot');
+            const pingEl = document.getElementById('update-time-ping');
+
+            // Static labels follow the active language.
+            const labels = {
+                title: currentLang === 'hi' ? 'भाव अपडेट समय (Price Updated At)' : 'Price Updated At (भाव अपडेट समय)',
+                checked: currentLang === 'hi' ? 'अंतिम जाँच' : 'Last checked',
+                next: currentLang === 'hi' ? 'अगला अपडेट' : 'Next update',
+                slots: currentLang === 'hi' ? 'दैनिक समय (IST)' : 'Daily slots (IST)'
+            };
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            };
+            setText('update-time-label', labels.title);
+            setText('update-time-checked-label', labels.checked);
+            setText('update-time-next-label', labels.next);
+            setText('update-time-slots-label', labels.slots);
+
+            const updatedAt = parseTimestamp(meta.updated_at);
+            const checkedAt = parseTimestamp(meta.last_checked_at);
+            const slots = Array.isArray(meta.update_slots_ist) && meta.update_slots_ist.length
+                ? meta.update_slots_ist
+                : ['06:30', '12:30', '16:30', '20:30'];
+
+            if (updatedAt) {
+                mainEl.innerText = formatIst(updatedAt);
+                mainEl.className = 'text-base md:text-lg font-black text-slate-900 leading-tight';
+                if (relativeEl) {
+                    relativeEl.innerText = relativeFromNow(updatedAt);
+                    relativeEl.className = 'text-[11px] font-semibold text-emerald-700';
+                }
+                if (dotEl) dotEl.className = 'relative inline-flex rounded-full h-3 w-3 bg-emerald-500';
+                if (pingEl) pingEl.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+            } else {
+                // No verified price was ever published: never imply otherwise.
+                mainEl.innerText = currentLang === 'hi'
+                    ? 'अभी कोई सत्यापित भाव प्रकाशित नहीं'
+                    : 'No verified price published yet';
+                mainEl.className = 'text-sm md:text-base font-black text-amber-700 leading-tight';
+                if (relativeEl) {
+                    relativeEl.innerText = currentLang === 'hi'
+                        ? 'सरकारी feeds जुड़ने पर समय यहाँ दिखेगा'
+                        : 'The time appears here once the government feeds are connected';
+                    relativeEl.className = 'text-[11px] font-semibold text-amber-700';
+                }
+                if (dotEl) dotEl.className = 'relative inline-flex rounded-full h-3 w-3 bg-amber-500';
+                if (pingEl) pingEl.className = 'absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60';
+            }
+
+            if (checkedEl) checkedEl.innerText = formatIst(checkedAt) || '—';
+            if (nextEl) nextEl.innerText = nextRefreshLabel(slots) || '—';
+            if (slotsEl) slotsEl.innerText = slots.join(' • ');
+        }
+
         function updateDataStatus(latest) {
             const banner = document.getElementById('data-status-banner');
             const title = document.getElementById('data-status-title');
@@ -1293,21 +1503,39 @@
             const liveBadge = document.getElementById('live-data-badge');
             if (!banner || !title || !message) return;
 
-            if (!latest.verified) {
+            const required = latest.minimum_price_source_matches || 2;
+            const crossVerifiedCount = latest.multi_source_verified_record_count
+                ?? latest.three_source_verified_record_count ?? 0;
+
+            if (usingSingleSourceFallback) {
+                // Prices ARE on screen, but every one of them came from a
+                // single government feed. Say so prominently.
+                if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'एकल-स्रोत भाव' : 'Single-source rates';
+                banner.className = 'border-l-4 border-amber-500 bg-amber-50 text-amber-800 p-4 rounded-xl shadow-sm text-xs';
+                title.innerText = currentLang === 'hi'
+                    ? 'ये भाव केवल एक सरकारी स्रोत से हैं (cross-verified नहीं)'
+                    : 'These rates come from a single government source (not cross-verified)';
+                message.innerText = currentLang === 'hi'
+                    ? `${required} स्रोतों का मिलान अभी नहीं हुआ, इसलिए नीचे हर भाव उसके अपने सरकारी feed के नाम के साथ दिखाया गया है। सौदा करने से पहले संबंधित मंडी समिति से पुष्टि करें।`
+                    : `Fewer than ${required} feeds agreed, so each rate below is shown with the name of the single government feed that reported it. Confirm with the mandi samiti before trading.`;
+                banner.classList.remove('hidden');
+            } else if (!latest.verified) {
                 if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'Official feed unavailable' : 'Official feed unavailable';
                 banner.className = 'border-l-4 border-red-500 bg-red-50 text-red-800 p-4 rounded-xl shadow-sm text-xs';
-                title.innerText = currentLang === 'hi' ? '3-स्रोत सत्यापित भाव उपलब्ध नहीं है' : 'Three-source verified prices are unavailable';
+                title.innerText = currentLang === 'hi' ? 'सत्यापित भाव उपलब्ध नहीं है' : 'Verified prices are unavailable';
                 message.innerText = currentLang === 'hi'
-                    ? 'ऊपर source-wise cards में हर सरकारी feed का अपना भाव अलग दिख सकता है; उसे 3-source verified भाव न मानें।'
-                    : 'The source-wise cards above may show each government feed separately; do not treat a single-source row as three-source verified.';
+                    ? 'कोई सरकारी price feed नहीं जुड़ा है। DATA_GOV_IN_API_KEY configure होने पर भाव अपने आप आ जाएंगे—कोई अनुमानित भाव नहीं बनाया जाता।'
+                    : 'No government price feed is connected. Rates appear automatically once DATA_GOV_IN_API_KEY is configured — no estimated price is ever generated.';
                 banner.classList.remove('hidden');
             } else if (latest.is_live && (
-                (latest.connected_price_source_count || 0) < 3 ||
-                (latest.three_source_verified_record_count || 0) < latestData.length
+                (latest.connected_price_source_count || 0) < required ||
+                crossVerifiedCount < latestData.length
             )) {
                 if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'Official feed live • cross-check अधूरा' : 'Official feed live • cross-check incomplete';
                 banner.className = 'border-l-4 border-amber-500 bg-amber-50 text-amber-800 p-4 rounded-xl shadow-sm text-xs';
-                title.innerText = currentLang === 'hi' ? '3-source verification अभी पूरी नहीं है' : 'Three-source verification is not complete';
+                title.innerText = currentLang === 'hi'
+                    ? `${required}-स्रोत सत्यापन अभी पूरा नहीं है`
+                    : `${required}-source verification is not complete`;
                 message.innerText = currentLang === 'hi'
                     ? `${latest.connected_price_source_count || 0} सरकारी price source जुड़े हैं। केवल matching records को cross-verified माना जाता है।`
                     : `${latest.connected_price_source_count || 0} government price sources are connected. Only matching records are treated as cross-verified.`;
@@ -1350,6 +1578,7 @@
             calculateBill();
             calculateArbitrage();
             updateDataStatus(latestMetadata);
+            renderUpdateTimeBar(latestMetadata);
         }
 
         function loadLanguage(lang) {
@@ -1462,6 +1691,46 @@
                 .replaceAll("'", '&#039;');
         }
 
+        // ================= SAFE FIELD HELPERS =================
+        // Government feeds do not publish a Hindi label for every district,
+        // mandi or commodity (for example a newly notified जिला, or a crop that
+        // is not in the translation table). Reading `record.district_hi`
+        // directly then yields `undefined`, which either prints the literal
+        // text "undefined" in the UI or throws on `.toLowerCase()`/
+        // `.localeCompare()` and aborts the whole render pass. These helpers
+        // always fall back to the other language's official spelling.
+        function displayName(record, field) {
+            if (!record) return '';
+            const hindi = record[`${field}_hi`];
+            const english = record[field];
+            const primary = currentLang === 'hi' ? hindi : english;
+            const secondary = currentLang === 'hi' ? english : hindi;
+            const chosen = primary ?? secondary ?? '';
+            return String(chosen).trim();
+        }
+
+        // Same fallback rule for a plain {en, hi} option pair.
+        function optionLabel(item) {
+            if (!item) return '';
+            const primary = currentLang === 'hi' ? item.hi : item.en;
+            const secondary = currentLang === 'hi' ? item.en : item.hi;
+            return String(primary ?? secondary ?? '').trim();
+        }
+
+        // Null-safe lowercase join used by every search box.
+        function searchableText(...values) {
+            return values
+                .filter(value => value !== null && value !== undefined)
+                .map(value => String(value))
+                .join(' ')
+                .toLowerCase();
+        }
+
+        // Locale-aware sort that never throws on a missing label.
+        function compareLabels(a, b) {
+            return String(a ?? '').localeCompare(String(b ?? ''));
+        }
+
         function buildAtoZMandiDirectory() {
             const officialMandis = Array.isArray(mandiDetailsData?.mandis) ? mandiDetailsData.mandis : [];
             if (officialMandis.length) {
@@ -1490,11 +1759,7 @@
                 mandiDirectoryList = Object.values(uniqueMandisMap);
             }
 
-            mandiDirectoryList.sort((a, b) => {
-                const nameA = currentLang === 'hi' ? (a.mandi_hi || a.mandi) : a.mandi;
-                const nameB = currentLang === 'hi' ? (b.mandi_hi || b.mandi) : b.mandi;
-                return nameA.localeCompare(nameB);
-            });
+            mandiDirectoryList.sort((a, b) => compareLabels(displayName(a, 'mandi'), displayName(b, 'mandi')));
             mandiDirectoryList.forEach((mandi, index) => { mandi._directoryIndex = index; });
             renderSidebarMandis(mandiDirectoryList);
         }
@@ -1505,16 +1770,38 @@
             let html = '';
 
             list.forEach(mandi => {
-                const mandiName = currentLang === 'hi' ? (mandi.mandi_hi || mandi.mandi) : mandi.mandi;
-                const districtName = currentLang === 'hi' ? (mandi.district_hi || mandi.district) : mandi.district;
-                const prices = (mandi.records || []).map(row => Number(row.modal_price)).filter(Boolean);
-                const avgPrice = prices.length ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length) : null;
-                const cropCount = new Set(mandi.commodities || (mandi.records || []).map(row => row.commodity)).size;
+                const mandiName = displayName(mandi, 'mandi') || '—';
+                const districtName = displayName(mandi, 'district')
+                    || (currentLang === 'hi' ? 'जिला प्रकाशित नहीं' : 'District not published');
+                const prices = (mandi.records || [])
+                    .map(row => Number(row.modal_price))
+                    .filter(price => Number.isFinite(price) && price > 0);
+                // Never average across different commodities: a wheat and a
+                // potato rate must not be blended into one "mandi rate". Show
+                // the reported modal range instead.
+                const priceBadge = prices.length
+                    ? (() => {
+                        const low = Math.min(...prices);
+                        const high = Math.max(...prices);
+                        return low === high
+                            ? `₹${low.toLocaleString('en-IN')}/Q`
+                            : `₹${low.toLocaleString('en-IN')}–${high.toLocaleString('en-IN')}/Q`;
+                    })()
+                    : (currentLang === 'hi' ? 'भाव देखें' : 'View rates');
+                const cropCount = new Set(
+                    (mandi.commodities && mandi.commodities.length)
+                        ? mandi.commodities
+                        : (mandi.records || []).map(row => row.commodity).filter(Boolean)
+                ).size;
                 const contactCount = Array.isArray(mandi.contacts) ? mandi.contacts.length : 0;
                 const officialBits = [
                     mandi.division ? `🏛 ${escapeHtml(mandi.division)}` : '',
                     mandi.grade ? `🏅 Grade ${escapeHtml(mandi.grade)}` : ''
                 ].filter(Boolean).join(' • ');
+                const cropLabel = currentLang === 'hi' ? 'जिंस' : 'crops';
+                const contactLabel = contactCount
+                    ? `${contactCount} ${currentLang === 'hi' ? 'स्थानीय संपर्क' : 'local contacts'}`
+                    : (currentLang === 'hi' ? 'आधिकारिक हेल्पडेस्क' : 'Official helpdesk');
 
                 html += `
                     <button type="button" onclick="openMandiDetails(${mandi._directoryIndex})" class="w-full text-left p-3 bg-slate-800/40 hover:bg-slate-800 rounded-xl border border-slate-800 hover:border-emerald-600/30 transition space-y-1">
@@ -1523,27 +1810,24 @@
                                 <h4 class="font-extrabold text-white text-xs">${escapeHtml(mandiName)}</h4>
                                 <span class="text-[9px] text-slate-400 font-semibold uppercase">📍 ${escapeHtml(districtName)}</span>
                             </div>
-                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">${avgPrice ? `₹${avgPrice}/Q` : 'भाव देखें'}</span>
+                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">${escapeHtml(priceBadge)}</span>
                         </div>
                         ${officialBits ? `<p class="text-[9px] text-indigo-300 font-bold">${officialBits}</p>` : ''}
-                        <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} जिंस • ☎ ${contactCount ? contactCount + ' स्थानीय संपर्क' : 'Official helpdesk'}</p>
-                        <p class="text-[9px] text-emerald-400 font-bold">पूरा विवरण देखें →</p>
+                        <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} ${cropLabel} • ☎ ${escapeHtml(contactLabel)}</p>
+                        <p class="text-[9px] text-emerald-400 font-bold">${currentLang === 'hi' ? 'पूरा विवरण देखें →' : 'View full details →'}</p>
                     </button>
                 `;
             });
 
-            container.innerHTML = html || `<p class="text-xs text-slate-500 text-center py-4">कोई मंडी नहीं मिली।</p>`;
+            container.innerHTML = html || `<p class="text-xs text-slate-500 text-center py-4">${currentLang === 'hi' ? 'कोई मंडी नहीं मिली।' : 'No mandi found.'}</p>`;
         }
 
         function filterSidebarMandis() {
-            const query = document.getElementById('sidebar-search').value.toLowerCase().trim();
-            const filtered = mandiDirectoryList.filter(mandi => {
-                const searchable = [
-                    mandi.mandi, mandi.mandi_hi, mandi.district, mandi.district_hi,
-                    mandi.division, mandi.grade, mandi.secretary, mandi.cug
-                ].filter(Boolean).join(' ').toLowerCase();
-                return searchable.includes(query);
-            });
+            const query = (document.getElementById('sidebar-search')?.value || '').toLowerCase().trim();
+            const filtered = mandiDirectoryList.filter(mandi => !query || searchableText(
+                mandi.mandi, mandi.mandi_hi, mandi.district, mandi.district_hi,
+                mandi.district_reported, mandi.division, mandi.grade, mandi.secretary, mandi.cug
+            ).includes(query));
             renderSidebarMandis(filtered);
         }
 
@@ -1622,7 +1906,9 @@
 
         function selectMandiFromSidebarByIndex(index) {
             const mandi = mandiDirectoryList[index];
-            if (mandi) selectMandiFromSidebar(mandi.mandi);
+            // A directory-only mandi may have no English name; fall back to the
+            // Hindi one instead of searching for "undefined".
+            if (mandi) selectMandiFromSidebar(mandi.mandi || mandi.mandi_hi || '');
         }
 
         function selectMandiFromSidebar(mandiName) {
@@ -1631,7 +1917,7 @@
             if (sidebar && !sidebar.classList.contains('-translate-x-full')) toggleSidebar();
             const searchInput = document.getElementById('rate-search');
             if (searchInput) {
-                searchInput.value = mandiName;
+                searchInput.value = String(mandiName ?? '');
                 applyFilters();
                 switchTab('rates');
             }
@@ -1705,6 +1991,7 @@
             Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchSourcePrices, fetchBenchmarks])
             .then(([latest, history, states, mandis, laws, sources, sourcePrices, benchmarks]) => {
                 latestData = (latest && latest.records) ? latest.records : (latest || []);
+                if (!Array.isArray(latestData)) latestData = [];
                 latestMetadata = latest && !Array.isArray(latest) ? latest : {};
                 historicalData = history || {};
                 statePriceData = states || { states: [] };
@@ -1713,6 +2000,20 @@
                 sourceData = sources || { sources: [] };
                 sourcePriceData = sourcePrices || { feeds: [] };
                 benchmarkData = benchmarks || { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
+
+                // When the cross-verification gate published nothing, fall back
+                // to the single-source rows so the dashboard is not blank.
+                // Every such row is tagged `single_source` and the table badges
+                // it as "1 स्रोत — cross-verified नहीं", so a single-feed rate
+                // can never be mistaken for a verified one.
+                usingSingleSourceFallback = false;
+                if (!latestData.length) {
+                    const fallback = collectSingleSourceRecords();
+                    if (fallback.length) {
+                        latestData = fallback;
+                        usingSingleSourceFallback = true;
+                    }
+                }
                 
                 // Safe UI Element updates with individual Try-Catch blocks
                 try {
@@ -1730,13 +2031,16 @@
                         : '-';
                     if (elSource) {
                         const sourceCount = latest?.connected_price_source_count || 0;
-                        const verifiedByThree = latest?.three_source_verified_record_count || 0;
-                        elSource.innerText = `${latest?.source || '-'} • ${sourceCount} sources • ${verifiedByThree} verified by 3+`;
+                        const required = latest?.minimum_price_source_matches || 2;
+                        const crossVerified = latest?.multi_source_verified_record_count
+                            ?? latest?.three_source_verified_record_count ?? 0;
+                        elSource.innerText = `${latest?.source || '-'} • ${sourceCount} sources • ${crossVerified} verified by ${required}+`;
                     }
                     if (elFrequency) elFrequency.innerText = currentLang === 'hi'
                         ? 'दिन में 4 बार • ' + (latest?.update_slots_ist || []).join(', ')
                         : '4 times daily • ' + (latest?.update_slots_ist || []).join(', ');
                     updateDataStatus(latest || {});
+                    renderUpdateTimeBar(latest || {});
                 } catch (e) { console.error("Error setting update metadata:", e); }
 
                 try {
@@ -1817,23 +2121,34 @@
             const uniqueCrops = [];
             const cropKeys = new Set();
 
+            // Only rows that actually carry a district/commodity become filter
+            // options, and a missing Hindi label falls back to the English
+            // spelling instead of becoming `undefined`.
             latestData.forEach(r => {
-                if (!districtKeys.has(r.district)) {
-                    districtKeys.add(r.district);
-                    uniqueDistricts.push({ en: r.district, hi: r.district_hi });
+                if (!r) return;
+                const district = r.district || r.district_hi;
+                if (district && !districtKeys.has(district)) {
+                    districtKeys.add(district);
+                    uniqueDistricts.push({ en: district, hi: r.district_hi || district });
                 }
-                if (!cropKeys.has(r.commodity)) {
-                    cropKeys.add(r.commodity);
-                    uniqueCrops.push({ en: r.commodity, hi: r.commodity_hi });
+                const commodity = r.commodity || r.commodity_hi;
+                if (commodity && !cropKeys.has(commodity)) {
+                    cropKeys.add(commodity);
+                    uniqueCrops.push({ en: commodity, hi: r.commodity_hi || commodity });
                 }
             });
 
             const buildOptions = (selectEl, defaultText, list) => {
                 if (!selectEl) return;
-                selectEl.innerHTML = `<option value="all">${defaultText}</option>`;
-                list.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(item => {
-                    selectEl.innerHTML += `<option value="${item.en}">${item[currentLang]}</option>`;
-                });
+                const options = [`<option value="all">${escapeHtml(defaultText)}</option>`];
+                [...list]
+                    .sort((a, b) => compareLabels(optionLabel(a), optionLabel(b)))
+                    .forEach(item => {
+                        options.push(
+                            `<option value="${escapeHtml(item.en)}">${escapeHtml(optionLabel(item))}</option>`
+                        );
+                    });
+                selectEl.innerHTML = options.join('');
             };
 
             buildOptions(distSelect, TRANSLATIONS[currentLang].opt_all_districts, uniqueDistricts);
@@ -1848,18 +2163,20 @@
             const uniqueMandisList = [];
             const mandiKeys = new Set();
             latestData.forEach(r => {
-                if (r.mandi && !mandiKeys.has(r.mandi)) {
-                    mandiKeys.add(r.mandi);
-                    uniqueMandisList.push({ en: r.mandi, hi: r.mandi_hi || r.mandi });
+                if (!r) return;
+                const mandi = r.mandi || r.mandi_hi;
+                if (mandi && !mandiKeys.has(mandi)) {
+                    mandiKeys.add(mandi);
+                    uniqueMandisList.push({ en: mandi, hi: r.mandi_hi || mandi });
                 }
             });
+            uniqueMandisList.sort((a, b) => compareLabels(optionLabel(a), optionLabel(b)));
 
             const populateMandiSelect = (selectEl, defaultMandi) => {
                 if (!selectEl) return;
-                selectEl.innerHTML = "";
-                uniqueMandisList.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(m => {
-                    selectEl.innerHTML += `<option value="${m.en}">${m[currentLang]}</option>`;
-                });
+                selectEl.innerHTML = uniqueMandisList
+                    .map(m => `<option value="${escapeHtml(m.en)}">${escapeHtml(optionLabel(m))}</option>`)
+                    .join('');
                 if (defaultMandi && uniqueMandisList.some(m => m.en === defaultMandi)) {
                     selectEl.value = defaultMandi;
                 }
@@ -1868,15 +2185,17 @@
             populateMandiSelect(arbSourceSelect, 'Kanpur Mandi');
             populateMandiSelect(arbDestSelect, 'Lucknow Mandi');
 
-            if (trendCropSelect) trendCropSelect.innerHTML = "";
-            if (predictCropSelect) predictCropSelect.innerHTML = "";
-            if (rankCropSelect) rankCropSelect.innerHTML = "";
-            uniqueCrops.forEach((c, index) => {
-                const opt = `<option value="${c.en}" ${index === 0 ? 'selected' : ''}>${c[currentLang]}</option>`;
-                if (trendCropSelect) trendCropSelect.innerHTML += opt;
-                if (predictCropSelect) predictCropSelect.innerHTML += opt;
-                if (rankCropSelect) rankCropSelect.innerHTML += opt;
-            });
+            const cropOptionsHtml = uniqueCrops
+                .map((c, index) => `<option value="${escapeHtml(c.en)}"${index === 0 ? ' selected' : ''}>${escapeHtml(optionLabel(c))}</option>`)
+                .join('');
+            // The ranking filter also offers "all crops"; the trend chart needs
+            // a single crop, so it keeps the plain crop list.
+            if (trendCropSelect) trendCropSelect.innerHTML = cropOptionsHtml;
+            if (predictCropSelect) predictCropSelect.innerHTML = cropOptionsHtml;
+            if (rankCropSelect) {
+                rankCropSelect.innerHTML =
+                    `<option value="all">${escapeHtml(TRANSLATIONS[currentLang].opt_all_crops)}</option>` + cropOptionsHtml;
+            }
 
             if (currentDistValue && distSelect) distSelect.value = currentDistValue;
             if (currentCropValue && cropSelect) cropSelect.value = currentCropValue;
@@ -1887,49 +2206,53 @@
 
         // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
         function updatePinnedStaples() {
-            const wheatRecords = latestData.filter(r => r.commodity === 'Wheat');
-            if (wheatRecords.length > 0) {
-                wheatRecords.sort((a, b) => a.modal_price - b.modal_price);
-                const minRec = wheatRecords[0];
-                const maxRec = wheatRecords[wheatRecords.length - 1];
-                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
-                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
-                
-                const elMin = document.getElementById('pinned-wheat-min');
-                const elMinM = document.getElementById('pinned-wheat-min-mandi');
-                const elMax = document.getElementById('pinned-wheat-max');
-                const elMaxM = document.getElementById('pinned-wheat-max-mandi');
-                
-                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
-                if (elMinM) elMinM.innerText = minMandi;
-                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
-                if (elMaxM) elMaxM.innerText = maxMandi;
-            }
+            // "Rice" and "Paddy" are reported under several official commodity
+            // names, so match on a prefix instead of one exact string.
+            const staplePrices = (matcher) => (Array.isArray(latestData) ? latestData : [])
+                .filter(r => r && matcher(String(r.commodity || '')) && Number.isFinite(Number(r.modal_price)))
+                .sort((a, b) => Number(a.modal_price) - Number(b.modal_price));
 
-            const riceRecords = latestData.filter(r => r.commodity === 'Rice');
-            if (riceRecords.length > 0) {
-                riceRecords.sort((a, b) => a.modal_price - b.modal_price);
-                const minRec = riceRecords[0];
-                const maxRec = riceRecords[riceRecords.length - 1];
-                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
-                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
-                
-                const elMin = document.getElementById('pinned-rice-min');
-                const elMinM = document.getElementById('pinned-rice-min-mandi');
-                const elMax = document.getElementById('pinned-rice-max');
-                const elMaxM = document.getElementById('pinned-rice-max-mandi');
-                
-                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
-                if (elMinM) elMinM.innerText = minMandi;
-                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
-                if (elMaxM) elMaxM.innerText = maxMandi;
-            }
+            const paintStaple = (prefix, rows) => {
+                const elMin = document.getElementById(`pinned-${prefix}-min`);
+                const elMinM = document.getElementById(`pinned-${prefix}-min-mandi`);
+                const elMax = document.getElementById(`pinned-${prefix}-max`);
+                const elMaxM = document.getElementById(`pinned-${prefix}-max-mandi`);
+                const label = (record) => {
+                    const mandiName = displayName(record, 'mandi');
+                    const districtName = displayName(record, 'district');
+                    if (mandiName && districtName) return `${mandiName} (${districtName})`;
+                    return mandiName || districtName || '—';
+                };
+
+                if (!rows.length) {
+                    // No verified row for this staple: show a dash rather than
+                    // leaving a stale price from an earlier refresh on screen.
+                    if (elMin) elMin.innerText = '₹ -';
+                    if (elMax) elMax.innerText = '₹ -';
+                    if (elMinM) elMinM.innerText = '-';
+                    if (elMaxM) elMaxM.innerText = '-';
+                    return;
+                }
+
+                const minRec = rows[0];
+                const maxRec = rows[rows.length - 1];
+                if (elMin) elMin.innerText = `₹ ${Number(minRec.modal_price).toLocaleString('en-IN')}/Q`;
+                if (elMinM) elMinM.innerText = label(minRec);
+                if (elMax) elMax.innerText = `₹ ${Number(maxRec.modal_price).toLocaleString('en-IN')}/Q`;
+                if (elMaxM) elMaxM.innerText = label(maxRec);
+            };
+
+            paintStaple('wheat', staplePrices(name => name === 'Wheat'));
+            paintStaple('rice', staplePrices(name => name === 'Rice' || name.startsWith('Paddy')));
         }
 
         function quickAddStaple(cropName) {
-            const records = latestData.filter(r => r.commodity === cropName);
+            const records = (Array.isArray(latestData) ? latestData : [])
+                .filter(r => r && r.commodity === cropName && Number.isFinite(Number(r.modal_price)));
             if (records.length > 0) {
-                const avgPrice = Math.round(records.reduce((sum, r) => sum + r.modal_price, 0) / records.length);
+                const avgPrice = Math.round(
+                    records.reduce((sum, r) => sum + Number(r.modal_price), 0) / records.length
+                );
                 sendToCalculator(cropName, avgPrice);
             }
         }
@@ -1939,17 +2262,21 @@
             const body = document.getElementById('leaderboard-table-body');
             if (!body) return;
 
-            const staples = latestData.filter(r => r.commodity === 'Wheat' || r.commodity === 'Rice');
-            staples.sort((a, b) => b.modal_price - a.modal_price);
+            const staples = (Array.isArray(latestData) ? latestData : []).filter(r => {
+                const name = String(r?.commodity || '');
+                return name === 'Wheat' || name === 'Rice' || name.startsWith('Paddy');
+            });
+            staples.sort((a, b) => (Number(b.modal_price) || 0) - (Number(a.modal_price) || 0));
             const topStaples = staples.slice(0, 15);
 
             let html = '';
             topStaples.forEach((r, idx) => {
                 const rank = idx + 1;
-                const dName = currentLang === 'hi' ? r.district_hi : r.district;
-                const mName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
-                const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
-                const vName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
+                const dName = escapeHtml(displayName(r, 'district') || '—');
+                const mName = escapeHtml(displayName(r, 'mandi') || '—');
+                const cName = escapeHtml(displayName(r, 'commodity') || '—');
+                const vName = escapeHtml(displayName(r, 'variety') || 'FAQ');
+                const modalPrice = Number(r.modal_price) || 0;
                 
                 const badgeClass = r.commodity === 'Wheat' 
                     ? "bg-amber-50 text-amber-800 border border-amber-100" 
@@ -1975,28 +2302,28 @@
                             </span>
                         </td>
                         <td class="py-3 px-3 text-slate-500 text-[10px] font-medium">${vName}</td>
-                        <td class="py-3 px-3 text-right font-black text-emerald-700 text-sm">₹${r.modal_price}/Q</td>
+                        <td class="py-3 px-3 text-right font-black text-emerald-700 text-sm">₹${modalPrice.toLocaleString('en-IN')}/Q</td>
                     </tr>
                 `;
             });
 
-            body.innerHTML = html || '<tr><td colspan="6" class="py-4 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
+            body.innerHTML = html || `<tr><td colspan="6" class="py-4 text-center text-slate-400">${currentLang === 'hi' ? 'कोई सत्यापित भाव उपलब्ध नहीं है।' : 'No verified rates are available.'}</td></tr>`;
         }
 
         function getFilteredRecords() {
-            const searchVal = document.getElementById('rate-search').value.toLowerCase();
-            const distVal = document.getElementById('filter-district').value;
-            const cropVal = document.getElementById('filter-commodity').value;
+            const searchVal = (document.getElementById('rate-search')?.value || '').toLowerCase().trim();
+            const distVal = document.getElementById('filter-district')?.value || 'all';
+            const cropVal = document.getElementById('filter-commodity')?.value || 'all';
 
-            return latestData.filter(r => {
-                const matchesSearch = 
-                    r.commodity.toLowerCase().includes(searchVal) ||
-                    r.commodity_hi.toLowerCase().includes(searchVal) ||
-                    r.mandi.toLowerCase().includes(searchVal) ||
-                    r.mandi_hi.toLowerCase().includes(searchVal) ||
-                    r.district.toLowerCase().includes(searchVal) ||
-                    r.district_hi.toLowerCase().includes(searchVal);
-                
+            return (Array.isArray(latestData) ? latestData : []).filter(r => {
+                if (!r) return false;
+                // Search both languages so a row whose Hindi label the feed did
+                // not publish is still findable by its official English name.
+                const matchesSearch = !searchVal || searchableText(
+                    r.commodity, r.commodity_hi, r.mandi, r.mandi_hi,
+                    r.district, r.district_hi, r.district_reported, r.variety, r.grade
+                ).includes(searchVal);
+
                 const matchesDistrict = (distVal === 'all' || r.district === distVal);
                 const matchesCrop = (cropVal === 'all' || r.commodity === cropVal);
 
@@ -2004,40 +2331,106 @@
             });
         }
 
+        // Explain *why* the rate table is empty instead of always blaming the
+        // user's search. There are three very different causes:
+        //   1. filters/search exclude every row,
+        //   2. the government feeds are not configured/reachable at all,
+        //   3. feeds responded but fewer than the required number agreed, so
+        //      the three-source publication gate held every price back.
+        function explainWhyNoPrices() {
+            const titleEl = document.getElementById('rates-empty-title');
+            const reasonEl = document.getElementById('rates-empty-reason');
+            const helpEl = document.getElementById('rates-empty-help');
+            if (!titleEl || !reasonEl) return;
+
+            const hasAnyRecord = Array.isArray(latestData) && latestData.length > 0;
+            const searchVal = (document.getElementById('rate-search')?.value || '').trim();
+            const distVal = document.getElementById('filter-district')?.value || 'all';
+            const cropVal = document.getElementById('filter-commodity')?.value || 'all';
+            const filtersActive = Boolean(searchVal) || distVal !== 'all' || cropVal !== 'all';
+            if (helpEl) helpEl.classList.add('hidden');
+
+            // Case 1: data exists, the filters simply matched nothing.
+            if (hasAnyRecord && filtersActive) {
+                titleEl.innerText = currentLang === 'hi'
+                    ? 'इस खोज/फ़िल्टर से कोई भाव नहीं मिला।'
+                    : 'No rate matched this search or filter.';
+                reasonEl.innerText = currentLang === 'hi'
+                    ? `कुल ${latestData.length} सत्यापित भाव उपलब्ध हैं। जिला/फसल फ़िल्टर हटाकर दोबारा देखें।`
+                    : `${latestData.length} verified rates are available. Clear the district/crop filter and try again.`;
+                return;
+            }
+
+            // Cases 2 and 3: nothing has been published at all.
+            const meta = latestMetadata || {};
+            const required = meta.minimum_price_source_matches || 3;
+            const connected = meta.connected_price_source_count || 0;
+            const feeds = Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : [];
+            const liveFeeds = feeds.filter(feed => feed.status === 'live' || feed.status === 'cached');
+            const reportedRows = liveFeeds.reduce((sum, feed) => sum + (Number(feed.record_count) || 0), 0);
+
+            titleEl.innerText = currentLang === 'hi'
+                ? 'अभी कोई सत्यापित मंडी भाव प्रकाशित नहीं है।'
+                : 'No verified mandi price is published right now.';
+
+            if (reportedRows > 0) {
+                // Feeds answered, but not enough of them agreed.
+                reasonEl.innerText = currentLang === 'hi'
+                    ? `${liveFeeds.length} सरकारी feed ने ${reportedRows} भाव भेजे, लेकिन भाव तभी प्रकाशित होता है जब कम से कम ${required} feeds एक ही मंडी, जिंस, तिथि और modal price बताएं। ये single-source भाव नीचे "स्रोत-वार भाव" कार्ड में अलग दिख रहे हैं।`
+                    : `${liveFeeds.length} government feed(s) reported ${reportedRows} rows, but a price is published only when at least ${required} feeds report the same mandi, commodity, date and modal price. Those single-source rows are shown separately in the "source-wise prices" cards below.`;
+            } else {
+                // No feed is connected at all — the usual cause is a missing key.
+                reasonEl.innerText = currentLang === 'hi'
+                    ? `${connected}/${required} सरकारी price feeds जुड़े हैं। DATA_GOV_IN_API_KEY जैसे secrets configure होने तक कोई भाव नहीं दिखाया जाता—कोई अनुमानित या नकली भाव नहीं बनाया जाता।`
+                    : `${connected}/${required} government price feeds are connected. Until secrets such as DATA_GOV_IN_API_KEY are configured no rate is shown — no estimated or simulated price is ever generated.`;
+            }
+
+            if (helpEl) {
+                helpEl.classList.remove('hidden');
+                helpEl.innerText = currentLang === 'hi'
+                    ? 'सरकारी स्रोत की स्थिति देखें →'
+                    : 'Check government source status →';
+                helpEl.href = 'javascript:void(0)';
+                helpEl.onclick = (event) => {
+                    event.preventDefault();
+                    switchTab('weather');
+                };
+            }
+        }
+
         function renderRatesTable() {
             const tableBody = document.getElementById('rates-table-body');
             const cardsContainer = document.getElementById('rates-cards-mobile');
             const emptyState = document.getElementById('rates-empty-state');
             const countBadge = document.getElementById('records-count');
+            if (!tableBody || !cardsContainer) return;
 
             const filtered = getFilteredRecords();
-            countBadge.innerText = `${filtered.length} ${currentLang === 'hi' ? 'रिकॉर्ड' : 'records'}`;
+            if (countBadge) countBadge.innerText = `${filtered.length} ${currentLang === 'hi' ? 'रिकॉर्ड' : 'records'}`;
 
             if (filtered.length === 0) {
                 tableBody.innerHTML = '';
                 cardsContainer.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                if (emptyState) {
+                    explainWhyNoPrices();
+                    emptyState.classList.remove('hidden');
+                }
                 return;
-            } else {
+            } else if (emptyState) {
                 emptyState.classList.add('hidden');
             }
 
             // Grouping and Sorting dynamically based on currentSortMode
             if (currentSortMode === 'district') {
                 filtered.sort((a, b) => {
-                    const distA = currentLang === 'hi' ? (a.district_hi || a.district || '') : (a.district || a.district_hi || '');
-                    const distB = currentLang === 'hi' ? (b.district_hi || b.district || '') : (b.district || b.district_hi || '');
-                    const compareDist = distA.localeCompare(distB);
+                    const compareDist = compareLabels(displayName(a, 'district'), displayName(b, 'district'));
                     if (compareDist !== 0) return compareDist;
-                    
-                    const mandiA = currentLang === 'hi' ? (a.mandi_hi || a.mandi || '') : (a.mandi || a.mandi_hi || '');
-                    const mandiB = currentLang === 'hi' ? (b.mandi_hi || b.mandi || '') : (b.mandi || b.mandi_hi || '');
-                    return mandiA.localeCompare(mandiB);
+                    return compareLabels(displayName(a, 'mandi'), displayName(b, 'mandi'));
                 });
             } else if (currentSortMode === 'price-desc') {
-                filtered.sort((a, b) => b.modal_price - a.modal_price);
+                filtered.sort((a, b) => (Number(b.modal_price) || 0) - (Number(a.modal_price) || 0));
             } else if (currentSortMode === 'price-asc') {
-                filtered.sort((a, b) => a.modal_price - b.modal_price);
+                filtered.sort((a, b) => (Number(a.modal_price) || 0) - (Number(b.modal_price) || 0));
             }
 
             let tableHtml = '';
@@ -2045,11 +2438,11 @@
             let lastDistrict = '';
 
             filtered.forEach(r => {
-                const distName = (currentLang === 'hi' ? r.district_hi : r.district) || r.district || r.district_hi || 'Unknown';
-                const mandiName = (currentLang === 'hi' ? r.mandi_hi : r.mandi) || r.mandi || r.mandi_hi || 'Mandi';
-                const cropName = (currentLang === 'hi' ? r.commodity_hi : r.commodity) || r.commodity || r.commodity_hi || 'Crop';
-                const varietyName = (currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety) || 'FAQ';
-                const gradeName = (currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade) || 'FAQ';
+                const distName = escapeHtml(displayName(r, 'district') || (currentLang === 'hi' ? 'अज्ञात जिला' : 'Unknown district'));
+                const mandiName = escapeHtml(displayName(r, 'mandi') || (currentLang === 'hi' ? 'मंडी' : 'Mandi'));
+                const cropName = escapeHtml(displayName(r, 'commodity') || (currentLang === 'hi' ? 'जिंस' : 'Crop'));
+                const varietyName = escapeHtml(displayName(r, 'variety') || 'FAQ');
+                const gradeName = escapeHtml(displayName(r, 'grade') || 'FAQ');
                 const arrivalsText = r.arrivals !== null && r.arrivals !== undefined
                     ? `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || '') : (r.arrivals_unit || '')}`.trim()
                     : (currentLang === 'hi' ? 'प्रकाशित नहीं' : 'Not published');
@@ -2057,7 +2450,7 @@
                 if (currentSortMode === 'district' && distName !== lastDistrict) {
                     tableHtml += `
                         <tr class="bg-emerald-50/70 border-y border-emerald-100/60">
-                            <td colspan="10" class="py-2.5 px-4 font-black text-emerald-800 text-xs select-none">
+                            <td colspan="9" class="py-2.5 px-4 font-black text-emerald-800 text-xs select-none">
                                 📍 ${currentLang === 'hi' ? 'जिला' : 'District'}: ${distName}
                             </td>
                         </tr>
@@ -2073,17 +2466,25 @@
                     lastDistrict = distName;
                 }
 
+                // Verification badge: a single-feed rate must be visually
+                // distinct from one that two government feeds agreed on.
+                const verifyCount = Number(r.verification_count) || 1;
+                const isCrossVerified = Boolean(r.multi_source_verified ?? r.three_source_verified);
+                const verifyBadge = isCrossVerified
+                    ? `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200" title="${escapeHtml(String(r.source || ''))}">✓ ${verifyCount} ${currentLang === 'hi' ? 'स्रोत' : 'sources'}</span>`
+                    : `<span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-50 text-amber-800 border border-amber-200" title="${escapeHtml(String(r.source || ''))}">⚠ ${currentLang === 'hi' ? '1 स्रोत — cross-verified नहीं' : '1 source — not cross-verified'}</span>`;
+
                 tableHtml += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="py-3 px-4 font-medium text-slate-500 text-xs">${distName}</td>
-                        <td class="py-3 px-4 font-bold text-slate-900">${mandiName}</td>
+                        <td class="py-3 px-4 font-bold text-slate-900">${mandiName}<div class="mt-0.5">${verifyBadge}</div></td>
                         <td class="py-3 px-4 text-emerald-700 font-semibold">${cropName}</td>
                         <td class="py-3 px-4 text-slate-600 text-xs">${varietyName}</td>
                         <td class="py-3 px-4 text-slate-500 text-xs">${gradeName}</td>
                         <td class="py-3 px-4 text-right font-medium text-slate-700 text-xs">${arrivalsText}</td>
-                        <td class="py-3 px-4 text-right text-slate-600">₹${r.min_price}</td>
-                        <td class="py-3 px-4 text-right font-black text-slate-800 text-base">₹${r.modal_price}</td>
-                        <td class="py-3 px-4 text-right text-slate-600">₹${r.max_price}</td>
+                        <td class="py-3 px-4 text-right text-slate-600">₹${Number(r.min_price) || 0}</td>
+                        <td class="py-3 px-4 text-right font-black text-slate-800 text-base">₹${Number(r.modal_price) || 0}</td>
+                        <td class="py-3 px-4 text-right text-slate-600">₹${Number(r.max_price) || 0}</td>
                     </tr>
                 `;
 
@@ -2093,6 +2494,7 @@
                             <div>
                                 <span class="text-xs font-bold text-slate-400 block uppercase">${distName}</span>
                                 <span class="font-extrabold text-slate-800 text-base block">${mandiName}</span>
+                                <span class="block mt-1">${verifyBadge}</span>
                             </div>
                             <span class="bg-emerald-50 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-100">${cropName}</span>
                         </div>
@@ -2168,56 +2570,42 @@
             const tableBody = document.getElementById('ranking-table-body');
             if (!tableBody) return;
 
-            const selectedCrop = document.getElementById('rank-crop-select').value;
-            const searchVal = document.getElementById('rank-search').value.toLowerCase();
+            const selectedCrop = document.getElementById('rank-crop-select')?.value || 'all';
+            const searchVal = (document.getElementById('rank-search')?.value || '').toLowerCase().trim();
 
-            let records = latestData.filter(r => {
+            let records = (Array.isArray(latestData) ? latestData : []).filter(r => {
+                if (!r) return false;
                 const matchesCrop = (selectedCrop === 'all' || r.commodity === selectedCrop);
-                const matchesSearch = 
-                    r.district.toLowerCase().includes(searchVal) ||
-                    r.district_hi.toLowerCase().includes(searchVal) ||
-                    r.mandi.toLowerCase().includes(searchVal) ||
-                    r.mandi_hi.toLowerCase().includes(searchVal);
+                const matchesSearch = !searchVal || searchableText(
+                    r.district, r.district_hi, r.district_reported, r.mandi, r.mandi_hi
+                ).includes(searchVal);
                 return matchesCrop && matchesSearch;
             });
 
-            records.sort((a, b) => b.modal_price - a.modal_price);
+            records.sort((a, b) => (Number(b.modal_price) || 0) - (Number(a.modal_price) || 0));
 
-            if (records.length >= 1) {
-                const top1 = records[0];
-                document.getElementById('rank-card-1-dist').innerText = currentLang === 'hi' ? `${top1.district_hi} (${top1.mandi_hi})` : `${top1.district} (${top1.mandi})`;
-                document.getElementById('rank-card-1-price').innerText = `₹ ${top1.modal_price}/Q`;
-            } else {
-                document.getElementById('rank-card-1-dist').innerText = "-";
-                document.getElementById('rank-card-1-price').innerText = "₹ -";
-            }
+            // Fill the pinned rank cards without ever printing "undefined" when
+            // a feed omitted the Hindi district or mandi label.
+            const setRankCard = (slot, record) => {
+                const distEl = document.getElementById(`rank-card-${slot}-dist`);
+                const priceEl = document.getElementById(`rank-card-${slot}-price`);
+                if (!distEl || !priceEl) return;
+                if (!record) {
+                    distEl.innerText = '-';
+                    priceEl.innerText = '₹ -';
+                    return;
+                }
+                const districtName = displayName(record, 'district') || '—';
+                const mandiName = displayName(record, 'mandi');
+                distEl.innerText = mandiName ? `${districtName} (${mandiName})` : districtName;
+                const price = Number(record.modal_price);
+                priceEl.innerText = Number.isFinite(price) ? `₹ ${price.toLocaleString('en-IN')}/Q` : '₹ -';
+            };
 
-            if (records.length >= 2) {
-                const top2 = records[1];
-                document.getElementById('rank-card-2-dist').innerText = currentLang === 'hi' ? `${top2.district_hi} (${top2.mandi_hi})` : `${top2.district} (${top2.mandi})`;
-                document.getElementById('rank-card-2-price').innerText = `₹ ${top2.modal_price}/Q`;
-            } else {
-                document.getElementById('rank-card-2-dist').innerText = "-";
-                document.getElementById('rank-card-2-price').innerText = "₹ -";
-            }
-
-            if (records.length >= 3) {
-                const top3 = records[2];
-                document.getElementById('rank-card-3-dist').innerText = currentLang === 'hi' ? `${top3.district_hi} (${top3.mandi_hi})` : `${top3.district} (${top3.mandi})`;
-                document.getElementById('rank-card-3-price').innerText = `₹ ${top3.modal_price}/Q`;
-            } else {
-                document.getElementById('rank-card-3-dist').innerText = "-";
-                document.getElementById('rank-card-3-price').innerText = "₹ -";
-            }
-
-            if (records.length > 0) {
-                const lowest = records[records.length - 1];
-                document.getElementById('rank-card-lowest-dist').innerText = currentLang === 'hi' ? `${lowest.district_hi} (${lowest.mandi_hi})` : `${lowest.district} (${lowest.mandi})`;
-                document.getElementById('rank-card-lowest-price').innerText = `₹ ${lowest.modal_price}/Q`;
-            } else {
-                document.getElementById('rank-card-lowest-dist').innerText = "-";
-                document.getElementById('rank-card-lowest-price').innerText = "₹ -";
-            }
+            setRankCard(1, records[0]);
+            setRankCard(2, records[1]);
+            setRankCard(3, records[2]);
+            setRankCard('lowest', records.length ? records[records.length - 1] : null);
 
             let renderedList = [...records];
             if (currentRankingScope === 'top10') {
@@ -2226,8 +2614,8 @@
                 renderedList = records.slice(-10).reverse();
             }
 
-            let maxVal = records.length > 0 ? records[0].modal_price : 0;
-            let minVal = records.length > 0 ? records[records.length - 1].modal_price : 0;
+            let maxVal = records.length > 0 ? (Number(records[0].modal_price) || 0) : 0;
+            let minVal = records.length > 0 ? (Number(records[records.length - 1].modal_price) || 0) : 0;
             let range = maxVal - minVal;
             let highThreshold = minVal + range * 0.7;
             let lowThreshold = minVal + range * 0.3;
@@ -2235,16 +2623,17 @@
             let html = '';
             renderedList.forEach((r, idx) => {
                 const rank = records.indexOf(r) + 1;
-                const distName = currentLang === 'hi' ? r.district_hi : r.district;
-                const mandiName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
-                const cropName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                const distName = escapeHtml(displayName(r, 'district') || '—');
+                const mandiName = escapeHtml(displayName(r, 'mandi') || '—');
+                const cropName = escapeHtml(displayName(r, 'commodity') || '—');
+                const modalPrice = Number(r.modal_price) || 0;
                 
                 let pillClass = '';
                 let trendIcon = '';
-                if (r.modal_price >= highThreshold) {
+                if (modalPrice >= highThreshold) {
                     pillClass = "bg-green-100 text-green-800 font-bold border border-green-200";
                     trendIcon = '<i data-lucide="trending-up" class="w-4 h-4 text-green-600 inline mr-1"></i> ↑';
-                } else if (r.modal_price <= lowThreshold) {
+                } else if (modalPrice <= lowThreshold) {
                     pillClass = "bg-red-100 text-red-800 font-bold border border-red-200";
                     trendIcon = '<i data-lucide="trending-down" class="w-4 h-4 text-red-600 inline mr-1"></i> ↓';
                 } else {
@@ -2272,14 +2661,14 @@
                         <td class="py-3 px-4 text-emerald-800 font-bold">${cropName}</td>
                         <td class="py-3 px-4 text-right">
                             <span class="px-2.5 py-1 rounded-full text-xs ${pillClass}">
-                                ₹ ${r.modal_price.toLocaleString('en-IN')}/Q
+                                ₹ ${modalPrice.toLocaleString('en-IN')}/Q
                             </span>
                         </td>
                         <td class="py-3 px-4 text-center font-bold text-xs">${trendIcon}</td>
                         <td class="py-3 px-4 text-center text-slate-400 text-xs">
                             <span class="flex items-center justify-center space-x-1">
                                 <i data-lucide="clock" class="w-3 h-3"></i>
-                                <span>${r.arrival_date || 'Today'}</span>
+                                <span>${escapeHtml(r.arrival_date || '—')}</span>
                             </span>
                         </td>
                     </tr>
@@ -2586,45 +2975,63 @@
 
         // ================= AI PRICE PREDICTION LOGIC =================
         function fetchAIPrediction() {
-            const crop = document.getElementById('predict-crop-select').value;
+            // The prediction panel is only rendered when the API build is in
+            // use. On the static GitHub Pages build these elements do not
+            // exist, so bail out instead of throwing on `.value` of null.
+            const cropSelect = document.getElementById('predict-crop-select');
+            if (!cropSelect) return;
+            const crop = cropSelect.value;
+            if (!crop) return;
             const host = window.location.origin;
 
-            fetch(`${host}/api/v2/prediction/${crop}`)
+            const setPrediction = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            };
+
+            fetch(`${host}/api/v2/prediction/${encodeURIComponent(crop)}`)
                 .then(res => {
                     if (!res.ok) throw new Error();
                     return res.json();
                 })
                 .then(data => {
-                    document.getElementById('pred-1-day').innerText = `₹ ${data.predictions.tomorrow} / Q`;
-                    document.getElementById('pred-3-day').innerText = `₹ ${data.predictions.three_days} / Q`;
-                    document.getElementById('pred-7-day').innerText = `₹ ${data.predictions.seven_days} / Q`;
-                    
-                    document.getElementById('pred-trend').innerText = data.trend;
-                    document.getElementById('pred-slope').innerText = data.slope;
-                    document.getElementById('pred-confidence').innerText = data.confidence;
-                    
-                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi' ? data.recommendation_hi : data.recommendation_en;
+                    const predictions = data?.predictions || {};
+                    setPrediction('pred-1-day', `₹ ${predictions.tomorrow ?? '—'} / Q`);
+                    setPrediction('pred-3-day', `₹ ${predictions.three_days ?? '—'} / Q`);
+                    setPrediction('pred-7-day', `₹ ${predictions.seven_days ?? '—'} / Q`);
+                    setPrediction('pred-trend', data?.trend ?? '—');
+                    setPrediction('pred-slope', data?.slope ?? '—');
+                    setPrediction('pred-confidence', data?.confidence ?? '—');
+                    setPrediction('pred-recommendation', currentLang === 'hi'
+                        ? (data?.recommendation_hi || '')
+                        : (data?.recommendation_en || ''));
                 })
                 .catch(() => {
-                    document.getElementById('pred-1-day').innerText = '—';
-                    document.getElementById('pred-3-day').innerText = '—';
-                    document.getElementById('pred-7-day').innerText = '—';
-                    document.getElementById('pred-trend').innerText = currentLang === 'hi' ? 'डेटा उपलब्ध नहीं' : 'Data unavailable';
-                    document.getElementById('pred-slope').innerText = '—';
-                    document.getElementById('pred-confidence').innerText = '0%';
-                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi'
+                    setPrediction('pred-1-day', '—');
+                    setPrediction('pred-3-day', '—');
+                    setPrediction('pred-7-day', '—');
+                    setPrediction('pred-trend', currentLang === 'hi' ? 'डेटा उपलब्ध नहीं' : 'Data unavailable');
+                    setPrediction('pred-slope', '—');
+                    setPrediction('pred-confidence', '0%');
+                    setPrediction('pred-recommendation', currentLang === 'hi'
                         ? 'पर्याप्त सत्यापित ऐतिहासिक डेटा के बिना कोई अनुमान नहीं दिखाया गया है।'
-                        : 'No forecast is shown without sufficient verified historical data.';
+                        : 'No forecast is shown without sufficient verified historical data.');
                 });
         }
 
         // ================= ALERTS SUBSCRIBE HANDLER =================
         function handleSubscribe(e) {
             e.preventDefault();
-            const type = document.getElementById('sub-type').value;
-            const val = document.getElementById('sub-val').value;
-            const dist = document.getElementById('sub-dist').value;
-            const crop = document.getElementById('sub-crop').value;
+            const type = document.getElementById('sub-type')?.value || 'telegram';
+            const val = (document.getElementById('sub-val')?.value || '').trim();
+            const dist = document.getElementById('sub-dist')?.value || 'all';
+            const crop = document.getElementById('sub-crop')?.value || 'all';
+            if (!val) {
+                alert(currentLang === 'hi'
+                    ? 'कृपया अपना मोबाइल नंबर या Telegram ID दर्ज करें।'
+                    : 'Please enter your mobile number or Telegram ID.');
+                return;
+            }
 
             const payload = {
                 contact_type: type,
@@ -2658,10 +3065,17 @@
         }
 
         function renderTrendChart() {
-            const crop = document.getElementById('trend-crop-select').value;
-            const historyObj = historicalData[crop] || [];
-            
-            if (historyObj.length === 0) return;
+            const crop = document.getElementById('trend-crop-select')?.value || '';
+            const historyObj = (crop && historicalData) ? (historicalData[crop] || []) : [];
+
+            // No verified history for this crop: tear down any stale chart so
+            // the previous crop's line is not left on screen.
+            if (!Array.isArray(historyObj) || historyObj.length === 0) {
+                if (trendChartObj) { trendChartObj.destroy(); trendChartObj = null; }
+                if (window.distChartObj) { window.distChartObj.destroy(); window.distChartObj = null; }
+                return;
+            }
+            if (typeof window.Chart !== 'function') return;
 
             const labels = historyObj.map(h => {
                 const d = new Date(h.date);
@@ -2669,10 +3083,13 @@
             });
             const data = historyObj.map(h => h.price);
 
-            const ctx = document.getElementById('trendsChart').getContext('2d');
-            
+            const trendsCanvas = document.getElementById('trendsChart');
+            if (!trendsCanvas) return;
+            const ctx = trendsCanvas.getContext('2d');
+
             if (trendChartObj) {
                 trendChartObj.destroy();
+                trendChartObj = null;
             }
 
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -2712,16 +3129,22 @@
                 }
             });
 
-            const cropRecords = latestData.filter(r => r.commodity === crop);
+            const cropRecords = (Array.isArray(latestData) ? latestData : []).filter(r => r && r.commodity === crop);
             const distPrices = {};
 
             cropRecords.forEach(r => {
-                const distKey = currentLang === 'hi' ? r.district_hi : r.district;
+                // A row whose district label the feed omitted must not become
+                // an "undefined" bar on the chart.
+                const distKey = displayName(r, 'district');
+                if (!distKey) return;
+                const minPrice = Number(r.min_price);
+                const maxPrice = Number(r.max_price);
+                if (!Number.isFinite(minPrice) || !Number.isFinite(maxPrice)) return;
                 if (!distPrices[distKey]) {
-                    distPrices[distKey] = { min: r.min_price, max: r.max_price };
+                    distPrices[distKey] = { min: minPrice, max: maxPrice };
                 } else {
-                    distPrices[distKey].min = Math.min(distPrices[distKey].min, r.min_price);
-                    distPrices[distKey].max = Math.max(distPrices[distKey].max, r.max_price);
+                    distPrices[distKey].min = Math.min(distPrices[distKey].min, minPrice);
+                    distPrices[distKey].max = Math.max(distPrices[distKey].max, maxPrice);
                 }
             });
 
@@ -2735,10 +3158,13 @@
             const minPrices = distList.map(d => d.min);
             const maxPrices = distList.map(d => d.max);
 
-            const distCtx = document.getElementById('districtsBarChart').getContext('2d');
-            
+            const distCanvas = document.getElementById('districtsBarChart');
+            if (!distCanvas) return;
+            const distCtx = distCanvas.getContext('2d');
+
             if (window.distChartObj) {
                 window.distChartObj.destroy();
+                window.distChartObj = null;
             }
 
             window.distChartObj = new Chart(distCtx, {
