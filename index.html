@@ -678,7 +678,7 @@
                     <!-- Sourcing Mandi -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">स्रोत्र मंडी (Sourcing Mandi)</label>
-                        <input type="text" id="arb-source" value="Khalilabad (खलीलाबाद)" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <select id="arb-source" onchange="calculateArbitrage()" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none"></select>
                     </div>
                     <!-- Sourcing Buy Price -->
                     <div>
@@ -688,7 +688,7 @@
                     <!-- Destination Mandi -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बिक्री मंडी (Destination Mandi)</label>
-                        <input type="text" id="arb-dest" value="Lucknow (लखनऊ)" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none">
+                        <select id="arb-dest" onchange="calculateArbitrage()" class="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none"></select>
                     </div>
                     <!-- Destination Sale Price -->
                     <div>
@@ -724,13 +724,27 @@
                 <div id="arb-result-card" class="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="space-y-1 text-center md:text-left">
                         <span id="arb-status-badge" class="bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">🟢 मुनाफे का सौदा (Net Profit)</span>
-                        <h4 class="text-lg font-black" id="arb-outcome-text">खलीलाबाद से लखनऊ माल बेचने पर शुद्ध मुनाफा:</h4>
+                        <h4 class="text-lg font-black" id="arb-outcome-text">स्रोत्र से बिक्री मंडी माल बेचने पर शुद्ध मुनाफा:</h4>
                         <p class="text-[11px] text-emerald-100">सारे खर्चे (भाड़ा, मंडी टैक्स, लोडिंग) काटकर अंतिम लाभ-हानि</p>
                     </div>
                     <div class="text-center md:text-right space-y-1">
                         <span class="text-[10px] font-bold text-emerald-200 block uppercase">शुद्ध लाभ / हानि (Net Profit/Loss)</span>
-                        <span id="arb-net-amount" class="text-3xl font-black">₹ 24,000</span>
+                        <span id="arb-net-amount" class="text-3xl font-black">₹ -</span>
                     </div>
+                </div>
+
+                <!-- Action Button Row -->
+                <div class="flex space-x-2 pt-2 border-t border-slate-100 justify-end flex-wrap gap-2">
+                    <!-- PDF Download Button -->
+                    <button onclick="downloadArbitragePDF()" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold py-2 px-4 rounded-xl flex items-center space-x-1.5 transition shadow-sm">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span>लाभ-हानि रिपोर्ट PDF</span>
+                    </button>
+                    <!-- Calculate Button -->
+                    <button onclick="calculateArbitrage()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-emerald-700/10">
+                        <i data-lucide="calculator" class="w-4 h-4"></i>
+                        <span>लाभ-हानि गणना करें (Calculate)</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1362,6 +1376,33 @@
             buildOptions(cropSelect, TRANSLATIONS[currentLang].opt_all_crops, uniqueCrops);
             buildOptions(subDist, currentLang === 'hi' ? 'सभी जिले' : 'All Districts', uniqueDistricts);
             buildOptions(subCrop, currentLang === 'hi' ? 'सभी फसलें' : 'All Crops', uniqueCrops);
+
+            // Populate Sourcing and Destination Mandis dynamically for the Arbitrage Calculator
+            const arbSourceSelect = document.getElementById('arb-source');
+            const arbDestSelect = document.getElementById('arb-dest');
+            
+            const uniqueMandisList = [];
+            const mandiKeys = new Set();
+            latestData.forEach(r => {
+                if (r.mandi && !mandiKeys.has(r.mandi)) {
+                    mandiKeys.add(r.mandi);
+                    uniqueMandisList.push({ en: r.mandi, hi: r.mandi_hi || r.mandi });
+                }
+            });
+
+            const populateMandiSelect = (selectEl, defaultMandi) => {
+                if (!selectEl) return;
+                selectEl.innerHTML = "";
+                uniqueMandisList.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(m => {
+                    selectEl.innerHTML += `<option value="${m.en}">${m[currentLang]}</option>`;
+                });
+                if (defaultMandi && uniqueMandisList.some(m => m.en === defaultMandi)) {
+                    selectEl.value = defaultMandi;
+                }
+            };
+
+            populateMandiSelect(arbSourceSelect, 'Kanpur Mandi');
+            populateMandiSelect(arbDestSelect, 'Lucknow Mandi');
 
             if (trendCropSelect) trendCropSelect.innerHTML = "";
             if (predictCropSelect) predictCropSelect.innerHTML = "";
@@ -2552,8 +2593,11 @@
             const taxPercent = parseFloat(document.getElementById('arb-tax-percent').value) || 0;
             const other = parseFloat(document.getElementById('arb-other').value) || 0;
 
-            const sourceName = document.getElementById('arb-source').value;
-            const destName = document.getElementById('arb-dest').value;
+            const sourceSelect = document.getElementById('arb-source');
+            const destSelect = document.getElementById('arb-dest');
+            
+            const sourceName = sourceSelect && sourceSelect.options.length > 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing Mandi';
+            const destName = destSelect && destSelect.options.length > 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination Mandi';
 
             const buyCost = qty * buyPrice;
             const taxAmt = (buyCost * taxPercent) / 100;
@@ -2581,6 +2625,126 @@
                     amountEl.innerText = `₹ ${Math.round(Math.abs(netAmount)).toLocaleString('en-IN')}`;
                     textEl.innerText = `${sourceName} से ${destName} माल बेचने पर शुद्ध घाटा (नुकसान):`;
                 }
+            }
+        }
+
+        // Beautiful A4-sized PDF Export for Mandi Arbitrage Report (Khalilabad/Lucknow scenario compliant)
+        function downloadArbitragePDF() {
+            try {
+                const buyPrice = parseFloat(document.getElementById('arb-buy-price').value) || 0;
+                const salePrice = parseFloat(document.getElementById('arb-sale-price').value) || 0;
+                const qty = parseFloat(document.getElementById('arb-qty').value) || 0;
+                const transport = parseFloat(document.getElementById('arb-transport').value) || 0;
+                const taxPercent = parseFloat(document.getElementById('arb-tax-percent').value) || 0;
+                const other = parseFloat(document.getElementById('arb-other').value) || 0;
+
+                const sourceSelect = document.getElementById('arb-source');
+                const destSelect = document.getElementById('arb-dest');
+                const sourceName = sourceSelect && sourceSelect.options.length > 0 ? sourceSelect.options[sourceSelect.selectedIndex].text : 'Sourcing';
+                const destName = destSelect && destSelect.options.length > 0 ? destSelect.options[destSelect.selectedIndex].text : 'Destination';
+
+                const buyCost = qty * buyPrice;
+                const taxAmt = (buyCost * taxPercent) / 100;
+                const totalExpenses = buyCost + taxAmt + transport + other;
+                const saleProceeds = qty * salePrice;
+                const netAmount = saleProceeds - totalExpenses;
+                const isProfit = netAmount >= 0;
+
+                const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                const pdfContainer = document.createElement('div');
+                pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-sm";
+                pdfContainer.style.width = "750px";
+
+                const contentHtml = `
+                    <div class="text-center font-bold text-[10px] text-slate-400 mb-2">॥ श्री गणेशाय नमः ॥</div>
+                    <div class="border-b-4 border-emerald-600 pb-4 flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-black text-emerald-800">Vijay Kumar Traders</h1>
+                            <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — अंत-मंडी आबिट्राज विश्लेषण</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">अंतर-मंडी लाभ-हानि रिपोर्ट</span>
+                            <p class="text-[10px] text-slate-400 mt-1">दिनांक: ${dateStr}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200 mt-4">
+                        <div>
+                            <span class="text-[10px] text-slate-400 font-bold block uppercase">स्रोत्र मंडी (Sourcing Mandi)</span>
+                            <p class="font-bold text-slate-800">${sourceName}</p>
+                            <p class="text-xs text-slate-500">खरीद भाव: ₹ ${buyPrice}/Q | मात्रा: ${qty}Q</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-400 font-bold block uppercase">बिक्री मंडी (Destination Mandi)</span>
+                            <p class="font-bold text-slate-800">${destName}</p>
+                            <p class="text-xs text-slate-500">बिक्री भाव: ₹ ${salePrice}/Q</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-800 border-b border-slate-300 pb-2 mb-3 uppercase tracking-wider text-xs">वित्तीय ब्योरा (Financial Statement)</h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between">
+                                <span>कुल खरीद लागत (Buying Cost):</span>
+                                <span>₹ ${buyCost.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>मंडी शुल्क व सेस (${taxPercent}%):</span>
+                                <span>₹ ${taxAmt.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>परिवहन भाड़ा (Freight Charges):</span>
+                                <span>₹ ${transport.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>मजदूरी व अन्य खर्च (Other Handling):</span>
+                                <span>₹ ${other.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="flex justify-between font-bold border-t border-slate-200 pt-1 text-red-700">
+                                <span>कुल सौदे का खर्च (Total Investment Cost):</span>
+                                <span>₹ ${totalExpenses.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-green-700">
+                                <span>कुल बिक्री मूल्य (Total Gross Sale):</span>
+                                <span>₹ ${saleProceeds.toLocaleString('en-IN')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 ${isProfit ? 'border-emerald-600 bg-emerald-50' : 'border-red-600 bg-red-50'} p-4 rounded-xl flex items-center justify-between mt-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase block ${isProfit ? 'text-emerald-800' : 'text-red-800'}">अंतिम शुद्ध परिणाम (Net Arbitrage Outcome)</span>
+                            <p class="text-[10px] text-slate-400">सारे खर्चों और टैक्सों को काटने के बाद परिणाम</p>
+                        </div>
+                        <span class="text-2xl font-black ${isProfit ? 'text-emerald-800' : 'text-red-800'}">
+                            ${isProfit ? '🟢 लाभ (Profit):' : '🔴 हानि (Loss):'} ₹ ${Math.round(Math.abs(netAmount)).toLocaleString('en-IN')}
+                        </span>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-6 mt-12 flex justify-between items-center text-[10px] text-slate-400">
+                        <p>© Vijay Kumar Traders - Kanpur. All rights reserved.</p>
+                        <p class="text-right">धन्यवाद, आपका व्यापार मंगलमय हो।</p>
+                    </div>
+                `;
+
+                pdfContainer.innerHTML = contentHtml;
+
+                const opt = {
+                    margin:       10,
+                    filename:     `Arbitrage_Report_${sourceName.split(' ')[0]}_to_${destName.split(' ')[0]}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().from(pdfContainer).set(opt).save()
+                    .then(() => console.log("Arbitrage report PDF downloaded successfully"))
+                    .catch(() => window.print());
+            } catch (err) {
+                window.print();
             }
         }
 
