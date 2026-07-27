@@ -252,6 +252,25 @@
             </div>
 
             <!-- Rates Table/Cards -->
+            <!-- ⚡ LIVE SORTING SELECTION BAR (सॉर्टिंग बार) ⚡ -->
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-150 flex flex-wrap items-center justify-between gap-3 select-none">
+                <span class="text-xs font-bold text-slate-500 flex items-center space-x-1.5">
+                    <i data-lucide="arrow-up-down" class="w-4 h-4 text-emerald-600"></i>
+                    <span>सूची क्रमबद्ध करें (Sort Mandi List By):</span>
+                </span>
+                <div class="flex space-x-2">
+                    <button onclick="setSortMode('district')" id="sort-btn-district" class="py-1.5 px-3 rounded-lg border font-bold text-[11px] transition bg-emerald-50 border-emerald-500 text-emerald-700">
+                        📍 जिला-वार (District-wise)
+                    </button>
+                    <button onclick="setSortMode('price-desc')" id="sort-btn-price-desc" class="py-1.5 px-3 rounded-lg border font-bold text-[11px] transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                        📈 भाव: अधिक से कम (High to Low)
+                    </button>
+                    <button onclick="setSortMode('price-asc')" id="sort-btn-price-asc" class="py-1.5 px-3 rounded-lg border font-bold text-[11px] transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                        📉 भाव: कम से अधिक (Low to High)
+                    </button>
+                </div>
+            </div>
+
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50">
                     <h3 class="font-bold text-slate-800 flex items-center space-x-2">
@@ -969,6 +988,7 @@
         };
 
         let currentLang = 'hi';
+        let currentSortMode = 'district';
         let latestData = [];
         let historicalData = {};
         let weatherData = [];
@@ -1329,16 +1349,23 @@
                 emptyState.classList.add('hidden');
             }
 
-            filtered.sort((a, b) => {
-                const distA = currentLang === 'hi' ? (a.district_hi || a.district || '') : (a.district || a.district_hi || '');
-                const distB = currentLang === 'hi' ? (b.district_hi || b.district || '') : (b.district || b.district_hi || '');
-                const compareDist = distA.localeCompare(distB);
-                if (compareDist !== 0) return compareDist;
-                
-                const mandiA = currentLang === 'hi' ? (a.mandi_hi || a.mandi || '') : (a.mandi || a.mandi_hi || '');
-                const mandiB = currentLang === 'hi' ? (b.mandi_hi || b.mandi || '') : (b.mandi || b.mandi_hi || '');
-                return mandiA.localeCompare(mandiB);
-            });
+            // Grouping and Sorting dynamically based on currentSortMode
+            if (currentSortMode === 'district') {
+                filtered.sort((a, b) => {
+                    const distA = currentLang === 'hi' ? (a.district_hi || a.district || '') : (a.district || a.district_hi || '');
+                    const distB = currentLang === 'hi' ? (b.district_hi || b.district || '') : (b.district || b.district_hi || '');
+                    const compareDist = distA.localeCompare(distB);
+                    if (compareDist !== 0) return compareDist;
+                    
+                    const mandiA = currentLang === 'hi' ? (a.mandi_hi || a.mandi || '') : (a.mandi || a.mandi_hi || '');
+                    const mandiB = currentLang === 'hi' ? (b.mandi_hi || b.mandi || '') : (b.mandi || b.mandi_hi || '');
+                    return mandiA.localeCompare(mandiB);
+                });
+            } else if (currentSortMode === 'price-desc') {
+                filtered.sort((a, b) => b.modal_price - a.modal_price);
+            } else if (currentSortMode === 'price-asc') {
+                filtered.sort((a, b) => a.modal_price - b.modal_price);
+            }
 
             let tableHtml = '';
             let cardsHtml = '';
@@ -1353,7 +1380,8 @@
                 const arrivalsText = `${r.arrivals || 0} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : (r.arrivals_unit || 'Tonnes')}`;
                 const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
-                if (distName !== lastDistrict) {
+                // Display District Header row ONLY when sorted district-wise
+                if (currentSortMode === 'district' && distName !== lastDistrict) {
                     tableHtml += `
                         <tr class="bg-emerald-50/70 border-y border-emerald-100/60">
                             <td colspan="10" class="py-2.5 px-4 font-black text-emerald-800 text-xs select-none">
@@ -1434,6 +1462,23 @@
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
             lucide.createIcons();
+        }
+
+        // Dynamic list sorting controller
+        function setSortMode(mode) {
+            currentSortMode = mode;
+            
+            const modes = ['district', 'price-desc', 'price-asc'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`sort-btn-${m}`);
+                if (m === mode) {
+                    btn.className = "py-1.5 px-3 rounded-lg border font-bold text-[11px] transition bg-emerald-50 border-emerald-500 text-emerald-700";
+                } else {
+                    btn.className = "py-1.5 px-3 rounded-lg border font-bold text-[11px] transition border-slate-200 text-slate-600 hover:bg-slate-50";
+                }
+            });
+
+            renderRatesTable();
         }
 
         function applyFilters() {
