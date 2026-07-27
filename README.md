@@ -128,6 +128,13 @@ integrator को मिलने के बाद GitHub Actions secrets मे
 न लिखें। जब तक 3 feeds configured नहीं होते, dashboard "insufficient_sources" status दिखाता है
 और कोई भाव प्रकाशित नहीं करता।
 
+`.github/workflows/update.yml` इन सभी optional secrets (`ENAM_TRADE_*`, `UP_EMANDI_TRADE_*`,
+`ENAM_AUCTION_*`, `DATA_GOV_RESOURCE_ID`) को updater तक पास करता है। जो secret set नहीं है वह
+खाली रहता है और उसका feed `not_configured` के रूप में Government Source Monitor में दिखता है—
+कोई fallback data नहीं बनता। हर run में updater `data/latest.json`, `data/history.json`,
+`data/state_prices.json`, `data/mandis.json`, `data/auction.json`, `data/benchmarks.json` और
+`data/sources.json` commit करता है (simulated `data/weather.json` हटा दिया गया है)।
+
 ### मण्डी परिषद निर्देशिका (division, district, mandi, grade, secretary, CUG)
 
 `https://dashboard.mandiprojects.in/MandiDetails.aspx` से हर अधिसूचित मण्डी की आधिकारिक पंक्ति
