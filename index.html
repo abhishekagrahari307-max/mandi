@@ -256,6 +256,15 @@
                 <div class="relative h-64 md:h-96 w-full">
                     <canvas id="trendsChart"></canvas>
                 </div>
+                <div class="relative h-64 md:h-96 w-full mt-8 pt-8 border-t border-slate-150">
+                    <h4 class="font-extrabold text-slate-800 text-sm mb-4 flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="w-4.5 h-4.5 text-emerald-600"></i>
+                        <span data-translate="trends_dist_comparison">ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)</span>
+                    </h4>
+                    <div class="relative h-64 md:h-80 w-full">
+                        <canvas id="districtsBarChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -689,7 +698,8 @@
                 adv_sunny: "मौसम साफ है। फसल सुखाने या भंडारण के लिए उत्तम समय है।",
                 adv_rainy: "बारिश की संभावना। कटी हुई फसल को सुरक्षित गोदाम में रखें।",
                 btn_download_pdf: "मंडी भाव PDF",
-                btn_download_bill: "बिल PDF"
+                btn_download_bill: "बिल PDF",
+                trends_dist_comparison: "ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)"
             },
             en: {
                 title_main: "UP Mandi Rates",
@@ -779,7 +789,8 @@
                 adv_sunny: "Clear sky. Excellent weather for drying crops or storage.",
                 adv_rainy: "Showers expected. Move harvested crops to indoor warehouse.",
                 btn_download_pdf: "Mandi Rates PDF",
-                btn_download_bill: "Bill PDF"
+                btn_download_bill: "Bill PDF",
+                trends_dist_comparison: "District-wise Price Comparison - Min vs Max (₹/Quintal)"
             }
         };
 
@@ -1258,6 +1269,75 @@
                                 font: { weight: 'bold', family: 'system-ui' }
                             }
                         }
+                    }
+                }
+            });
+
+            // Calculate District-wise Min and Max Prices for currently selected crop
+            const cropRecords = latestData.filter(r => r.commodity === crop);
+            const distPrices = {};
+
+            cropRecords.forEach(r => {
+                const distKey = currentLang === 'hi' ? r.district_hi : r.district;
+                if (!distPrices[distKey]) {
+                    distPrices[distKey] = { min: r.min_price, max: r.max_price };
+                } else {
+                    distPrices[distKey].min = Math.min(distPrices[distKey].min, r.min_price);
+                    distPrices[distKey].max = Math.max(distPrices[distKey].max, r.max_price);
+                }
+            });
+
+            // Convert to sorted array and limit to top 8 districts for clean layout
+            const distList = Object.keys(distPrices).map(name => ({
+                name: name,
+                min: distPrices[name].min,
+                max: distPrices[name].max
+            })).sort((a,b) => b.max - a.max).slice(0, 8);
+
+            const distLabels = distList.map(d => d.name);
+            const minPrices = distList.map(d => d.min);
+            const maxPrices = distList.map(d => d.max);
+
+            // Draw districtsBarChart
+            const distCtx = document.getElementById('districtsBarChart').getContext('2d');
+            
+            if (window.distChartObj) {
+                window.distChartObj.destroy();
+            }
+
+            window.distChartObj = new Chart(distCtx, {
+                type: 'bar',
+                data: {
+                    labels: distLabels,
+                    datasets: [
+                        {
+                            label: currentLang === 'hi' ? 'न्यूनतम भाव (Min Price)' : 'Min Price',
+                            data: minPrices,
+                            backgroundColor: '#f59e0b', // Amber-500
+                            borderRadius: 4
+                        },
+                        {
+                            label: currentLang === 'hi' ? 'उच्चतम भाव (Max Price)' : 'Max Price',
+                            data: maxPrices,
+                            backgroundColor: '#10b981', // Emerald-500
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true }
                     }
                 }
             });
