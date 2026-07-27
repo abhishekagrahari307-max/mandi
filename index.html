@@ -1274,22 +1274,41 @@
             }
         }
 
+        // Global Error Visualizer (Production-Grade Diagnostic System)
+        window.addEventListener('error', function(event) {
+            const errDiv = document.createElement('div');
+            errDiv.className = "fixed bottom-20 right-4 z-[9999] bg-red-600 text-white p-4 rounded-xl shadow-2xl max-w-sm text-xs font-mono space-y-2 border border-red-500 animate-bounce";
+            errDiv.innerHTML = `
+                <p class="font-bold">⚠️ रीयल-टाइम एरर डिटेक्टेड (Live Error):</p>
+                <p class="text-[10px] break-all">${event.message}</p>
+                <p class="text-[9px] text-red-200">फाइल: ${event.filename ? event.filename.split('/').pop() : 'Unknown'} | लाइन: ${event.lineno || 'Unknown'}</p>
+                <button onclick="this.parentElement.remove()" class="bg-white/20 hover:bg-white/30 text-white font-bold py-1 px-3 rounded mt-2">बंद करें</button>
+            `;
+            document.body.appendChild(errDiv);
+        });
+
         function fetchDashboardData() {
             const refreshIcon = document.getElementById('refresh-icon');
             if (refreshIcon) refreshIcon.classList.add('animate-spin');
 
             const host = window.location.origin;
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            const fetchLatest = fetch(`${host}/api/v2/rates?limit=500`)
-                .then(res => {
-                    if (!res.ok) throw new Error();
-                    return res.json();
-                })
-                .catch(() => fetch('data/latest.json').then(res => {
-                    if (!res.ok) throw new Error();
-                    return res.json();
-                }))
-                .catch(() => ({ records: [] }));
+            // Production-grade router: directly fetch from data/latest.json if on GitHub Pages
+            const fetchLatest = isLocal
+                ? fetch(`${host}/api/v2/rates?limit=500`)
+                    .then(res => {
+                        if (!res.ok) throw new Error();
+                        return res.json();
+                    })
+                    .catch(() => fetch('data/latest.json').then(res => res.json()))
+                    .catch(() => ({ records: [] }))
+                : fetch('data/latest.json')
+                    .then(res => {
+                        if (!res.ok) throw new Error();
+                        return res.json();
+                    })
+                    .catch(() => ({ records: [] }));
 
             const fetchHistory = fetch('data/history.json')
                 .then(res => {
