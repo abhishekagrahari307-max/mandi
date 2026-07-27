@@ -1974,7 +1974,96 @@
             renderIcons();
         }
 
-        function downloadRankingPDF() {
+        function waitForPdfRender(element) {
+            const imagePromises = Array.from(element.querySelectorAll('img')).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    const finish = () => resolve();
+                    img.addEventListener('load', finish, { once: true });
+                    img.addEventListener('error', finish, { once: true });
+                    setTimeout(finish, 3000);
+                });
+            });
+
+            const fontsReady = document.fonts && document.fonts.ready
+                ? document.fonts.ready.catch(() => undefined)
+                : Promise.resolve();
+
+            return Promise.all([fontsReady, ...imagePromises]).then(() => new Promise(resolve => {
+                // Two frames let the browser calculate Tailwind styles and the
+                // final dimensions before html2canvas takes its snapshot.
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            }));
+        }
+
+        async function savePdfDocument(pdfContainer, options) {
+            if (typeof window.html2pdf !== 'function') {
+                throw new Error('PDF library could not be loaded');
+            }
+
+            // html2canvas can return a blank canvas for detached elements.
+            // Keep the export in the rendered DOM, behind the app, until saving
+            // finishes. Do not use display:none/visibility:hidden/opacity:0.
+            Object.assign(pdfContainer.style, {
+                position: 'fixed',
+                left: '0',
+                top: '0',
+                zIndex: '-2147483647',
+                pointerEvents: 'none',
+                backgroundColor: '#ffffff',
+                color: '#0f172a',
+                fontFamily: "'Nirmala UI', 'Mangal', Arial, sans-serif"
+            });
+            pdfContainer.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(pdfContainer);
+
+            try {
+                await waitForPdfRender(pdfContainer);
+
+                const contentWidth = Math.max(pdfContainer.scrollWidth, 1);
+                const contentHeight = Math.max(pdfContainer.scrollHeight, 1);
+                if (contentWidth < 10 || contentHeight < 10) {
+                    throw new Error('PDF content has no renderable dimensions');
+                }
+
+                // Long rate tables can exceed mobile-browser canvas limits and
+                // produce an entirely blank PDF. Dynamically lower only the
+                // raster scale to stay under safe dimension/pixel limits.
+                const requestedScale = options.html2canvas?.scale || 2;
+                const dimensionScale = 30000 / contentHeight;
+                const pixelScale = Math.sqrt(12000000 / (contentWidth * contentHeight));
+                const safeScale = Math.max(0.7, Math.min(requestedScale, dimensionScale, pixelScale));
+
+                const finalOptions = {
+                    ...options,
+                    pagebreak: options.pagebreak || { mode: ['css', 'legacy'] },
+                    html2canvas: {
+                        ...(options.html2canvas || {}),
+                        scale: safeScale,
+                        useCORS: true,
+                        allowTaint: false,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: Math.max(document.documentElement.clientWidth, contentWidth)
+                    }
+                };
+
+                await window.html2pdf().set(finalOptions).from(pdfContainer).save();
+            } finally {
+                pdfContainer.remove();
+            }
+        }
+
+        function reportPdfError(error) {
+            console.error('PDF export failed:', error);
+            alert(currentLang === 'hi'
+                ? 'PDF नहीं बन सकी। इंटरनेट कनेक्शन जांचें और दोबारा प्रयास करें।'
+                : 'The PDF could not be created. Check your connection and try again.');
+        }
+
+        async function downloadRankingPDF() {
             try {
                 const bodyHtml = document.getElementById('print-area-ranking').innerHTML;
                 const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
@@ -2017,13 +2106,10 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("PDF downloaded cleanly"))
-                    .catch(() => {
-                        window.print();
-                    });
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Ranking PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
@@ -2677,7 +2763,7 @@
         }
 
         // Beautiful A4-sized PDF Export for Mandi Arbitrage Report (Khalilabad/Lucknow scenario compliant)
-        function downloadArbitragePDF() {
+        async function downloadArbitragePDF() {
             try {
                 const buyPrice = parseFloat(document.getElementById('arb-buy-price').value) || 0;
                 const salePrice = parseFloat(document.getElementById('arb-sale-price').value) || 0;
@@ -2788,15 +2874,14 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Arbitrage report PDF downloaded successfully"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Arbitrage report PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
-        function downloadBillPDF() {
+        async function downloadBillPDF() {
             try {
                 if (!globalBillDetails) {
                     calculateBill();
@@ -2930,15 +3015,14 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Bill PDF downloaded successfully"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Bill PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
 
-        function downloadRatesPDF() {
+        async function downloadRatesPDF() {
             try {
                 const filteredRecords = getFilteredRecords();
                 const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
@@ -3036,11 +3120,10 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
                 };
 
-                html2pdf().from(pdfContainer).set(opt).save()
-                    .then(() => console.log("Rates PDF downloaded cleanly"))
-                    .catch(() => window.print());
+                await savePdfDocument(pdfContainer, opt);
+                console.log("Rates PDF downloaded successfully");
             } catch (err) {
-                window.print();
+                reportPdfError(err);
             }
         }
     </script>
