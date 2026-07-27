@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://mandi_user:mandi_pass@db:5432/mandi_db
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=9ef842f824b44749a978d0c17b101cff356e9
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=mandi_user
+      - POSTGRES_PASSWORD=mandi_pass
+      - POSTGRES_DB=mandi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

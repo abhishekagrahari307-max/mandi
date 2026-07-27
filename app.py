@@ -4,12 +4,12 @@ import random
 import urllib.request
 import re
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, Security
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -44,23 +44,24 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v2/auth/login")
 
-# Pydantic Schemas
+# ================= VALIDATION SCHEMAS (SECURITY CODES) =================
+
 class RateCreate(BaseModel):
-    district: str
-    district_hi: str
-    mandi: str
-    mandi_hi: str
-    commodity: str
-    commodity_hi: str
+    district: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-zA-Z\s]+$")
+    district_hi: str = Field(..., min_length=2, max_length=50)
+    mandi: str = Field(..., min_length=2, max_length=100)
+    mandi_hi: str = Field(..., min_length=2, max_length=100)
+    commodity: str = Field(..., min_length=2, max_length=100)
+    commodity_hi: str = Field(..., min_length=2, max_length=100)
     variety: str = "FAQ"
     variety_hi: str = "सामान्य (FAQ)"
     grade: str = "FAQ"
     grade_hi: str = "FAQ"
-    arrivals: int = 0
-    min_price: float
-    max_price: float
-    modal_price: float
-    arrival_date: str
+    arrivals: int = Field(default=0, ge=0)
+    min_price: float = Field(..., gt=0)
+    max_price: float = Field(..., gt=0)
+    modal_price: float = Field(..., gt=0)
+    arrival_date: str = Field(..., pattern=r"^\d{2}/\d{2}/\d{4}$")
 
 class Token(BaseModel):
     access_token: str
@@ -68,7 +69,7 @@ class Token(BaseModel):
 
 class SubscribeRequest(BaseModel):
     contact_type: str # "whatsapp", "telegram"
-    contact_value: str
+    contact_value: str = Field(..., min_length=5, max_length=100)
     district: str = "all"
     commodity: str = "all"
 
@@ -111,15 +112,27 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Dep
         raise credentials_exception
     return user
 
+# Helper to write Secure Audit Logs
+def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, details: str, request: Request):
+    ip = request.client.host if request.client else "Unknown"
+    log_entry = db.AuditLog(
+        user_id=user_id,
+        username=username,
+        action=action,
+        details=details,
+        ip_address=ip
+    )
+    db_sess.add(log_entry)
+    db_sess.commit()
+
 # Seeding initial data (Auto-run on server start)
 @app.on_event("startup")
 def seed_database():
     session = db.SessionLocal()
     try:
-        # 1. Seed admin user if not exists
+        # Seed default admin user
         admin_exists = session.query(db.User).filter(db.User.username == "admin").first()
         if not admin_exists:
-            print("👤 Seeding default admin user (Username: admin, Password: admin123)...")
             admin_user = db.User(
                 username="admin",
                 hashed_password=get_password_hash("admin123"),
@@ -129,10 +142,9 @@ def seed_database():
             session.add(admin_user)
             session.commit()
             
-        # 2. Seed initial mandi rates from latest.json if database table is empty
+        # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
         if records_count == 0:
-            print("🌾 Database tables are empty. Seeding initial rates from latest.json...")
             latest_file = "data/latest.json"
             if os.path.exists(latest_file):
                 with open(latest_file, "r", encoding="utf-8") as f:
@@ -161,7 +173,6 @@ def seed_database():
                         )
                         session.add(m_record)
                 session.commit()
-                print(f"✅ Successfully seeded {session.query(db.MandiRecord).count()} mandi rates!")
     except Exception as e:
         print(f"Error seeding database: {e}")
     finally:
@@ -230,43 +241,102 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "avg_modal_price": round(avg_val, 2)
     }
 
-# 4. MANUALLY INSERT NEW MANDI RECORD (Admin Authorized)
+# 4. MANUALLY INSERT NEW MANDI RECORD (Admin & Trader Authorized + Audit Logging)
 @app.post("/api/v2/rates", status_code=status.HTTP_201_CREATED)
-def create_rate(rate: RateCreate, current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+def create_rate(
+    rate: RateCreate, 
+    request: Request,
+    current_user: db.User = Depends(get_current_user), 
+    db_sess: Session = Depends(get_db)
+):
+    # Role-Based Access Control (Only Admin, Trader, or Staff roles can add rates)
+    if current_user.role not in ["admin", "trader", "staff"]:
+        raise HTTPException(status_code=403, detail="Role unauthorized to insert rates")
+        
     m_record = db.MandiRecord(**rate.dict())
     db_sess.add(m_record)
     db_sess.commit()
     db_sess.refresh(m_record)
+    
+    # Write Audit Log
+    write_audit_log(
+        db_sess, current_user.id, current_user.username, "CREATE_RATE", 
+        f"Inserted new rate for {rate.commodity} in {rate.mandi} (₹{rate.modal_price})", request
+    )
+    
     return {"message": "Mandi rate added successfully!", "record": m_record}
 
-# 5. MANUALLY UPDATE EXISTING MANDI RECORD (Admin Authorized)
+# 5. MANUALLY UPDATE EXISTING MANDI RECORD (Admin & Trader Authorized + Audit Logging)
 @app.put("/api/v2/rates/{record_id}")
-def update_rate(record_id: int, updated: RateCreate, current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+def update_rate(
+    record_id: int, 
+    updated: RateCreate, 
+    request: Request,
+    current_user: db.User = Depends(get_current_user), 
+    db_sess: Session = Depends(get_db)
+):
+    if current_user.role not in ["admin", "trader"]:
+        raise HTTPException(status_code=403, detail="Role unauthorized to modify rates")
+        
     record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
+        
     for key, value in updated.dict().items():
         setattr(record, key, value)
+        
     db_sess.commit()
     db_sess.refresh(record)
+    
+    # Write Audit Log
+    write_audit_log(
+        db_sess, current_user.id, current_user.username, "UPDATE_RATE", 
+        f"Modified record ID {record_id} - New Modal Price: ₹{updated.modal_price}", request
+    )
+    
     return {"message": "Mandi rate updated successfully!", "record": record}
 
-# 6. DELETE MANDI RECORD (Admin Authorized)
+# 6. DELETE MANDI RECORD (Admin ONLY + Audit Logging)
 @app.delete("/api/v2/rates/{record_id}")
-def delete_rate(record_id: int, current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+def delete_rate(
+    record_id: int, 
+    request: Request,
+    current_user: db.User = Depends(get_current_user), 
+    db_sess: Session = Depends(get_db)
+):
+    # Strictly Admin ONLY
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Strictly Admin only operation")
+        
     record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
+        
     db_sess.delete(record)
     db_sess.commit()
+    
+    # Write Audit Log
+    write_audit_log(
+        db_sess, current_user.id, current_user.username, "DELETE_RATE", 
+        f"Deleted record ID {record_id} ({record.commodity} at {record.mandi})", request
+    )
+    
     return {"message": f"Record with ID {record_id} deleted successfully!"}
 
-# 7. AUTOMATIC PRICE SCRAPER FORCE TRIGGER (Authorized Admin Panel/Cron)
+# 7. AUTOMATIC PRICE SCRAPER FORCE TRIGGER (Admin Only + Audit Logging)
 @app.post("/api/v2/update")
-def trigger_system_update(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+def trigger_system_update(
+    request: Request,
+    current_user: db.User = Depends(get_current_user), 
+    db_sess: Session = Depends(get_db)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Role unauthorized to trigger scrapers")
+        
     print("Force Update Engine Triggered via Admin Panel...")
     import update_data as updater
     records = updater.generate_mock_data()
+    
     db_sess.query(db.MandiRecord).delete()
     for r in records:
         m_record = db.MandiRecord(
@@ -290,7 +360,15 @@ def trigger_system_update(current_user: db.User = Depends(get_current_user), db_
             arrival_date=r["arrival_date"]
         )
         db_sess.add(m_record)
+        
     db_sess.commit()
+    
+    # Write Audit Log
+    write_audit_log(
+        db_sess, current_user.id, current_user.username, "SCRAPER_TRIGGER", 
+        f"Triggered manual data refresh, updated {len(records)} entries in DB", request
+    )
+    
     return {
         "status": "success",
         "updated_count": len(records),
@@ -313,15 +391,9 @@ def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
         headers={"Content-Disposition": "attachment; filename=UP_Mandi_Live_Sync.csv"}
     )
 
-# ================= PHASE 2 NEW ENHANCED ENDPOINTS =================
-
 # 9. AI PRICE PREDICTION ENDPOINT
 @app.get("/api/v2/prediction/{crop}")
 def get_price_prediction(crop: str):
-    """
-    Analyzes historical price data and provides AI predictions 
-    for 1-day, 3-day, and 7-day projected prices and buying/selling recommendations.
-    """
     history_file = "data/history.json"
     if not os.path.exists(history_file):
         raise HTTPException(status_code=404, detail="Historical records not found")
@@ -329,17 +401,12 @@ def get_price_prediction(crop: str):
     with open(history_file, "r", encoding="utf-8") as f:
         history_data = json.load(f)
         
-    # Run the regression analytics model
     prediction_results = pred_engine.predict_future_prices(history_data, crop)
     return prediction_results
 
 # 10. WHATSAPP/TELEGRAM ALERTS SUBSCRIBE ENDPOINT
 @app.post("/api/v2/alerts/subscribe")
 def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get_db)):
-    """
-    Registers a farmer or trader for automated daily WhatsApp/Telegram price alerts.
-    """
-    # Check if subscription already exists
     existing = db_sess.query(db.AlertSubscription).filter(
         db.AlertSubscription.contact_type == sub.contact_type,
         db.AlertSubscription.contact_value == sub.contact_value
@@ -361,7 +428,6 @@ def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get
     db_sess.add(new_sub)
     db_sess.commit()
     
-    # Send a quick welcome greeting
     welcome_text = "🌾 <b>Welcome to UP Mandi Price Alerts!</b> 🌾\nVijay Kumar Traders has registered your phone. You will receive daily rate summaries as soon as Agmarknet rates update! Thank you."
     if sub.contact_type == "telegram":
         alert_engine.send_telegram_alert(sub.contact_value, welcome_text)
@@ -373,9 +439,6 @@ def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get
 # 11. FORCE BROADCAST PRICE ALERTS TO ALL ACTIVE SUBSCRIBERS (Admin Authorized)
 @app.post("/api/v2/alerts/broadcast")
 def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
-    """
-    Triggers immediate price alert notifications to all registered subscribers.
-    """
     records = db_sess.query(db.MandiRecord).all()
     subscriptions = db_sess.query(db.AlertSubscription).filter(db.AlertSubscription.is_active == True).all()
     

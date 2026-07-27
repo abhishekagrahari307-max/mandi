@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -15,7 +15,7 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# 1. USER TABLE FOR SECURE ADMIN PANEL LOGIN
+# 1. USER TABLE FOR SECURE ADMIN PANEL LOGIN & ROLE-BASED ACCESS CONTROL (RBAC)
 class User(Base):
     __tablename__ = "users"
     
@@ -23,10 +23,11 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, default="admin") # admin, editor, viewer
+    role = Column(String, default="admin") # "admin", "trader", "farmer", "staff"
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# 2. MANDI RECORD TABLE WITH ALL EXTRA DETAILS (Variety, Grade, Arrivals)
+# 2. MANDI RECORD TABLE WITH ADVANCED DATABASE INDEXES (FOR ENTERPRISE PERFORMANCE)
 class MandiRecord(Base):
     __tablename__ = "mandi_records"
     
@@ -52,17 +53,35 @@ class MandiRecord(Base):
     arrival_date = Column(String, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# 3. ALERTS SUBSCRIPTION TABLE (WhatsApp / Telegram / Email Alerts)
+    # Multi-Column Indexing for ultra-fast query and filtering performance
+    __table_args__ = (
+        Index('idx_district_commodity', 'district', 'commodity'),
+        Index('idx_mandi_commodity', 'mandi', 'commodity'),
+    )
+
+# 3. ALERTS SUBSCRIPTION TABLE
 class AlertSubscription(Base):
     __tablename__ = "alert_subscriptions"
     
     id = Column(Integer, primary_key=True, index=True)
     contact_type = Column(String, nullable=False) # "whatsapp", "telegram", "email"
-    contact_value = Column(String, nullable=False, index=True) # phone number, chat ID, or email
-    district = Column(String, default="all") # Specific district or all
-    commodity = Column(String, default="all") # Specific crop or all
+    contact_value = Column(String, nullable=False, index=True)
+    district = Column(String, default="all")
+    commodity = Column(String, default="all")
     is_active = Column(Boolean, default=True)
     subscribed_at = Column(DateTime, default=datetime.utcnow)
+
+# 4. ENTERPRISE AUDIT LOGS TABLE (FOR SYSTEM SECURITY AUDITS)
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True, nullable=True) # ID of user performing the action
+    username = Column(String, index=True, nullable=True)
+    action = Column(String, nullable=False) # e.g. "CREATE_RATE", "DELETE_USER", "SCRAPER_TRIGGER"
+    details = Column(String, nullable=True) # JSON or text payload description
+    ip_address = Column(String, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
 
 # Initialize Database tables
 def init_db():
