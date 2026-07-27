@@ -107,6 +107,9 @@ bash deploy.sh
 
 ### 🔑 भाव नहीं दिख रहे? सबसे पहले यह करें — DATA_GOV_IN_API_KEY सेट करें
 
+> 📄 **विस्तृत step-by-step गाइड (screenshots-जैसे निर्देश, troubleshooting table
+> और सुरक्षा नियम के साथ): [SETUP_API_KEY.md](SETUP_API_KEY.md)**
+
 Dashboard पर भाव न दिखने का **सबसे आम कारण** यही है कि `DATA_GOV_IN_API_KEY`
 configure नहीं है। यह key **मुफ़्त** है। पूरा तरीका:
 

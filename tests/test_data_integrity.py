@@ -435,6 +435,56 @@ class DashboardResilienceTests(unittest.TestCase):
         )
 
 
+class ServiceWorkerTests(unittest.TestCase):
+    """The offline cache must not break POSTs or store error pages."""
+
+    SOURCE = (ROOT / "sw.js").read_text(encoding="utf-8")
+
+    def test_non_get_requests_bypass_the_cache(self):
+        """Cache.put() rejects a POST with "Invalid request method POST",
+        which would make /api/v2/alerts/subscribe look like a network error."""
+        self.assertIn("request.method !== 'GET'", self.SOURCE)
+
+    def test_only_successful_responses_are_cached(self):
+        """fetch() resolves for 404/500 too; caching those would overwrite a
+        good offline copy with an error page."""
+        self.assertIn("networkResponse.ok", self.SOURCE)
+        self.assertIn("networkResponse.type !== 'opaque'", self.SOURCE)
+        self.assertNotIn("cache.put(event.request, networkResponse.clone());", self.SOURCE)
+
+    def test_offline_miss_resolves_instead_of_hanging(self):
+        self.assertIn("Response.error()", self.SOURCE)
+
+    def test_cache_version_was_bumped_for_the_new_logic(self):
+        """Returning users keep the old worker unless the cache name changes."""
+        match = re.search(r"const CACHE_NAME = 'up-mandi-v(\d+)'", self.SOURCE)
+        self.assertIsNotNone(match)
+        self.assertGreaterEqual(int(match.group(1)), 12)
+
+
+class ApiHardeningTests(unittest.TestCase):
+    """Regression tests for defects found by exercising the REST API."""
+
+    SOURCE = (ROOT / "app.py").read_text(encoding="utf-8")
+
+    def test_csv_export_uses_a_real_csv_writer(self):
+        """Official mandi/commodity names contain commas, which shifted every
+        later column when the row was built with an f-string."""
+        self.assertIn("csv.writer(", self.SOURCE)
+        self.assertNotIn(
+            'row = f"{r.id},{r.district},{r.mandi}', self.SOURCE
+        )
+
+    def test_csv_export_neutralises_spreadsheet_formulas(self):
+        self.assertIn("_csv_safe", self.SOURCE)
+
+    def test_alert_subscription_validates_the_channel_and_contact(self):
+        """A bogus contact_type or junk phone used to be stored as a dead row."""
+        self.assertIn("SUPPORTED_CONTACT_TYPES", self.SOURCE)
+        self.assertIn("_validated_contact_value", self.SOURCE)
+        self.assertIn(r"^(telegram|whatsapp)$", self.SOURCE)
+
+
 class AdminPanelTests(unittest.TestCase):
     """The admin panel must not offer actions the API refuses."""
 
