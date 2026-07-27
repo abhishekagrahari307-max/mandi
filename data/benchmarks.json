@@ -1,67 +1,47 @@
 {
-  "last_checked_at": "2026-07-27T15:55:16.183609+05:30",
-  "update_frequency": "6 times daily",
-  "update_slots_ist": [
-    "00:30",
-    "04:30",
-    "08:30",
-    "12:30",
-    "16:30",
-    "20:30"
-  ],
-  "sources": [
-    {
-      "name": "data.gov.in",
-      "status": "error",
-      "message": "DATA_GOV_IN_API_KEY is not configured"
-    },
-    {
-      "name": "AGMARKNET portal",
-      "status": "not_checked",
-      "url": "https://agmarknet.gov.in/home",
-      "message": "offline repository refresh"
-    },
-    {
-      "name": "AGMARKNET",
-      "status": "not_checked",
-      "message": "offline repository refresh"
-    },
-    {
-      "name": "e-NAM trade feed",
-      "status": "not_configured",
-      "records": 0
-    },
-    {
-      "name": "UP e-Mandi trade feed",
-      "status": "not_configured",
-      "records": 0
-    },
-    {
-      "name": "UP e-Mandi contacts",
-      "status": "unavailable",
-      "records": 0,
-      "url": null
-    },
-    {
-      "name": "UP Mandi Parishad directory",
-      "status": "not_checked",
-      "records": 0,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-      "message": "offline repository refresh"
-    },
-    {
-      "name": "UP Krishi Vipran state benchmark",
-      "status": "not_checked",
-      "records": 0,
-      "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "offline repository refresh"
-    },
-    {
-      "name": "e-NAM authorised auction feed",
-      "status": "not_configured",
-      "records": 0
-    }
-  ],
+  "updated_at": "2026-07-27T15:55:16.183771+05:30",
+  "policy": "Every value below is copied from an official government portal. No simulated, random or interpolated figure is stored.",
+  "state_benchmark": {
+    "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
+    "title_en": "Uttar Pradesh state-level benchmark rate",
+    "scope": "state_benchmark",
+    "is_mandi_rate": false,
+    "disclaimer_hi": "यह उ0प्र0 कृषि विपणन निदेशालय द्वारा प्रकाशित राज्य-स्तरीय संदर्भ भाव है, किसी एक मंडी का भाव नहीं। मंडी-वार भाव के लिए ऊपर सत्यापित तालिका देखें।",
+    "disclaimer_en": "This is the state-level benchmark published by the UP Directorate of Agricultural Marketing, not an individual mandi rate. See the verified mandi table for market-wise prices.",
+    "source": "UP Krishi Vipran (Directorate of Agricultural Marketing, UP)",
+    "source_url": "https://www.upkrishivipran.in/Default.aspx",
+    "status": "not_checked",
+    "message": "offline repository refresh",
+    "commodities": []
+  },
+  "mandi_parishad_directory": {
+    "title_hi": "राज्य कृषि उत्पादन मण्डी परिषद — मण्डी निर्देशिका",
+    "title_en": "UP State Agricultural Produce Market Board — mandi directory",
+    "source": "राज्य कृषि उत्पादन मण्डी परिषद, उत्तर प्रदेश",
+    "source_url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+    "status": "not_checked",
+    "fields": [
+      "division",
+      "district",
+      "mandi",
+      "grade",
+      "secretary",
+      "cug"
+    ],
+    "division_count": 0,
+    "district_count": 0,
+    "mandi_count": 0,
+    "grades": {},
+    "divisions": [],
+    "mandis": []
+  },
+  "agmarknet": {
+    "title_hi": "AGMARKNET राष्ट्रीय मूल्य पोर्टल",
+    "title_en": "AGMARKNET national price portal",
+    "source_url": "https://agmarknet.gov.in/home",
+    "report_url": "https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=0&Tx_State=UP&Tx_District=0&Tx_Market=0&Tx_Trend=0",
+    "status": null
+  },
   "official_portals": [
     {
       "id": "agmarknet",
@@ -123,7 +103,5 @@
       "owner": "Rajya Krishi Utpadan Mandi Parishad, Uttar Pradesh",
       "data_used": "Mandi secretary/contact details"
     }
-  ],
-  "minimum_price_source_matches": 3,
-  "policy": "No simulated prices, arrivals, contacts, lots, or bids are generated."
+  ]
 }
