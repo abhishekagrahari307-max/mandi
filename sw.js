@@ -1,17 +1,27 @@
-const CACHE_NAME = 'up-mandi-v4';
+const CACHE_NAME = 'up-mandi-v6';
 const STATIC_ASSETS = [
+  './',
+  './index.html',
   './manifest.json',
+  './data/latest.json',
+  './data/history.json',
+  './data/weather.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/lucide@latest',
-  'https://cdn.jsdelivr.net/npm/chart.js'
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
 ];
 
-// Install Event - cache only purely static libraries
+// Install Event - cache best-effort assets without blocking activation.
+// CDN requests can fail on some networks; that must never keep an old broken
+// service worker alive or stop the dashboard JavaScript from loading fresh data.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('Caching static libraries...');
-      return cache.addAll(STATIC_ASSETS);
+      console.log('Caching app shell and libraries...');
+      return Promise.allSettled(
+        STATIC_ASSETS.map(asset => cache.add(asset))
+      );
     })
   );
   self.skipWaiting();

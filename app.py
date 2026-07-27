@@ -9,11 +9,12 @@ from typing import List, Dict
 from fastapi import FastAPI, Depends, HTTPException, status, Security, Request, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+from sqlalchemy import text
+import bcrypt
 from jose import JWTError, jwt
 
 import database as db
@@ -38,7 +39,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = os.environ.get("JWT_SECRET", "9ef842f824b44749a978d0c17b101cff356e9")
 ALGORITHM = "HS256"
@@ -106,11 +106,40 @@ def get_db():
     finally:
         session.close()
 
+def _password_to_bcrypt_bytes(password: str) -> bytes:
+    """Encode passwords safely for bcrypt.
+
+    bcrypt has a hard 72-byte input limit. Newer bcrypt releases raise an
+    exception for longer values, so validate it ourselves to keep startup and
+    login behavior deterministic across dependency versions.
+    """
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        raise ValueError("Password must be 72 bytes or fewer for bcrypt")
+    return password_bytes
+
+
+def pydantic_to_dict(model: BaseModel) -> dict:
+    """Return a plain dict for both Pydantic v1 and v2 models."""
+    if hasattr(model, "model_dump"):
+        return model.model_dump()
+    return model.dict()
+
+def sqlalchemy_to_dict(model) -> dict:
+    """Serialize a SQLAlchemy model using its mapped table columns."""
+    return {column.name: getattr(model, column.name) for column in model.__table__.columns}
+
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(_password_to_bcrypt_bytes(password), bcrypt.gensalt()).decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            _password_to_bcrypt_bytes(plain_password),
+            hashed_password.encode("utf-8")
+        )
+    except (TypeError, ValueError):
+        return False
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -290,7 +319,7 @@ def get_rates(
         "total": total_records,
         "page": page,
         "limit": limit,
-        "records": records
+        "records": [sqlalchemy_to_dict(record) for record in records]
     }
 
 @app.get("/api/v2/analytics/metrics")
@@ -315,7 +344,7 @@ def create_rate(
     if current_user.role not in ["admin", "trader", "staff"]:
         raise HTTPException(status_code=403, detail="Role unauthorized to insert rates")
         
-    m_record = db.MandiRecord(**rate.dict())
+    m_record = db.MandiRecord(**pydantic_to_dict(rate))
     db_sess.add(m_record)
     db_sess.commit()
     db_sess.refresh(m_record)
@@ -324,7 +353,7 @@ def create_rate(
         db_sess, current_user.id, current_user.username, "CREATE_RATE", 
         f"Inserted new rate for {rate.commodity} in {rate.mandi} (₹{rate.modal_price})", request
     )
-    return {"message": "Mandi rate added successfully!", "record": m_record}
+    return {"message": "Mandi rate added successfully!", "record": sqlalchemy_to_dict(m_record)}
 
 @app.put("/api/v2/rates/{record_id}")
 def update_rate(
@@ -341,7 +370,7 @@ def update_rate(
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
         
-    for key, value in updated.dict().items():
+    for key, value in pydantic_to_dict(updated).items():
         setattr(record, key, value)
         
     db_sess.commit()
@@ -351,7 +380,7 @@ def update_rate(
         db_sess, current_user.id, current_user.username, "UPDATE_RATE", 
         f"Modified record ID {record_id} - New Modal Price: ₹{updated.modal_price}", request
     )
-    return {"message": "Mandi rate updated successfully!", "record": record}
+    return {"message": "Mandi rate updated successfully!", "record": sqlalchemy_to_dict(record)}
 
 @app.delete("/api/v2/rates/{record_id}")
 def delete_rate(
@@ -367,12 +396,14 @@ def delete_rate(
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
         
+    deleted_commodity = record.commodity
+    deleted_mandi = record.mandi
     db_sess.delete(record)
     db_sess.commit()
     
     write_audit_log(
         db_sess, current_user.id, current_user.username, "DELETE_RATE", 
-        f"Deleted record ID {record_id} ({record.commodity} at {record.mandi})", request
+        f"Deleted record ID {record_id} ({deleted_commodity} at {deleted_mandi})", request
     )
     return {"message": f"Record with ID {record_id} deleted successfully!"}
 
@@ -548,7 +579,7 @@ def create_financial_invoice(
     return {
         "status": "success",
         "message": "Official invoice saved and signed successfully!",
-        "invoice": db_invoice
+        "invoice": sqlalchemy_to_dict(db_invoice)
     }
 
 @app.get("/api/v2/financials/reports")
@@ -569,7 +600,7 @@ def get_financial_reports(current_user: db.User = Depends(get_current_user), db_
         "total_mandi_taxes_paid": round(total_mandi_tax, 2),
         "total_cash_liquid_payout": round(total_net_payout, 2),
         "total_bills_issued": total_bills_issued,
-        "recent_invoices": invoices[-10:]
+        "recent_invoices": [sqlalchemy_to_dict(invoice) for invoice in invoices[-10:]]
     }
 
 # ================= FIRST PILLAR: WEBSOCKET LIVE AUCTION ENGINE (PHASE 5) =================
@@ -577,7 +608,8 @@ def get_financial_reports(current_user: db.User = Depends(get_current_user), db_
 @app.get("/api/v2/auction/lots")
 def get_active_auction_lots(db_sess: Session = Depends(get_db)):
     """Returns list of currently active grain/crop lots inside the bidding yard."""
-    return db_sess.query(db.AuctionLot).filter(db.AuctionLot.status == "active").all()
+    lots = db_sess.query(db.AuctionLot).filter(db.AuctionLot.status == "active").all()
+    return [sqlalchemy_to_dict(lot) for lot in lots]
 
 @app.post("/api/v2/auction/bid")
 async def submit_auction_bid(bid: BidSubmit, db_sess: Session = Depends(get_db)):
@@ -621,11 +653,11 @@ async def submit_auction_bid(bid: BidSubmit, db_sess: Session = Depends(get_db))
     return {
         "status": "success",
         "message": f"Successfully placed bid of ₹{bid.bid_amount}/Q!",
-        "lot": lot
+        "lot": sqlalchemy_to_dict(lot)
     }
 
 # WEBSOCKET REAL-TIME BIDDING GATEWAY
-@websocket_endpoint := app.websocket("/api/v2/auction/ws/{username}")
+@app.websocket("/api/v2/auction/ws/{username}")
 async def websocket_auction_endpoint(websocket: WebSocket, username: str):
     """
     Real-Time WebSocket gateway connection endpoint.
@@ -657,7 +689,7 @@ async def websocket_auction_endpoint(websocket: WebSocket, username: str):
 @app.get("/health")
 def health_check(db_sess: Session = Depends(get_db)):
     try:
-        db_sess.execute("SELECT 1")
+        db_sess.execute(text("SELECT 1"))
         return {
             "status": "healthy",
             "database": "connected",
@@ -671,7 +703,31 @@ def health_check(db_sess: Session = Depends(get_db)):
         )
 
 # Serve Enterprise Admin Panel
-@app.get("/admin", response_class=HTMLResponse)
+@app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
 def serve_admin_panel():
     with open("admin.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+
+# Serve the public dashboard and static PWA assets when running via FastAPI/Docker.
+# GitHub Pages can still serve the same files directly, but the API server should
+# not return 404 for the app shell or its local JSON/image assets.
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/index.html", response_class=HTMLResponse, include_in_schema=False)
+def serve_dashboard():
+    with open("index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/manifest.json", include_in_schema=False)
+def serve_manifest():
+    return FileResponse("manifest.json", media_type="application/manifest+json")
+
+@app.get("/sw.js", include_in_schema=False)
+def serve_service_worker():
+    return FileResponse("sw.js", media_type="application/javascript")
+
+if os.path.isdir("data"):
+    app.mount("/data", StaticFiles(directory="data"), name="data")
+if os.path.isdir("images"):
+    app.mount("/images", StaticFiles(directory="images"), name="images")
+if os.path.isdir("uploads"):
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
