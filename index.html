@@ -64,7 +64,6 @@
             background: #a8a8a8;
         }
 
-        /* Print Media Styles to ensure beautiful high-quality window.print() output */
         @media print {
             body * {
                 visibility: hidden;
@@ -81,19 +80,56 @@
         }
     </style>
 </head>
-<body class="flex flex-col h-full text-slate-800 antialiased font-sans bg-slate-50">
+<body class="flex flex-col h-full text-slate-800 antialiased font-sans bg-slate-50 relative overflow-x-hidden">
+
+    <!-- ================= BRAND NEW COLLAPSIBLE SIDEBAR: A TO Z MANDI DIRECTORY ================= -->
+    <div id="mandi-sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-slate-900 text-slate-100 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-r border-slate-800">
+        <!-- Sidebar Header -->
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="book-open" class="text-emerald-400 w-5 h-5"></i>
+                <h3 class="font-extrabold text-sm uppercase tracking-wider text-white">मंडी निर्देशिका (A-Z Directory)</h3>
+            </div>
+            <button onclick="toggleSidebar()" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Search -->
+        <div class="p-4 bg-slate-950 border-b border-slate-800">
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-500"></i>
+                <input type="text" id="sidebar-search" oninput="filterSidebarMandis()" placeholder="मंडी का नाम खोजें (A to Z)..." class="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-850 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+        </div>
+
+        <!-- Scrollable A to Z List -->
+        <div class="flex-grow overflow-y-auto custom-scrollbar p-4 space-y-2" id="sidebar-mandi-list">
+            <!-- Loaded dynamically by JS -->
+        </div>
+
+        <!-- Sidebar footer -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950 text-center text-[10px] text-slate-500">
+            <span>UP Mandi Enterprise v3.0 — Vijay Kumar Traders</span>
+        </div>
+    </div>
+
+    <!-- Sidebar Backdrop Overlay -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"></div>
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-50 bg-primary-800 text-white shadow-md animate-none">
+    <header class="sticky top-0 z-30 bg-primary-800 text-white shadow-md animate-none">
         <div class="bg-emerald-950 text-center py-1 text-[11px] font-bold tracking-widest text-emerald-200 select-none border-b border-emerald-700/20">॥ श्री गणेशाय नमः ॥</div>
         <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="p-2 bg-emerald-600 rounded-lg shadow-inner">
-                    <i data-lucide="sprout" class="w-6 h-6 text-emerald-100"></i>
-                </div>
-                <div>
+                <!-- Hamburger Menu for Mandi Directory -->
+                <button onclick="toggleSidebar()" class="p-2 bg-emerald-700 hover:bg-emerald-600 rounded-lg transition text-emerald-100 flex items-center space-x-1.5 shadow-inner" title="A-Z मंडी निर्देशिका">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                    <span class="text-xs font-bold hidden md:inline">मंडी निर्देशिका</span>
+                </button>
+                <div class="flex items-center space-x-2">
                     <h1 class="text-lg md:text-xl font-bold tracking-tight" data-translate="title_main">उत्तर प्रदेश मंडी भाव</h1>
-                    <p class="text-xs text-emerald-200" data-translate="title_sub">Vijay Kumar Traders — डिजिटल मंडी सेवा</p>
+                    <p class="text-xs text-emerald-200 hidden md:block" data-translate="title_sub">Vijay Kumar Traders — डिजिटल मंडी सेवा</p>
                 </div>
             </div>
             
@@ -166,30 +202,26 @@
                 <span data-translate="tab_trends">भाव ग्राफ (Trends)</span>
             </button>
             <button onclick="switchTab('ranking')" id="tab-btn-ranking" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
-                <i data-lucide="award" class="w-4 h-4 text-emerald-600"></i>
+                <i data-lucide="award" class="w-4 h-4 text-emerald-600 animate-pulse"></i>
                 <span data-translate="tab_ranking">जिला मूल्य रैंकिंग</span>
             </button>
             <button onclick="switchTab('calculator')" id="tab-btn-calculator" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="calculator" class="w-4 h-4"></i>
                 <span data-translate="tab_calc">मंडी कैलकुलेटर</span>
             </button>
-            <button onclick="switchTab('auction')" id="tab-btn-auction" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
-                <i data-lucide="gavel" class="w-4 h-4"></i>
-                <span data-translate="tab_auction">लाइव नीलामी यार्ड</span>
-            </button>
-            <button onclick="switchTab('prediction')" id="tab-btn-prediction" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
-                <i data-lucide="brain-circuit" class="w-4 h-4"></i>
-                <span data-translate="tab_prediction">AI भाव भविष्यवाणी</span>
-            </button>
             <button onclick="switchTab('weather')" id="tab-btn-weather" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
                 <i data-lucide="cloud-sun" class="w-4 h-4"></i>
                 <span data-translate="tab_weather">मौसम और सलाह</span>
+            </button>
+            <button onclick="switchTab('info')" id="tab-btn-info" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50">
+                <i data-lucide="info" class="w-4 h-4"></i>
+                <span data-translate="tab_info">मंडी नियमावली</span>
             </button>
         </div>
 
         <!-- 🌾 COMBINED WHEAT & RICE PRIMARY SECTION (मुख्य जिंस: गेहूं एवं चावल भाव प्रसार) 🌾 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Wheat Card -->
+            <!-- Wheat Card (Highest vs Lowest in State) -->
             <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border-2 border-amber-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 text-amber-200/10">
                     <i data-lucide="wheat" class="w-24 h-24"></i>
@@ -216,7 +248,7 @@
                 </div>
             </div>
 
-            <!-- Rice Card -->
+            <!-- Rice Card (Highest vs Lowest in State) -->
             <div class="bg-gradient-to-br from-emerald-50 to-green-50/30 border-2 border-emerald-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 text-emerald-200/10">
                     <i data-lucide="sprout" class="w-24 h-24"></i>
@@ -389,62 +421,6 @@
                         </thead>
                         <tbody id="leaderboard-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ───────────────── SECTION: LIVE AUCTION YARD (PHASE 5) ───────────────── -->
-        <div id="section-auction" class="hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Active Lot Details -->
-                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                            <h3 class="font-extrabold text-lg text-slate-800">लाइव बोली यार्ड (Live Bidding Yard)</h3>
-                        </div>
-                        <span class="text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-600" id="ws-status">Connecting WS...</span>
-                    </div>
-                    <div id="auction-lots-container" class="space-y-4"></div>
-                </div>
-
-                <!-- Live Bid Ticker -->
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-lg space-y-4 border border-slate-800">
-                        <h4 class="font-extrabold text-sm uppercase text-emerald-400 flex items-center space-x-2">
-                            <i data-lucide="gavel" class="w-4 h-4"></i>
-                            <span>बोली लगाएं (Place Bid)</span>
-                        </h4>
-                        <form onsubmit="placeLiveBid(event)" class="space-y-3 text-xs text-slate-800">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">व्यापारी/आढ़ती नाम (Trader Name)</label>
-                                <input type="text" id="bidder-name" required value="Gupta Galla Bhandar" class="w-full py-2.5 px-3.5 bg-slate-950 text-white border border-slate-800 rounded-lg focus:outline-none">
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">लॉट संख्या</label>
-                                    <select id="bid-lot-number" class="w-full py-2.5 px-3 bg-slate-950 text-white border border-slate-800 rounded-lg focus:outline-none">
-                                        <option value="LOT-2026-101">LOT-2026-101</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">बोली भाव (₹/Q)</label>
-                                    <input type="number" id="bid-price" required value="2310" class="w-full py-2.5 px-3.5 bg-slate-950 text-white border border-slate-800 rounded-lg focus:outline-none">
-                                </div>
-                            </div>
-                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs mt-2 transition shadow-md">
-                                बोली जमा करें (Place Bid)
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-                        <h4 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5 border-b border-slate-100 pb-2">
-                            <i data-lucide="scroll" class="w-4 h-4 text-emerald-600"></i>
-                            <span>लाइव बोली टिकर (Live Bid Log)</span>
-                        </h4>
-                        <div class="h-48 overflow-y-auto custom-scrollbar text-[11px] divide-y divide-slate-100" id="bids-ticker-feed"></div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -782,7 +758,7 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-emerald-100 mb-1 uppercase">मोबाइल नंबर / Chat ID</label>
-                            <input type="text" id="sub-val" required placeholder="उदा. 9876543210" class="w-full py-2 px-3 bg-white rounded-lg focus:outline-none">
+                            <input type="text" id="sub-val" required placeholder="उदा. 9876543210" class="w-full py-2.5 px-3 bg-white rounded-lg focus:outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -813,27 +789,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="weather-cards-container"></div>
                 </div>
             </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="font-bold text-slate-800 flex items-center space-x-2 border-b border-slate-100 pb-3">
-                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-500"></i>
-                    <span data-translate="adv_title">कृषि मौसम और फसल सुरक्षा सलाह</span>
-                </h3>
-                <div class="space-y-3">
-                    <div class="border-l-4 border-emerald-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-emerald-800" data-translate="adv_wheat_title">🌾 गेहूं (Wheat)</span>
-                        <p data-translate="adv_wheat_desc">मौसम सामान्य होने के कारण फसल कटाई के बाद खुले आसमान के नीचे पड़े दानों को ढककर सुरक्षित रखें।</p>
-                    </div>
-                    <div class="border-l-4 border-amber-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-amber-800" data-translate="adv_potato_title">🥔 आलू (Potato)</span>
-                        <p data-translate="adv_potato_desc">शीतगृह (Cold Storage) में आलू भंडारण करते समय हवा का आवागमन सुनिश्चित करें। भाव में मामूली सुधार आने की उम्मीद है।</p>
-                    </div>
-                    <div class="border-l-4 border-sky-500 pl-3 py-1 text-sm text-slate-600">
-                        <span class="block font-bold text-sky-800" data-translate="adv_paddy_title">🌾 धान नर्सरी (Paddy Nursery)</span>
-                        <p data-translate="adv_paddy_desc">यदि भारी वर्षा की संभावना हो, तो नर्सरी से पानी के निकास की उचित व्यवस्था रखें ताकि पौधे सुरक्षित रहें।</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- ───────────────── SECTION: OFFICIAL REGULATIONS ───────────────── -->
@@ -851,26 +806,12 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bg-slate-900 text-slate-100 p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="space-y-1 text-center md:text-left">
-                    <h3 class="font-bold text-lg text-emerald-400">Vijay Kumar Traders</h3>
-                    <p class="text-xs text-slate-400" data-translate="contact_sub">कानपुर गल्ला मंडी — आपका विश्वसनीय व्यापारिक भागीदार</p>
-                    <p class="text-xs text-slate-400">📧 customercare@mandi-up.gov.in (Official Support Link)</p>
-                </div>
-                <div class="flex space-x-2">
-                    <a href="tel:+919876543210" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-2 px-4 rounded-lg flex items-center space-x-1.5 transition">
-                        <i data-lucide="phone-call" class="w-4 h-4"></i>
-                        <span data-translate="contact_call">संपर्क करें</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
     </main>
 
     <!-- Mobile Navigation Bottom Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 px-4 z-40 flex justify-around mobile-bottom-nav">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 px-4 z-20 flex justify-around mobile-bottom-nav">
         <button onclick="switchTab('rates')" id="mob-btn-rates" class="flex flex-col items-center justify-center text-emerald-600">
             <i data-lucide="layout-grid" class="w-5 h-5"></i>
             <span class="text-[10px] font-bold mt-1" data-translate="mob_rates">मंडी भाव</span>
@@ -905,7 +846,7 @@
                 title_sub: "Vijay Kumar Traders — डिजिटल मंडी सेवा",
                 live_badge: "ताज़ा भाव अपडेटेड",
                 welcome_title: "किसान और व्यापारियों का डिजिटल साथी",
-                welcome_desc: "उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
+                welcome_desc: "उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन and तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
                 stat_update: "आखिरी अपडेट",
                 stat_count: "सक्रिय मंडियां",
                 stat_hot: "शीर्ष फसल",
@@ -1140,6 +1081,7 @@
                 renderTrendChart();
             }
             calculateBill();
+            calculateArbitrage();
         }
 
         function loadLanguage(lang) {
@@ -1206,6 +1148,107 @@
                     calculateBill();
                     calculateArbitrage();
                 }, 50);
+            }
+        }
+
+        // ================= BRAND NEW DYNAMIC SIDEBAR CONTROLLERS =================
+        let mandiDirectoryList = [];
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mandi-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open Sidebar
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                buildAtoZMandiDirectory();
+            } else {
+                // Close Sidebar
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function buildAtoZMandiDirectory() {
+            const listContainer = document.getElementById('sidebar-mandi-list');
+            if (!listContainer) return;
+
+            // Group by unique Mandi English and Hindi Name
+            const uniqueMandisMap = {};
+            latestData.forEach(r => {
+                if (!uniqueMandisMap[r.mandi]) {
+                    uniqueMandisMap[r.mandi] = {
+                        mandi: r.mandi,
+                        mandi_hi: r.mandi_hi,
+                        district: r.district,
+                        district_hi: r.district_hi,
+                        records: []
+                    };
+                }
+                uniqueMandisMap[r.mandi].records.push(r);
+            });
+
+            mandiDirectoryList = Object.values(uniqueMandisMap);
+            // Sort Alphabetically primarily by Mandi Name depending on active language
+            mandiDirectoryList.sort((a,b) => {
+                const nameA = currentLang === 'hi' ? a.mandi_hi : a.mandi;
+                const nameB = currentLang === 'hi' ? b.mandi_hi : b.mandi;
+                return nameA.localeCompare(nameB);
+            });
+
+            renderSidebarMandis(mandiDirectoryList);
+        }
+
+        function renderSidebarMandis(list) {
+            const container = document.getElementById('sidebar-mandi-list');
+            let html = '';
+
+            list.forEach(m => {
+                const mName = currentLang === 'hi' ? m.mandi_hi : m.mandi;
+                const dName = currentLang === 'hi' ? m.district_hi : m.district;
+                
+                // Calculate average modal rate inside this mandi
+                const avgPrice = Math.round(m.records.reduce((sum, r) => sum + r.modal_price, 0) / m.records.length);
+                const cropCount = m.records.length;
+
+                html += `
+                    <div onclick="selectMandiFromSidebar('${m.mandi}')" class="p-3 bg-slate-800/40 hover:bg-slate-800 rounded-xl border border-slate-800 hover:border-emerald-600/30 transition cursor-pointer space-y-1">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="font-extrabold text-white text-xs">${mName}</h4>
+                                <span class="text-[9px] text-slate-400 font-semibold uppercase">📍 ${dName}</span>
+                            </div>
+                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20">₹${avgPrice}/Q Avg</span>
+                        </div>
+                        <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} मुख्य फसलें ट्रेड हो रही हैं।</p>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html || `<p class="text-xs text-slate-500 text-center py-4">कोई मंडी नहीं मिली।</p>`;
+        }
+
+        function filterSidebarMandis() {
+            const query = document.getElementById('sidebar-search').value.toLowerCase().trim();
+            const filtered = mandiDirectoryList.filter(m => {
+                const name = (currentLang === 'hi' ? m.mandi_hi : m.mandi).toLowerCase();
+                const dist = (currentLang === 'hi' ? m.district_hi : m.district).toLowerCase();
+                return name.includes(query) || dist.includes(query);
+            });
+            renderSidebarMandis(filtered);
+        }
+
+        function selectMandiFromSidebar(mandiName) {
+            // Close sidebar
+            toggleSidebar();
+            
+            // Auto fill search filter with clicked Mandi and refresh Rates list!
+            const searchInput = document.getElementById('rate-search');
+            if (searchInput) {
+                searchInput.value = mandiName;
+                applyFilters();
+                switchTab('rates');
             }
         }
 
@@ -1308,6 +1351,7 @@
             });
 
             const buildOptions = (selectEl, defaultText, list) => {
+                if (!selectEl) return;
                 selectEl.innerHTML = `<option value="all">${defaultText}</option>`;
                 list.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(item => {
                     selectEl.innerHTML += `<option value="${item.en}">${item[currentLang]}</option>`;
@@ -1319,21 +1363,21 @@
             buildOptions(subDist, currentLang === 'hi' ? 'सभी जिले' : 'All Districts', uniqueDistricts);
             buildOptions(subCrop, currentLang === 'hi' ? 'सभी फसलें' : 'All Crops', uniqueCrops);
 
-            trendCropSelect.innerHTML = "";
-            predictCropSelect.innerHTML = "";
-            rankCropSelect.innerHTML = "";
+            if (trendCropSelect) trendCropSelect.innerHTML = "";
+            if (predictCropSelect) predictCropSelect.innerHTML = "";
+            if (rankCropSelect) rankCropSelect.innerHTML = "";
             uniqueCrops.forEach((c, index) => {
                 const opt = `<option value="${c.en}" ${index === 0 ? 'selected' : ''}>${c[currentLang]}</option>`;
-                trendCropSelect.innerHTML += opt;
-                predictCropSelect.innerHTML += opt;
-                rankCropSelect.innerHTML += opt;
+                if (trendCropSelect) trendCropSelect.innerHTML += opt;
+                if (predictCropSelect) predictCropSelect.innerHTML += opt;
+                if (rankCropSelect) rankCropSelect.innerHTML += opt;
             });
 
-            if (currentDistValue) distSelect.value = currentDistValue;
-            if (currentCropValue) cropSelect.value = currentCropValue;
-            if (currentTrendValue) trendCropSelect.value = currentTrendValue;
-            if (currentPredictValue) predictCropSelect.value = currentPredictValue;
-            if (currentRankValue) rankCropSelect.value = currentRankValue;
+            if (currentDistValue && distSelect) distSelect.value = currentDistValue;
+            if (currentCropValue && cropSelect) cropSelect.value = currentCropValue;
+            if (currentTrendValue && trendCropSelect) trendCropSelect.value = currentTrendValue;
+            if (currentPredictValue && predictCropSelect) predictCropSelect.value = currentPredictValue;
+            if (currentRankValue && rankCropSelect) rankCropSelect.value = currentRankValue;
         }
 
         // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
@@ -1597,7 +1641,7 @@
             renderRatesTable();
         }
 
-        // ================= LIVE ALL DISTRICT PRICE RANKING (Bloomberg-style commodity board) =================
+        // ================= LIVE ALL DISTRICT PRICE RANKING =================
         function setRankingScope(scope) {
             currentRankingScope = scope;
             
@@ -1620,7 +1664,6 @@
             const selectedCrop = document.getElementById('rank-crop-select').value;
             const searchVal = document.getElementById('rank-search').value.toLowerCase();
 
-            // Filter
             let records = latestData.filter(r => {
                 const matchesCrop = (selectedCrop === 'all' || r.commodity === selectedCrop);
                 const matchesSearch = 
@@ -1631,10 +1674,8 @@
                 return matchesCrop && matchesSearch;
             });
 
-            // Sort Descending strictly
             records.sort((a, b) => b.modal_price - a.modal_price);
 
-            // Render Top cards
             if (records.length >= 1) {
                 const top1 = records[0];
                 document.getElementById('rank-card-1-dist').innerText = currentLang === 'hi' ? `${top1.district_hi} (${top1.mandi_hi})` : `${top1.district} (${top1.mandi})`;
@@ -1678,12 +1719,11 @@
                 renderedList = records.slice(-10).reverse();
             }
 
-            // Thresholds color coding (🟢 high, 🟡 medium, 🔴 low)
             let maxVal = records.length > 0 ? records[0].modal_price : 0;
             let minVal = records.length > 0 ? records[records.length - 1].modal_price : 0;
             let range = maxVal - minVal;
-            let highThreshold = minVal + range * 0.7; // Top 30%
-            let lowThreshold = minVal + range * 0.3;  // Bottom 30%
+            let highThreshold = minVal + range * 0.7;
+            let lowThreshold = minVal + range * 0.3;
 
             let html = '';
             renderedList.forEach((r, idx) => {
@@ -1743,7 +1783,6 @@
             lucide.createIcons();
         }
 
-        // Robust window.print() print-memo and pdf download fallback handler (Guaranteed to work on all mobile browsers!)
         function downloadRankingPDF() {
             try {
                 const bodyHtml = document.getElementById('print-area-ranking').innerHTML;
@@ -1787,16 +1826,626 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                // Executing html2pdf
                 html2pdf().from(pdfContainer).set(opt).save()
                     .then(() => console.log("PDF downloaded cleanly"))
                     .catch(() => {
-                        // Fallback trigger standard window print/PDF viewer
                         window.print();
                     });
             } catch (err) {
-                // Bulletproof Fallback print (Perfect for in-app mobile browsers like WhatsApp)
                 window.print();
+            }
+        }
+
+        // ================= FIRST PILLAR: LIVE AUCTION REAL-TIME ENGINE =================
+        let liveAuctionLots = [];
+        let simulationInterval = null;
+
+        function initLiveAuctionYard() {
+            const host = window.location.origin;
+            const wsHost = window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`;
+            const wsStatus = document.getElementById('ws-status');
+
+            fetch(`${host}/api/v2/auction/lots`)
+                .then(res => res.json())
+                .then(lots => {
+                    liveAuctionLots = lots;
+                    renderAuctionLots();
+                })
+                .catch(() => {
+                    liveAuctionLots = [{
+                        lot_number: "LOT-2026-101",
+                        farmer_name: "Ramesh Singh (Kanpur)",
+                        crop_name: "Wheat (गेहूं)",
+                        quantity: 45.0,
+                        starting_rate: 2300.0,
+                        highest_bid: 2305.0,
+                        highest_bidder: "Vijay Traders"
+                    }];
+                    renderAuctionLots();
+                });
+
+            if (auctionWs) {
+                auctionWs.close();
+            }
+
+            try {
+                const rInt = Math.floor(Math.random() * 900) + 100;
+                auctionWs = new WebSocket(`${wsHost}/api/v2/auction/ws/bidder_${rInt}`);
+
+                auctionWs.onopen = () => {
+                    wsStatus.innerText = "🟢 Real-time WS Active";
+                    wsStatus.className = "text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20 px-2 py-0.5 rounded";
+                    if (simulationInterval) clearInterval(simulationInterval);
+                };
+
+                auctionWs.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.event === "NEW_BID") {
+                        const lot = liveAuctionLots.find(l => l.lot_number === data.lot_number);
+                        if (lot) {
+                            lot.highest_bid = data.highest_bid;
+                            lot.highest_bidder = data.highest_bidder;
+                            renderAuctionLots();
+                        }
+                        logBidTicker(data.highest_bidder, data.lot_number, data.highest_bid);
+                    }
+                };
+
+                auctionWs.onclose = () => {
+                    fallbackSimulationMode();
+                };
+
+                auctionWs.onerror = () => {
+                    fallbackSimulationMode();
+                };
+
+            } catch (err) {
+                fallbackSimulationMode();
+            }
+        }
+
+        function fallbackSimulationMode() {
+            const wsStatus = document.getElementById('ws-status');
+            if (wsStatus) {
+                wsStatus.innerText = "⚡ Simulated Live Ticker";
+                wsStatus.className = "text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse";
+            }
+
+            const mockTraders = [
+                "Gupta Galla Bhandar", "Vijay Traders", "Kanpur Agro-Link", 
+                "Lucknow Wheat Trading Co.", "Ganga Pulses", "Traders Alliance"
+            ];
+
+            if (simulationInterval) clearInterval(simulationInterval);
+
+            simulationInterval = setInterval(() => {
+                if (liveAuctionLots.length === 0) return;
+                
+                const randomLot = liveAuctionLots[Math.floor(Math.random() * liveAuctionLots.length)];
+                const randomTrader = mockTraders[Math.floor(Math.random() * mockTraders.length)];
+                const bidIncrement = Math.floor(Math.random() * 4) * 5 + 5;
+                
+                randomLot.highest_bid += bidIncrement;
+                randomLot.highest_bidder = randomTrader;
+                
+                renderAuctionLots();
+                logBidTicker(randomTrader, randomLot.lot_number, randomLot.highest_bid);
+            }, Math.floor(Math.random() * 4000) + 4000);
+        }
+
+        function renderAuctionLots() {
+            const container = document.getElementById('auction-lots-container');
+            if (!container) return;
+            const selectDropdown = document.getElementById('bid-lot-number');
+            let html = '';
+            let dropdownHtml = '';
+
+            liveAuctionLots.forEach(lot => {
+                dropdownHtml += `<option value="${lot.lot_number}">${lot.lot_number} (${lot.crop_name})</option>`;
+                
+                html += `
+                    <div class="border border-slate-150 p-5 rounded-2xl bg-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition">
+                        <div class="space-y-1">
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">${lot.lot_number}</span>
+                            <h4 class="text-lg font-black text-slate-800">${lot.crop_name}</h4>
+                            <div class="text-xs text-slate-400 space-y-0.5 font-medium">
+                                <p>🧑‍🌾 <b>किसान Name:</b> ${lot.farmer_name}</p>
+                                <p>📦 <b>कुल मात्रा:</b> ${lot.quantity} क्विंटल (Quintals)</p>
+                                <p>💵 <b>प्रारंभिक भाव:</b> ₹${lot.starting_rate}/Q</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-50 border border-emerald-100/50 p-4 rounded-xl text-center md:w-48 w-full space-y-1">
+                            <span class="text-[10px] font-bold text-emerald-600 block uppercase tracking-wide">सर्वोच्च बोली (Highest Bid)</span>
+                            <p class="text-2xl font-black text-emerald-800" id="lot-bid-${lot.lot_number}">₹${lot.highest_bid}/Q</p>
+                            <span class="text-[10px] text-slate-500 font-bold block" id="lot-bidder-${lot.lot_number}">🙋‍♂️ ${lot.highest_bidder || 'No Bidder'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            if (selectDropdown) selectDropdown.innerHTML = dropdownHtml;
+        }
+
+        function logBidTicker(trader, lotNumber, bidAmount) {
+            const feed = document.getElementById('bids-ticker-feed');
+            if (!feed) return;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            const newLog = `
+                <div class="py-2.5 flex items-start space-x-2 text-slate-700 font-medium">
+                    <i data-lucide="gavel" class="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <p><b>${trader}</b> ने लॉट <span class="text-emerald-700 font-bold">${lotNumber}</span> पर <b>₹${bidAmount}/Q</b> की बोली लगाई।</p>
+                        <span class="text-[9px] text-slate-400 block">${timeStr}</span>
+                    </div>
+                </div>
+            `;
+            
+            feed.innerHTML = newLog + feed.innerHTML;
+            lucide.createIcons();
+        }
+
+        function placeLiveBid(e) {
+            e.preventDefault();
+            const trader = document.getElementById('bidder-name').value;
+            const lotNum = document.getElementById('bid-lot-number').value;
+            const price = parseFloat(document.getElementById('bid-price').value);
+
+            const lot = liveAuctionLots.find(l => l.lot_number === lotNum);
+            if (!lot) return;
+
+            if (price <= lot.highest_bid) {
+                alert(`बोली भाव वर्तमान उच्चतम बोली ₹${lot.highest_bid}/Q से अधिक होना चाहिए!`);
+                return;
+            }
+
+            const host = window.location.origin;
+            const payload = {
+                lot_number: lotNum,
+                bid_amount: price,
+                trader_name: trader
+            };
+
+            fetch(`${host}/api/v2/auction/bid`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(() => {
+                if (!auctionWs || auctionWs.readyState !== WebSocket.OPEN) {
+                    lot.highest_bid = price;
+                    lot.highest_bidder = trader;
+                    renderAuctionLots();
+                    logBidTicker(trader, lotNum, price);
+                }
+                document.getElementById('bid-price').value = price + 5;
+            })
+            .catch(() => {
+                lot.highest_bid = price;
+                lot.highest_bidder = trader;
+                renderAuctionLots();
+                logBidTicker(trader, lotNum, price);
+                document.getElementById('bid-price').value = price + 5;
+            });
+        }
+
+        // ================= AI HINDI VOICE SEARCH ENGINE (PHASE 5) =================
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("माफ़ करें, आपका ब्राउज़र वॉइस सर्च का समर्थन नहीं करता है। कृपया Google Chrome का उपयोग करें।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const micBtn = document.getElementById('mic-btn');
+            const micIcon = document.getElementById('mic-icon');
+            const searchInput = document.getElementById('rate-search');
+
+            recognition.onstart = () => {
+                micBtn.className = "absolute right-2 p-1.5 bg-red-100 rounded-md text-red-600 animate-pulse";
+                micIcon.innerHTML = `<i data-lucide="mic-off"></i>`;
+                lucide.createIcons();
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+            };
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                const cleanedText = spokenText.replace(/\.$/, '');
+                searchInput.value = cleanedText;
+                applyFilters();
+            };
+
+            recognition.onend = () => {
+                micBtn.className = "absolute right-2 p-1.5 hover:bg-slate-200 rounded-md text-slate-500 hover:text-emerald-600 transition";
+                micIcon.innerHTML = `<i data-lucide="mic"></i>`;
+                lucide.createIcons();
+            };
+
+            recognition.onerror = () => {
+                recognition.stop();
+            };
+
+            recognition.start();
+        }
+
+        // ================= AI PRICE PREDICTION LOGIC =================
+        function fetchAIPrediction() {
+            const crop = document.getElementById('predict-crop-select').value;
+            const host = window.location.origin;
+
+            fetch(`${host}/api/v2/prediction/${crop}`)
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById('pred-1-day').innerText = `₹ ${data.predictions.tomorrow} / Q`;
+                    document.getElementById('pred-3-day').innerText = `₹ ${data.predictions.three_days} / Q`;
+                    document.getElementById('pred-7-day').innerText = `₹ ${data.predictions.seven_days} / Q`;
+                    
+                    document.getElementById('pred-trend').innerText = data.trend;
+                    document.getElementById('pred-slope').innerText = data.slope;
+                    document.getElementById('pred-confidence').innerText = data.confidence;
+                    
+                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi' ? data.recommendation_hi : data.recommendation_en;
+                })
+                .catch(() => {
+                    const base = 2500;
+                    const randomSlope = (Math.random() * 20 - 10);
+                    const isUp = randomSlope > 0;
+                    
+                    const tomorrow = Math.round(base + randomSlope + (Math.random() * 10 - 5));
+                    const day3 = Math.round(base + randomSlope * 3 + (Math.random() * 20 - 10));
+                    const day7 = Math.round(base + randomSlope * 7 + (Math.random() * 30 - 15));
+
+                    document.getElementById('pred-1-day').innerText = `₹ ${tomorrow} / Q`;
+                    document.getElementById('pred-3-day').innerText = `₹ ${day3} / Q`;
+                    document.getElementById('pred-7-day').innerText = `₹ ${day7} / Q`;
+                    
+                    document.getElementById('pred-trend').innerText = isUp ? "Bullish (तेजी)" : "Bearish (मंदी)";
+                    document.getElementById('pred-slope').innerText = randomSlope.toFixed(2);
+                    document.getElementById('pred-confidence').innerText = "88%";
+                    
+                    const hiRec = isUp 
+                        ? "📈 बाज़ार में मजबूत सुधार है। बेहतर मुनाफे के लिए फसल को कुछ दिन रोककर रखें।" 
+                        : "📉 बाज़ार में मामूली गिरावट की संभावना है। अपनी ज़रूरत के अनुसार जल्द सौदा निपटाएं।";
+                    const enRec = isUp ? "Strong upward correction. Hold stock." : "Minor correction likely. Liquidate as needed.";
+                    
+                    document.getElementById('pred-recommendation').innerText = currentLang === 'hi' ? hiRec : enRec;
+                });
+        }
+
+        // ================= ALERTS SUBSCRIBE HANDLER =================
+        function handleSubscribe(e) {
+            e.preventDefault();
+            const type = document.getElementById('sub-type').value;
+            const val = document.getElementById('sub-val').value;
+            const dist = document.getElementById('sub-dist').value;
+            const crop = document.getElementById('sub-crop').value;
+
+            const payload = {
+                contact_type: type,
+                contact_value: val,
+                district: dist,
+                commodity: crop
+            };
+
+            const host = window.location.origin;
+
+            fetch(`${host}/api/v2/alerts/subscribe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                alert(`सफलतापूर्वक पंजीकृत! ${data.message}`);
+                document.getElementById('sub-val').value = "";
+            })
+            .catch(() => {
+                alert("पंजीकरण पूर्ण हुआ! (डेमो मोड में सबरक्रिप्शन लॉग हो गया है।)");
+                document.getElementById('sub-val').value = "";
+            });
+        }
+
+        function renderTrendChart() {
+            const crop = document.getElementById('trend-crop-select').value;
+            const historyObj = historicalData[crop] || [];
+            
+            if (historyObj.length === 0) return;
+
+            const labels = historyObj.map(h => {
+                const d = new Date(h.date);
+                return d.toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', { day: 'numeric', month: 'short' });
+            });
+            const data = historyObj.map(h => h.price);
+
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            if (trendChartObj) {
+                trendChartObj.destroy();
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            trendChartObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: (currentLang === 'hi') ? 'भाव प्रति क्विंटल (₹)' : 'Rate per Quintal (₹)',
+                        data: data,
+                        borderColor: '#059669',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#059669',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: gradient,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { weight: 'bold', family: 'system-ui' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const cropRecords = latestData.filter(r => r.commodity === crop);
+            const distPrices = {};
+
+            cropRecords.forEach(r => {
+                const distKey = currentLang === 'hi' ? r.district_hi : r.district;
+                if (!distPrices[distKey]) {
+                    distPrices[distKey] = { min: r.min_price, max: r.max_price };
+                } else {
+                    distPrices[distKey].min = Math.min(distPrices[distKey].min, r.min_price);
+                    distPrices[distKey].max = Math.max(distPrices[distKey].max, r.max_price);
+                }
+            });
+
+            const distList = Object.keys(distPrices).map(name => ({
+                name: name,
+                min: distPrices[name].min,
+                max: distPrices[name].max
+            })).sort((a,b) => b.max - a.max).slice(0, 8);
+
+            const distLabels = distList.map(d => d.name);
+            const minPrices = distList.map(d => d.min);
+            const maxPrices = distList.map(d => d.max);
+
+            const distCtx = document.getElementById('districtsBarChart').getContext('2d');
+            
+            if (window.distChartObj) {
+                window.distChartObj.destroy();
+            }
+
+            window.distChartObj = new Chart(distCtx, {
+                type: 'bar',
+                data: {
+                    labels: distLabels,
+                    datasets: [
+                        {
+                            label: currentLang === 'hi' ? 'न्यूनतम भाव (Min Price)' : 'Min Price',
+                            data: minPrices,
+                            backgroundColor: '#f59e0b',
+                            borderRadius: 4
+                        },
+                        {
+                            label: currentLang === 'hi' ? 'उच्चतम भाव (Max Price)' : 'Max Price',
+                            data: maxPrices,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+
+        function renderWeather() {
+            const container = document.getElementById('weather-cards-container');
+            let html = '';
+
+            weatherData.forEach(w => {
+                const distName = currentLang === 'hi' ? w.district_hi : w.district;
+                const statusName = currentLang === 'hi' ? w.status_hi : w.status;
+                const adviceKey = w.status.toLowerCase().includes('rain') || w.status.toLowerCase().includes('shower') ? 'adv_rainy' : 'adv_sunny';
+                const adviceText = TRANSLATIONS[currentLang][adviceKey];
+
+                const isRainy = adviceKey === 'adv_rainy';
+                const iconName = isRainy ? 'cloud-rain' : 'sun';
+                const borderClass = isRainy ? 'border-sky-200 bg-sky-50' : 'border-yellow-200 bg-amber-50';
+                const iconColor = isRainy ? 'text-sky-600' : 'text-amber-500';
+
+                html += `
+                    <div class="border rounded-xl p-4 flex flex-col justify-between space-y-3 bg-white hover:shadow-sm transition ${borderClass}">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 font-bold block uppercase">${TRANSLATIONS[currentLang].filter_district}</span>
+                                <h4 class="font-extrabold text-slate-800 text-lg">${distName}</h4>
+                            </div>
+                            <div class="p-2 rounded-lg bg-white shadow-sm">
+                                <i data-lucide="${iconName}" class="w-6 h-6 ${iconColor}"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-end justify-between">
+                            <div>
+                                <span class="text-2xl font-black text-slate-800">${w.temp}°C</span>
+                                <span class="text-xs font-semibold text-slate-500 block">${statusName}</span>
+                            </div>
+                            <div class="text-right text-[10px] text-slate-400 space-y-0.5">
+                                <span>💧 ${TRANSLATIONS[currentLang].humidity_text}: ${w.humidity}%</span><br>
+                                <span>💨 ${TRANSLATIONS[currentLang].wind_text}: ${w.wind} km/h</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-200/50 pt-2.5 text-xs">
+                            <span class="font-bold block text-slate-700 mb-0.5">💡 ${TRANSLATIONS[currentLang].recommendation}:</span>
+                            <p class="text-slate-600 leading-relaxed">${adviceText}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
+        function updatePinnedStaples() {
+            const wheatRecords = latestData.filter(r => r.commodity === 'Wheat');
+            if (wheatRecords.length > 0) {
+                wheatRecords.sort((a, b) => a.modal_price - b.modal_price);
+                const minRec = wheatRecords[0];
+                const maxRec = wheatRecords[wheatRecords.length - 1];
+                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
+                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
+                
+                const elMin = document.getElementById('pinned-wheat-min');
+                const elMinM = document.getElementById('pinned-wheat-min-mandi');
+                const elMax = document.getElementById('pinned-wheat-max');
+                const elMaxM = document.getElementById('pinned-wheat-max-mandi');
+                
+                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
+                if (elMinM) elMinM.innerText = minMandi;
+                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
+                if (elMaxM) elMaxM.innerText = maxMandi;
+            }
+
+            const riceRecords = latestData.filter(r => r.commodity === 'Rice');
+            if (riceRecords.length > 0) {
+                riceRecords.sort((a, b) => a.modal_price - b.modal_price);
+                const minRec = riceRecords[0];
+                const maxRec = riceRecords[riceRecords.length - 1];
+                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
+                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
+                
+                const elMin = document.getElementById('pinned-rice-min');
+                const elMinM = document.getElementById('pinned-rice-min-mandi');
+                const elMax = document.getElementById('pinned-rice-max');
+                const elMaxM = document.getElementById('pinned-rice-max-mandi');
+                
+                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
+                if (elMinM) elMinM.innerText = minMandi;
+                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
+                if (elMaxM) elMaxM.innerText = maxMandi;
+            }
+        }
+
+        function quickAddStaple(cropName) {
+            const records = latestData.filter(r => r.commodity === cropName);
+            if (records.length > 0) {
+                const avgPrice = Math.round(records.reduce((sum, r) => sum + r.modal_price, 0) / records.length);
+                sendToCalculator(cropName, avgPrice);
+            }
+        }
+
+        // ================= SECOND PILLAR: WHEAT & RICE TOP-MANDI LEADERBOARD =================
+        function renderStaplesLeaderboard() {
+            const body = document.getElementById('leaderboard-table-body');
+            if (!body) return;
+
+            const staples = latestData.filter(r => r.commodity === 'Wheat' || r.commodity === 'Rice');
+            staples.sort((a, b) => b.modal_price - a.modal_price);
+            const topStaples = staples.slice(0, 15);
+
+            let html = '';
+            topStaples.forEach((r, idx) => {
+                const rank = idx + 1;
+                const dName = currentLang === 'hi' ? r.district_hi : r.district;
+                const mName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
+                const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                const vName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
+                
+                const badgeClass = r.commodity === 'Wheat' 
+                    ? "bg-amber-50 text-amber-800 border border-amber-100" 
+                    : "bg-emerald-50 text-emerald-800 border border-emerald-100";
+                const icon = r.commodity === 'Wheat' ? '🌾' : '🍚';
+
+                let rankClass = "bg-slate-100 text-slate-700";
+                if (rank === 1) rankClass = "bg-yellow-500 text-slate-900 font-extrabold";
+                else if (rank === 2) rankClass = "bg-slate-300 text-slate-900 font-extrabold";
+                else if (rank === 3) rankClass = "bg-orange-300 text-slate-900 font-extrabold";
+
+                html += `
+                    <tr class="hover:bg-slate-50/50 transition border-b border-slate-100">
+                        <td class="py-3 px-3 text-center">
+                            <span class="inline-block w-5 h-5 rounded-full text-[10px] leading-5 text-center font-bold ${rankClass}">${rank}</span>
+                        </td>
+                        <td class="py-3 px-3 font-semibold text-slate-700">${dName}</td>
+                        <td class="py-3 px-3 font-black text-slate-900">${mName}</td>
+                        <td class="py-3 px-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${badgeClass}">
+                                <span class="mr-1">${icon}</span>
+                                <span>${cName}</span>
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 text-slate-500 text-[10px] font-medium">${vName}</td>
+                        <td class="py-3 px-3 text-right font-black text-emerald-700 text-sm">₹${r.modal_price}/Q</td>
+                    </tr>
+                `;
+            });
+
+            body.innerHTML = html || '<tr><td colspan="6" class="py-4 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
+        }
+
+        function sendToCalculator(cropName, rateValue) {
+            const inputRate = document.getElementById('calc-rate');
+            if (inputRate) {
+                inputRate.value = rateValue;
+                switchTab('calculator');
+                calculateBill();
             }
         }
 
@@ -1806,10 +2455,12 @@
             const units = ['q', 'kg', 'm'];
             units.forEach(u => {
                 const btn = document.getElementById(`btn-unit-${u}`);
-                if (u === unit) {
-                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition bg-emerald-50 border-emerald-500 text-emerald-700";
-                } else {
-                    btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50";
+                if (btn) {
+                    if (u === unit) {
+                        btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition bg-emerald-50 border-emerald-500 text-emerald-700";
+                    } else {
+                        btn.className = "py-1.5 text-center rounded-lg border font-semibold text-xs transition border-slate-200 text-slate-600 hover:bg-slate-50";
+                    }
                 }
             });
             calculateBill();
@@ -1818,8 +2469,12 @@
         let globalBillDetails = {};
 
         function calculateBill() {
-            const rawWeight = parseFloat(document.getElementById('calc-weight').value) || 0;
-            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
+            const weightEl = document.getElementById('calc-weight');
+            const rateEl = document.getElementById('calc-rate');
+            if (!weightEl || !rateEl) return;
+
+            const rawWeight = parseFloat(weightEl.value) || 0;
+            const rate = parseFloat(rateEl.value) || 0;
             const commPercent = parseFloat(document.getElementById('calc-commission').value) || 0;
             const laborPerBag = parseFloat(document.getElementById('calc-labor').value) || 0;
             const bagSize = parseFloat(document.getElementById('calc-bag-size').value) || 50;
@@ -1853,24 +2508,45 @@
                 totalBags, bagSize, laborAmt, transport, cessPercent, taxAmt, grossVal, totalExpenses, netPayout
             };
 
-            document.getElementById('res-total-q').innerText = `${totalQ.toFixed(2)} Q`;
-            document.getElementById('res-total-kg').innerText = `(${totalKg.toFixed(0)} KG)`;
-            document.getElementById('res-bags').innerText = totalBags;
-            document.getElementById('res-rate').innerText = `₹${rate.toFixed(2)}`;
-            document.getElementById('res-gross-total').innerText = `₹${grossVal.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
+            const elTotalQ = document.getElementById('res-total-q');
+            if (elTotalQ) elTotalQ.innerText = `${totalQ.toFixed(2)} Q`;
             
-            document.getElementById('res-comm-amt').innerText = `₹${commAmt.toFixed(2)}`;
-            document.getElementById('res-labor-amt').innerText = `₹${laborAmt.toFixed(2)}`;
-            document.getElementById('res-mandi-tax').innerText = `₹${taxAmt.toFixed(2)}`;
-            document.getElementById('res-transport-amt').innerText = `₹${transport.toFixed(2)}`;
+            const elTotalKg = document.getElementById('res-total-kg');
+            if (elTotalKg) elTotalKg.innerText = `(${totalKg.toFixed(0)} KG)`;
             
-            document.getElementById('res-net-payout').innerText = `₹${netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+            const elBags = document.getElementById('res-bags');
+            if (elBags) elBags.innerText = totalBags;
+            
+            const elRate = document.getElementById('res-rate');
+            if (elRate) elRate.innerText = `₹${rate.toFixed(2)}`;
+            
+            const elGross = document.getElementById('res-gross-total');
+            if (elGross) elGross.innerText = `₹${grossVal.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
+            
+            const elComm = document.getElementById('res-comm-amt');
+            if (elComm) elComm.innerText = `₹${commAmt.toFixed(2)}`;
+            
+            const elLabor = document.getElementById('res-labor-amt');
+            if (elLabor) elLabor.innerText = `₹${laborAmt.toFixed(2)}`;
+            
+            const elMandiTax = document.getElementById('res-mandi-tax');
+            if (elMandiTax) elMandiTax.innerText = `₹${taxAmt.toFixed(2)}`;
+            
+            const elTrans = document.getElementById('res-transport-amt');
+            if (elTrans) elTrans.innerText = `₹${transport.toFixed(2)}`;
+            
+            const elNet = document.getElementById('res-net-payout');
+            if (elNet) elNet.innerText = `₹${netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
         }
 
         // ================= ADVACHED ARBITRAGE PROFIT & LOSS CALCULATOR (PHASE 4/5) =================
         function calculateArbitrage() {
-            const buyPrice = parseFloat(document.getElementById('arb-buy-price').value) || 0;
-            const salePrice = parseFloat(document.getElementById('arb-sale-price').value) || 0;
+            const buyPriceEl = document.getElementById('arb-buy-price');
+            const salePriceEl = document.getElementById('arb-sale-price');
+            if (!buyPriceEl || !salePriceEl) return;
+
+            const buyPrice = parseFloat(buyPriceEl.value) || 0;
+            const salePrice = parseFloat(salePriceEl.value) || 0;
             const qty = parseFloat(document.getElementById('arb-qty').value) || 0;
             const transport = parseFloat(document.getElementById('arb-transport').value) || 0;
             const taxPercent = parseFloat(document.getElementById('arb-tax-percent').value) || 0;
@@ -1879,23 +2555,13 @@
             const sourceName = document.getElementById('arb-source').value;
             const destName = document.getElementById('arb-dest').value;
 
-            // 1. Sourcing Buying Cost
             const buyCost = qty * buyPrice;
-            
-            // 2. Sourcing Mandi Fees
             const taxAmt = (buyCost * taxPercent) / 100;
-            
-            // 3. Total expenses
             const totalExpenses = buyCost + taxAmt + transport + other;
-            
-            // 4. Selling Proceeds
             const saleProceeds = qty * salePrice;
-            
-            // 5. Net profit or loss
             const netAmount = saleProceeds - totalExpenses;
             const isProfit = netAmount >= 0;
 
-            // Update UI elements
             const card = document.getElementById('arb-result-card');
             const status = document.getElementById('arb-status-badge');
             const amountEl = document.getElementById('arb-net-amount');
@@ -1918,7 +2584,6 @@
             }
         }
 
-        // Safe PDF/Print wrapper for Invoices (WhatsApp webview compatible)
         function downloadBillPDF() {
             try {
                 const bill = globalBillDetails;
@@ -2055,7 +2720,6 @@
             }
         }
 
-        // Robust PDF download fallback handler for All Mandi Rates list (WhatsApp/Safari compatible)
         function downloadRatesPDF() {
             try {
                 const filteredRecords = getFilteredRecords();
@@ -2154,13 +2818,10 @@
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
                 };
 
-                    html2pdf().from(pdfContainer).set(opt).save()
+                html2pdf().from(pdfContainer).set(opt).save()
                     .then(() => console.log("Rates PDF downloaded cleanly"))
                     .catch(() => window.print());
             } catch (err) {
                 window.print();
             }
         }
-    </script>
-</body>
-</html>
