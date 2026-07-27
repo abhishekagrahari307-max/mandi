@@ -8,9 +8,11 @@ services:
     volumes:
       - .:/app
     environment:
-      - DATABASE_URL=postgresql://mandi_user:mandi_pass@db:5432/mandi_db
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./mandi_v2.db}
       - REDIS_URL=redis://redis:6379/0
-      - JWT_SECRET=9ef842f824b44749a978d0c17b101cff356e9
+      - JWT_SECRET=${JWT_SECRET:-9ef842f824b44749a978d0c17b101cff356e9}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY}
     depends_on:
       - db
       - redis
@@ -18,9 +20,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=mandi_user
-      - POSTGRES_PASSWORD=mandi_pass
-      - POSTGRES_DB=mandi_db
+      - POSTGRES_USER=${POSTGRES_USER:-mandi_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mandi_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-mandi_db}
     ports:
       - "5432:5432"
     volumes:

@@ -454,3 +454,25 @@ def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), 
 def serve_admin_panel():
     with open("admin.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+
+# 12. HEALTH & READINESS ENDPOINT (FOR ENTERPRISE SYSTEM MONITORING & DOCKER/KUBERNETES)
+@app.get("/health")
+def health_check(db_sess: Session = Depends(get_db)):
+    """
+    Standard enterprise liveness & readiness check.
+    Verifies API server status and database connection health.
+    """
+    try:
+        # Perform simple low-cost query to verify database connection pool is active
+        db_sess.execute(db.SessionLocal().bind.utility_select_criterion() if hasattr(db.SessionLocal().bind, "utility_select_criterion") else "SELECT 1")
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.utcnow().isoformat(),
+            "uptime": "active"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database connectivity check failed: {str(e)}"
+        )
