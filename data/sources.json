@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-07-27T20:34:25.575311+05:30",
+  "last_checked_at": "2026-07-27T22:23:24.737850+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -15,14 +15,14 @@
     },
     {
       "name": "AGMARKNET portal",
-      "status": "not_checked",
+      "status": "error",
       "url": "https://agmarknet.gov.in/home",
-      "message": "offline repository refresh"
+      "message": "HTTP Error 403: Forbidden"
     },
     {
       "name": "AGMARKNET",
-      "status": "not_checked",
-      "message": "offline repository refresh"
+      "status": "error",
+      "message": "HTTP Error 403: Forbidden"
     },
     {
       "name": "e-NAM trade feed",
@@ -42,17 +42,16 @@
     },
     {
       "name": "UP Mandi Parishad directory",
-      "status": "not_checked",
-      "records": 0,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-      "message": "offline repository refresh"
+      "status": "ok",
+      "records": 9,
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx"
     },
     {
       "name": "UP Krishi Vipran state benchmark",
-      "status": "not_checked",
+      "status": "error",
       "records": 0,
       "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "offline repository refresh"
+      "message": "state ticker returned no parseable benchmark rates"
     },
     {
       "name": "e-NAM authorised auction feed",
