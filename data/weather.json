@@ -2,109 +2,109 @@
   {
     "district": "Kanpur",
     "district_hi": "कानपुर",
-    "temp": 24,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 51,
-    "wind": 6
+    "temp": 25,
+    "status": "Heavy Rain",
+    "status_hi": "भारी बारिश",
+    "humidity": 60,
+    "wind": 5
   },
   {
     "district": "Lucknow",
     "district_hi": "लखनऊ",
-    "temp": 22,
+    "temp": 27,
     "status": "Showers",
     "status_hi": "हल्की बारिश",
-    "humidity": 84,
-    "wind": 12
+    "humidity": 90,
+    "wind": 19
   },
   {
     "district": "Varanasi",
     "district_hi": "वाराणसी",
-    "temp": 25,
-    "status": "Partly Cloudy",
-    "status_hi": "आंशिक बादल",
-    "humidity": 68,
-    "wind": 14
+    "temp": 24,
+    "status": "Heavy Rain",
+    "status_hi": "भारी बारिश",
+    "humidity": 67,
+    "wind": 19
   },
   {
     "district": "Agra",
     "district_hi": "आगरा",
-    "temp": 22,
-    "status": "Showers",
-    "status_hi": "हल्की बारिश",
-    "humidity": 85,
-    "wind": 17
+    "temp": 28,
+    "status": "Clear Sky",
+    "status_hi": "साफ मौसम",
+    "humidity": 68,
+    "wind": 5
   },
   {
     "district": "Meerut",
     "district_hi": "मेरठ",
-    "temp": 26,
+    "temp": 28,
     "status": "Showers",
     "status_hi": "हल्की बारिश",
-    "humidity": 81,
-    "wind": 12
+    "humidity": 69,
+    "wind": 14
   },
   {
     "district": "Prayagraj",
     "district_hi": "प्रयागराज",
-    "temp": 33,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 57,
-    "wind": 15
+    "temp": 23,
+    "status": "Showers",
+    "status_hi": "हल्की बारिश",
+    "humidity": 71,
+    "wind": 19
   },
   {
     "district": "Bareilly",
     "district_hi": "बरेली",
-    "temp": 29,
-    "status": "Showers",
-    "status_hi": "हल्की बारिश",
-    "humidity": 66,
-    "wind": 19
+    "temp": 33,
+    "status": "Partly Cloudy",
+    "status_hi": "आंशिक बादल",
+    "humidity": 80,
+    "wind": 14
   },
   {
     "district": "Gorakhpur",
     "district_hi": "गोरखपुर",
-    "temp": 24,
-    "status": "Partly Cloudy",
-    "status_hi": "आंशिक बादल",
-    "humidity": 58,
-    "wind": 11
+    "temp": 33,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 59,
+    "wind": 8
   },
   {
     "district": "Aligarh",
     "district_hi": "अलीगढ़",
-    "temp": 27,
-    "status": "Clear Sky",
-    "status_hi": "साफ मौसम",
-    "humidity": 46,
-    "wind": 7
+    "temp": 24,
+    "status": "Showers",
+    "status_hi": "हल्की बारिश",
+    "humidity": 89,
+    "wind": 8
   },
   {
     "district": "Jhansi",
     "district_hi": "झांसी",
-    "temp": 26,
-    "status": "Heavy Rain",
-    "status_hi": "भारी बारिश",
-    "humidity": 76,
-    "wind": 6
+    "temp": 29,
+    "status": "Showers",
+    "status_hi": "हल्की बारिश",
+    "humidity": 88,
+    "wind": 15
   },
   {
     "district": "Hapur",
     "district_hi": "हापुड़",
-    "temp": 26,
+    "temp": 21,
     "status": "Heavy Rain",
     "status_hi": "भारी बारिश",
-    "humidity": 81,
-    "wind": 13
+    "humidity": 56,
+    "wind": 18
   },
   {
     "district": "Shahjahanpur",
     "district_hi": "शाहजहाँपुर",
-    "temp": 28,
-    "status": "Heavy Rain",
-    "status_hi": "भारी बारिश",
-    "humidity": 55,
-    "wind": 11
+    "temp": 30,
+    "status": "Sunny",
+    "status_hi": "धूप",
+    "humidity": 81,
+    "wind": 6
   }
 ]
