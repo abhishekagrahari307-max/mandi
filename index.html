@@ -1060,8 +1060,21 @@
                 emptyState.classList.add('hidden');
             }
 
+            // Primary sorting alphabetically by District name and secondarily by Mandi name
+            filtered.sort((a, b) => {
+                const distA = currentLang === 'hi' ? a.district_hi : a.district;
+                const distB = currentLang === 'hi' ? b.district_hi : b.district;
+                const compareDist = distA.localeCompare(distB);
+                if (compareDist !== 0) return compareDist;
+                
+                const mandiA = currentLang === 'hi' ? a.mandi_hi : a.mandi;
+                const mandiB = currentLang === 'hi' ? b.mandi_hi : b.mandi;
+                return mandiA.localeCompare(mandiB);
+            });
+
             let tableHtml = '';
             let cardsHtml = '';
+            let lastDistrict = '';
 
             filtered.forEach(r => {
                 const distName = currentLang === 'hi' ? r.district_hi : r.district;
@@ -1072,9 +1085,29 @@
                 const arrivalsText = `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : r.arrivals_unit}`;
                 const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
+                // Add District Header row if the district changes (Grouping)
+                if (distName !== lastDistrict) {
+                    tableHtml += `
+                        <tr class="bg-emerald-50/70 border-y border-emerald-100/60">
+                            <td colspan="10" class="py-2.5 px-4 font-black text-emerald-800 text-xs select-none">
+                                📍 ${currentLang === 'hi' ? 'जिला' : 'District'}: ${distName}
+                            </td>
+                        </tr>
+                    `;
+                    
+                    cardsHtml += `
+                        <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white py-2.5 px-4 font-black text-xs uppercase flex items-center space-x-2 mt-4 first:mt-0 shadow-sm">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-100"></i>
+                            <span>${currentLang === 'hi' ? 'जिला' : 'District'}: ${distName}</span>
+                        </div>
+                    `;
+                    
+                    lastDistrict = distName;
+                }
+
                 tableHtml += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-3 px-4 font-medium text-slate-700">${distName}</td>
+                        <td class="py-3 px-4 font-medium text-slate-500 text-xs">${distName}</td>
                         <td class="py-3 px-4 font-bold text-slate-900">${mandiName}</td>
                         <td class="py-3 px-4 text-emerald-700 font-semibold">${cropName}</td>
                         <td class="py-3 px-4 text-slate-600 text-xs">${varietyName}</td>
@@ -1093,7 +1126,7 @@
                 `;
 
                 cardsHtml += `
-                    <div class="p-4 space-y-3">
+                    <div class="p-4 space-y-3 bg-white border-b border-slate-100">
                         <div class="flex justify-between items-start">
                             <div>
                                 <span class="text-xs font-bold text-slate-400 block uppercase">${distName}</span>
@@ -1130,6 +1163,11 @@
                     </div>
                 `;
             });
+
+            tableBody.innerHTML = tableHtml;
+            cardsContainer.innerHTML = cardsHtml;
+            lucide.createIcons();
+        }
 
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
