@@ -1062,13 +1062,14 @@
 
             // Primary sorting alphabetically by District name and secondarily by Mandi name
             filtered.sort((a, b) => {
-                const distA = currentLang === 'hi' ? a.district_hi : a.district;
-                const distB = currentLang === 'hi' ? b.district_hi : b.district;
+                const distA = currentLang === 'hi' ? (a.district_hi || a.district || '') : (a.district || a.district_hi || '');
+                const distB = currentLang === 'hi' ? (b.district_hi || b.district || '') : (b.district || b.district_hi || '');
+                
                 const compareDist = distA.localeCompare(distB);
                 if (compareDist !== 0) return compareDist;
                 
-                const mandiA = currentLang === 'hi' ? a.mandi_hi : a.mandi;
-                const mandiB = currentLang === 'hi' ? b.mandi_hi : b.mandi;
+                const mandiA = currentLang === 'hi' ? (a.mandi_hi || a.mandi || '') : (a.mandi || a.mandi_hi || '');
+                const mandiB = currentLang === 'hi' ? (b.mandi_hi || b.mandi || '') : (b.mandi || b.mandi_hi || '');
                 return mandiA.localeCompare(mandiB);
             });
 
@@ -1077,12 +1078,12 @@
             let lastDistrict = '';
 
             filtered.forEach(r => {
-                const distName = currentLang === 'hi' ? r.district_hi : r.district;
-                const mandiName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
-                const cropName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
-                const varietyName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
-                const gradeName = currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade;
-                const arrivalsText = `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : r.arrivals_unit}`;
+                const distName = (currentLang === 'hi' ? r.district_hi : r.district) || r.district || r.district_hi || 'Unknown';
+                const mandiName = (currentLang === 'hi' ? r.mandi_hi : r.mandi) || r.mandi || r.mandi_hi || 'Mandi';
+                const cropName = (currentLang === 'hi' ? r.commodity_hi : r.commodity) || r.commodity || r.commodity_hi || 'Crop';
+                const varietyName = (currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety) || 'FAQ';
+                const gradeName = (currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade) || 'FAQ';
+                const arrivalsText = `${r.arrivals || 0} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : (r.arrivals_unit || 'Tonnes')}`;
                 const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
                 // Add District Header row if the district changes (Grouping)
