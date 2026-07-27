@@ -909,11 +909,40 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="state-price-cards-container"></div>
                 </div>
             </div>
+            <!-- State-level benchmark ticker (UP Krishi Vipran) -->
+            <div class="bg-white border-2 border-indigo-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
+                    <div>
+                        <h4 class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+                            <i data-lucide="landmark" class="w-5 h-5 text-indigo-600"></i>
+                            <span id="benchmark-title">राज्य-स्तरीय संदर्भ भाव (State Benchmark)</span>
+                        </h4>
+                        <p class="text-[10px] text-indigo-700 font-bold mt-1 uppercase tracking-wide">
+                            <span class="bg-indigo-100 border border-indigo-200 rounded px-1.5 py-0.5">State-level benchmark — not an individual mandi rate</span>
+                        </p>
+                    </div>
+                    <a id="benchmark-source-link" href="https://www.upkrishivipran.in/Default.aspx" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-indigo-700 underline whitespace-nowrap">upkrishivipran.in ↗</a>
+                </div>
+                <p id="benchmark-disclaimer" class="text-[11px] text-slate-600 leading-relaxed mt-3"></p>
+                <div id="benchmark-container" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mt-3"></div>
+                <p id="benchmark-status" class="text-[10px] text-slate-400 mt-3"></p>
+            </div>
+
+            <!-- Official government portal cards -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <h4 class="font-extrabold text-slate-800 text-sm flex items-center gap-2"><i data-lucide="building-2" class="w-5 h-5 text-emerald-600"></i> आधिकारिक सरकारी पोर्टल (Official Portals)</h4>
+                    <span id="official-portal-count" class="text-[10px] text-slate-400"></span>
+                </div>
+                <div id="official-portals-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-4"></div>
+            </div>
+
             <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <h4 class="font-extrabold text-slate-800 text-sm flex items-center gap-2"><i data-lucide="radio-tower" class="w-5 h-5 text-emerald-600"></i> Government Source Monitor</h4>
                     <span id="source-monitor-checked" class="text-[10px] text-slate-400"></span>
                 </div>
+                <p id="source-monitor-policy" class="text-[11px] text-slate-500 mt-3 leading-relaxed"></p>
                 <div id="source-monitor-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"></div>
             </div>
         </div>
@@ -1171,6 +1200,7 @@
         let mandiDetailsData = { mandis: [] };
         let lawsData = { chapters: [], practical_rules: [], official_sources: [] };
         let sourceData = { sources: [] };
+        let benchmarkData = { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
         let auctionSnapshot = { status: 'loading', lots: [] };
         let calcWeightUnit = 'q';
         let globalBillDetails = null;
@@ -1278,6 +1308,8 @@
             populateDropdowns();
             renderRatesTable();
             renderStatePrices();
+            renderStateBenchmark();
+            renderOfficialPortals();
             renderSourceMonitor();
             renderLaws();
             renderAuctionLots();
@@ -1357,7 +1389,12 @@
             } else if (tabId === 'auction') {
                 setTimeout(initLiveAuctionYard, 50);
             } else if (tabId === 'weather') {
-                setTimeout(() => { renderStatePrices(); renderSourceMonitor(); }, 50);
+                setTimeout(() => {
+                    renderStatePrices();
+                    renderStateBenchmark();
+                    renderOfficialPortals();
+                    renderSourceMonitor();
+                }, 50);
             } else if (tabId === 'info') {
                 setTimeout(renderLaws, 50);
             } else if (tabId === 'ranking') {
@@ -1447,6 +1484,10 @@
                 const avgPrice = prices.length ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length) : null;
                 const cropCount = new Set(mandi.commodities || (mandi.records || []).map(row => row.commodity)).size;
                 const contactCount = Array.isArray(mandi.contacts) ? mandi.contacts.length : 0;
+                const officialBits = [
+                    mandi.division ? `🏛 ${escapeHtml(mandi.division)}` : '',
+                    mandi.grade ? `🏅 Grade ${escapeHtml(mandi.grade)}` : ''
+                ].filter(Boolean).join(' • ');
 
                 html += `
                     <button type="button" onclick="openMandiDetails(${mandi._directoryIndex})" class="w-full text-left p-3 bg-slate-800/40 hover:bg-slate-800 rounded-xl border border-slate-800 hover:border-emerald-600/30 transition space-y-1">
@@ -1457,6 +1498,7 @@
                             </div>
                             <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">${avgPrice ? `₹${avgPrice}/Q` : 'भाव देखें'}</span>
                         </div>
+                        ${officialBits ? `<p class="text-[9px] text-indigo-300 font-bold">${officialBits}</p>` : ''}
                         <p class="text-[9px] text-slate-500 font-bold">🌾 ${cropCount} जिंस • ☎ ${contactCount ? contactCount + ' स्थानीय संपर्क' : 'Official helpdesk'}</p>
                         <p class="text-[9px] text-emerald-400 font-bold">पूरा विवरण देखें →</p>
                     </button>
@@ -1469,8 +1511,10 @@
         function filterSidebarMandis() {
             const query = document.getElementById('sidebar-search').value.toLowerCase().trim();
             const filtered = mandiDirectoryList.filter(mandi => {
-                const searchable = [mandi.mandi, mandi.mandi_hi, mandi.district, mandi.district_hi]
-                    .filter(Boolean).join(' ').toLowerCase();
+                const searchable = [
+                    mandi.mandi, mandi.mandi_hi, mandi.district, mandi.district_hi,
+                    mandi.division, mandi.grade, mandi.secretary, mandi.cug
+                ].filter(Boolean).join(' ').toLowerCase();
                 return searchable.includes(query);
             });
             renderSidebarMandis(filtered);
@@ -1498,7 +1542,30 @@
                     </div>`).join('')
                 : `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-lg">इस मंडी का स्थानीय नंबर official feed में उपलब्ध नहीं है। नीचे e-Mandi contact directory से सत्यापित करें।</p>`;
 
+            const officialDirectoryHtml = (mandi.division || mandi.grade || mandi.secretary || mandi.cug)
+                ? `<div class="border-2 border-indigo-200 bg-indigo-50/50 rounded-lg p-3 text-xs space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="font-extrabold text-indigo-900">${currentLang === 'hi' ? 'मण्डी परिषद निर्देशिका (आधिकारिक)' : 'Mandi Parishad directory (official)'}</p>
+                        <a href="${escapeHtml(mandi.directory_source_url || 'https://dashboard.mandiprojects.in/MandiDetails.aspx')}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-bold text-indigo-700 underline whitespace-nowrap">verify ↗</a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><span class="text-[9px] text-slate-500 uppercase block">${currentLang === 'hi' ? 'मंडल (Division)' : 'Division'}</span><p class="font-bold text-slate-800">${escapeHtml(mandi.division || '—')}</p></div>
+                        <div><span class="text-[9px] text-slate-500 uppercase block">${currentLang === 'hi' ? 'जनपद (District)' : 'District'}</span><p class="font-bold text-slate-800">${escapeHtml(districtName || '—')}</p></div>
+                        <div><span class="text-[9px] text-slate-500 uppercase block">${currentLang === 'hi' ? 'मण्डी ग्रेड' : 'Mandi grade'}</span><p class="font-bold text-slate-800">${escapeHtml(mandi.grade || '—')}</p></div>
+                        <div><span class="text-[9px] text-slate-500 uppercase block">${currentLang === 'hi' ? 'सचिव' : 'Secretary'}</span><p class="font-bold text-slate-800">${escapeHtml(mandi.secretary || '—')}</p></div>
+                    </div>
+                    <div><span class="text-[9px] text-slate-500 uppercase block">${currentLang === 'hi' ? 'सी.यू.जी नंबर (CUG)' : 'CUG number'}</span>
+                        ${mandi.cug
+                            ? `<a class="font-bold text-emerald-700" href="tel:${escapeHtml(mandi.cug)}">☎ ${escapeHtml(mandi.cug)}</a>`
+                            : `<p class="text-slate-500">${currentLang === 'hi' ? 'पोर्टल पर प्रकाशित नहीं' : 'Not published on the portal'}</p>`}
+                    </div>
+                </div>`
+                : `<p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-lg">${currentLang === 'hi'
+                        ? 'इस मंडी का मंडल/ग्रेड/सचिव/सी.यू.जी विवरण मण्डी परिषद निर्देशिका में नहीं मिला।'
+                        : 'Division, grade, secretary and CUG details were not found in the Mandi Parishad directory for this mandi.'}</p>`;
+
             content.innerHTML = `
+                ${officialDirectoryHtml}
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${mandi.commodity_count ?? commodities.length}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">न्यूनतम मॉडल</span><p class="font-black">${mandi.minimum_modal_price ? '₹' + mandi.minimum_modal_price : '—'}</p></div>
@@ -1601,9 +1668,14 @@
             const fetchMandiDetails = fetchJson('data/mandis.json', { mandis: [] });
             const fetchLaws = fetchJson('data/laws.json', { chapters: [], practical_rules: [], official_sources: [] });
             const fetchSources = fetchJson('data/sources.json', { sources: [] });
+            const fetchBenchmarks = fetchJson('data/benchmarks.json', {
+                state_benchmark: { commodities: [] },
+                mandi_parishad_directory: { mandis: [] },
+                official_portals: []
+            });
 
-            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources])
-            .then(([latest, history, states, mandis, laws, sources]) => {
+            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchBenchmarks])
+            .then(([latest, history, states, mandis, laws, sources, benchmarks]) => {
                 latestData = (latest && latest.records) ? latest.records : (latest || []);
                 latestMetadata = latest && !Array.isArray(latest) ? latest : {};
                 historicalData = history || {};
@@ -1611,6 +1683,7 @@
                 mandiDetailsData = mandis || { mandis: [] };
                 lawsData = laws || { chapters: [], practical_rules: [], official_sources: [] };
                 sourceData = sources || { sources: [] };
+                benchmarkData = benchmarks || { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
                 
                 // Safe UI Element updates with individual Try-Catch blocks
                 try {
@@ -1669,6 +1742,8 @@
                 safeRun('populateDropdowns', populateDropdowns);
                 safeRun('renderRatesTable', renderRatesTable);
                 safeRun('renderStatePrices', renderStatePrices);
+                safeRun('renderStateBenchmark', renderStateBenchmark);
+                safeRun('renderOfficialPortals', renderOfficialPortals);
                 safeRun('renderSourceMonitor', renderSourceMonitor);
                 safeRun('buildAtoZMandiDirectory', buildAtoZMandiDirectory);
                 safeRun('renderLaws', renderLaws);
@@ -2724,6 +2799,90 @@
             renderIcons();
         }
 
+        function renderStateBenchmark() {
+            const container = document.getElementById('benchmark-container');
+            if (!container) return;
+            const block = benchmarkData?.state_benchmark || {};
+            const commodities = Array.isArray(block.commodities) ? block.commodities : [];
+            const title = document.getElementById('benchmark-title');
+            const disclaimer = document.getElementById('benchmark-disclaimer');
+            const statusEl = document.getElementById('benchmark-status');
+            const link = document.getElementById('benchmark-source-link');
+
+            if (title) title.innerText = currentLang === 'hi'
+                ? (block.title_hi || 'राज्य-स्तरीय संदर्भ भाव (State Benchmark)')
+                : (block.title_en || 'Uttar Pradesh state-level benchmark rate');
+            if (disclaimer) disclaimer.innerText = currentLang === 'hi'
+                ? (block.disclaimer_hi || '')
+                : (block.disclaimer_en || '');
+            if (link && block.source_url) link.href = block.source_url;
+            if (statusEl) {
+                const stamp = benchmarkData?.updated_at ? new Date(benchmarkData.updated_at).toLocaleString('en-IN') : '';
+                statusEl.innerText = `${block.source || 'UP Krishi Vipran'} • status: ${block.status || 'unknown'}${stamp ? ' • ' + stamp : ''}`;
+            }
+
+            if (!commodities.length) {
+                container.innerHTML = `<div class="col-span-full border border-amber-200 bg-amber-50 text-amber-800 rounded-xl p-4 text-xs">
+                    ${currentLang === 'hi'
+                        ? 'आधिकारिक राज्य-स्तरीय ticker अभी उपलब्ध नहीं है। कोई अनुमानित भाव नहीं बनाया गया है।'
+                        : 'The official state-level ticker is unavailable. No estimated rate has been generated.'}
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = commodities.map(item => {
+                const change = Number(item.change_percent);
+                const up = Number.isFinite(change) && change > 0;
+                const down = Number.isFinite(change) && change < 0;
+                const changeClass = up ? 'text-emerald-700' : (down ? 'text-red-700' : 'text-slate-500');
+                const arrow = up ? '▲' : (down ? '▼' : '■');
+                const label = currentLang === 'hi'
+                    ? (item.commodity_hi || item.commodity || '')
+                    : (item.commodity || item.commodity_hi || '');
+                return `<div class="border border-indigo-100 bg-indigo-50/60 rounded-xl p-3">
+                    <p class="text-[11px] font-bold text-slate-700 truncate" title="${escapeHtml(label)}">${escapeHtml(label)}</p>
+                    <p class="text-lg font-black text-indigo-900">₹${Number(item.state_benchmark_price || 0).toLocaleString('en-IN')}</p>
+                    <p class="text-[9px] text-slate-500">${escapeHtml(item.price_unit || 'Quintal')} • ${currentLang === 'hi' ? 'राज्य benchmark' : 'state benchmark'}</p>
+                    ${Number.isFinite(change) ? `<p class="text-[10px] font-bold ${changeClass} mt-1">${arrow} ${change.toFixed(2)}%</p>` : ''}
+                </div>`;
+            }).join('');
+            renderIcons();
+        }
+
+        function renderOfficialPortals() {
+            const container = document.getElementById('official-portals-container');
+            if (!container) return;
+            const portals = Array.isArray(benchmarkData?.official_portals) && benchmarkData.official_portals.length
+                ? benchmarkData.official_portals
+                : (Array.isArray(sourceData?.official_portals) ? sourceData.official_portals : []);
+            const counter = document.getElementById('official-portal-count');
+            if (counter) counter.innerText = `${portals.length} ${currentLang === 'hi' ? 'पोर्टल' : 'portals'}`;
+
+            const statusByPortal = {};
+            (Array.isArray(sourceData?.sources) ? sourceData.sources : []).forEach(item => {
+                if (item.url) statusByPortal[item.url] = item.status;
+            });
+
+            container.innerHTML = portals.map(portal => {
+                const name = currentLang === 'hi' ? (portal.name_hi || portal.name_en) : (portal.name_en || portal.name_hi);
+                const role = currentLang === 'hi' ? (portal.role_hi || portal.role_en) : (portal.role_en || portal.role_hi);
+                const status = statusByPortal[portal.url];
+                const badge = status
+                    ? `<span class="text-[9px] uppercase font-black ${status === 'ok' ? 'text-emerald-700' : 'text-amber-700'}">${escapeHtml(status)}</span>`
+                    : '';
+                return `<a href="${escapeHtml(portal.url)}" target="_blank" rel="noopener noreferrer" class="block border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40 rounded-xl p-4 transition">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="font-bold text-xs text-slate-800 leading-snug">${escapeHtml(name || '')}</p>
+                        ${badge}
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed">${escapeHtml(role || '')}</p>
+                    <p class="text-[9px] text-slate-400 mt-2">${escapeHtml(portal.owner || '')}</p>
+                    <p class="text-[10px] font-bold text-emerald-700 mt-2">${escapeHtml(portal.url)} ↗</p>
+                </a>`;
+            }).join('') || `<p class="text-xs text-amber-700">${currentLang === 'hi' ? 'पोर्टल सूची उपलब्ध नहीं है।' : 'The portal list is unavailable.'}</p>`;
+            renderIcons();
+        }
+
         function renderSourceMonitor() {
             const container = document.getElementById('source-monitor-container');
             const checked = document.getElementById('source-monitor-checked');
@@ -2732,9 +2891,20 @@
             if (checked) checked.innerText = sourceData?.last_checked_at
                 ? `${currentLang === 'hi' ? 'अंतिम जाँच' : 'Last checked'}: ${new Date(sourceData.last_checked_at).toLocaleString('en-IN')}`
                 : '';
+
+            const policy = document.getElementById('source-monitor-policy');
+            if (policy) {
+                const minimum = sourceData?.minimum_price_source_matches
+                    || latestMetadata?.minimum_price_source_matches || 3;
+                const slots = (sourceData?.update_slots_ist || latestMetadata?.update_slots_ist || []).join(', ');
+                policy.innerText = currentLang === 'hi'
+                    ? `मंडी भाव तभी प्रकाशित होता है जब कम से कम ${minimum} सरकारी price feeds एक ही मंडी, जिंस, तिथि और modal price बताएं। रिफ्रेश: ${slots} IST। कोई simulated भाव, आवक, मौसम, lot, bid या prediction नहीं बनाया जाता।`
+                    : `A mandi price is published only when at least ${minimum} government price feeds report the same market, commodity, date and modal price. Refresh slots: ${slots} IST. No simulated prices, arrivals, weather, lots, bids or predictions are generated.`;
+            }
+
             container.innerHTML = sources.map(sourceItem => {
                 const ok = sourceItem.status === 'ok';
-                const waiting = ['not_configured', 'unavailable'].includes(sourceItem.status);
+                const waiting = ['not_configured', 'unavailable', 'not_checked', 'cached', 'insufficient_sources'].includes(sourceItem.status);
                 const cardClass = ok
                     ? 'border-emerald-200 bg-emerald-50'
                     : (waiting ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50');
@@ -2743,6 +2913,7 @@
                     <div class="flex items-center justify-between gap-2"><p class="font-bold text-xs text-slate-800">${escapeHtml(sourceItem.name)}</p><span class="text-[9px] uppercase font-black ${statusClass}">${escapeHtml(sourceItem.status)}</span></div>
                     <p class="text-[10px] text-slate-500 mt-1">${sourceItem.records ?? 0} records</p>
                     ${sourceItem.message ? `<p class="text-[9px] ${statusClass} mt-1 line-clamp-2">${escapeHtml(sourceItem.message)}</p>` : ''}
+                    ${sourceItem.url ? `<a href="${escapeHtml(sourceItem.url)}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-bold text-slate-500 underline mt-1 inline-block">source ↗</a>` : ''}
                 </div>`;
             }).join('') || `<p class="text-xs text-amber-700">${currentLang === 'hi' ? 'Source status उपलब्ध नहीं है।' : 'Source status is unavailable.'}</p>`;
             renderIcons();

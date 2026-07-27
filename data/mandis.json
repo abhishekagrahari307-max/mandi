@@ -1,6 +1,8 @@
 {
-  "updated_at": "2026-07-27T15:03:36.724843+05:30",
-  "source": "AGMARKNET market list; e-Mandi contact portal unavailable",
+  "updated_at": "2026-07-27T15:55:16.183746+05:30",
+  "source": "AGMARKNET market list; official directory portals unavailable",
+  "directory_sources": [],
+  "parishad_directory_count": 0,
   "central_office": {
     "name": "राज्य कृषि उत्पादन मण्डी परिषद्, उत्तर प्रदेश",
     "address": "किसान मंडी भवन, विभूति खंड, गोमती नगर, लखनऊ - 226010",

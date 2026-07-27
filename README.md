@@ -16,6 +16,9 @@
 - **⚖️ अधिनियम और नियमावली:** U.P. Krishi Utpadan Mandi Adhiniyam 1964, Niyamawali 1965, अध्याय और धारा-सूची के official India Code links।
 - **🔨 e-NAM नीलामी:** अधिकृत feed मिलने पर जिला एवं lot-wise read-only live snapshot; वास्तविक bid केवल authenticated e-NAM portal पर। कोई simulated lot/bid नहीं।
 - **🗺️ राज्य-वार भाव:** केवल 3+ सरकारी feeds पर match हुए records से राज्य, जिला, मंडी और जिंस का सारांश।
+- **🏢 मण्डी परिषद निर्देशिका:** UP Mandi Parishad से मंडल (division), जनपद, मण्डी, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।
+- **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
+- **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
 - **🔄 दिन में 6 बार auto-update:** 00:30, 04:30, 08:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
@@ -33,6 +36,7 @@
 │   ├── mandis.json             # Mandi directory and available contacts
 │   ├── auction.json            # Authorised e-NAM lot snapshot/status
 │   ├── laws.json               # Act/rules section index and official links
+│   ├── benchmarks.json         # State benchmark, Mandi Parishad directory, portals
 │   └── sources.json            # Portal health and refresh metadata
 ├── deploy.sh                   # GitHub Pages पर वन-क्लिक डिप्लॉय करने की स्क्रिप्ट
 ├── images/
@@ -102,18 +106,41 @@ bash deploy.sh
 3. एक नया Secret बनाएं:
    - **Name:** `DATA_GOV_IN_API_KEY`
    - **Value:** *[आपकी API Key]*
-4. इसके बाद dashboard दिन में 6 बार official OGD/AGMARKNET rates refresh करेगा। Key न होने या portal failure पर updater **कोई random/simulated rate नहीं बनाता**; UI last verified snapshot या स्पष्ट unavailable/unverified status दिखाता है।
+4. इसके बाद dashboard दिन में 6 बार (00:30, 04:30, 08:30, 12:30, 16:30, 20:30 IST) official
+   OGD/AGMARKNET rates refresh करेगा। Key न होने या portal failure पर updater **कोई random/simulated rate नहीं बनाता**; UI last verified snapshot या स्पष्ट unavailable/unverified status दिखाता है।
 
-### 3/4-source price verification
+### 3-source publication gate (कड़ा नियम)
 
-Pipeline इन सरकारी sources को अलग-अलग monitor करता है और market + commodity + date + modal price match होने पर ही record को cross-verified मानता है:
+**कोई भी मंडी भाव तभी प्रकाशित होता है जब कम से कम 3 configured सरकारी price feeds एक ही
+market + commodity + date + modal price बताएं।** 1 या 2 feeds के match पर record रोक दिया
+जाता है—अनुमान या औसत नहीं बनाया जाता (`update_data.select_publishable_records`,
+`MIN_PRICE_SOURCE_MATCHES = 3`).
+
+Pipeline इन सरकारी sources को अलग-अलग monitor करता है:
 
 1. `data.gov.in` OGD API
-2. AGMARKNET public report
+2. AGMARKNET public report (`https://agmarknet.gov.in/home` portal health अलग से जाँची जाती है)
 3. authorised e-NAM trade feed (`ENAM_TRADE_FEED_URL`, `ENAM_TRADE_API_KEY`)
 4. authorised UP e-Mandi trade feed (`UP_EMANDI_TRADE_FEED_URL`, `UP_EMANDI_TRADE_API_KEY`)
 
-तीसरे और चौथे feed public APIs नहीं हैं। इनके URLs/keys संबंधित सरकारी portal द्वारा approved integrator को मिलने के बाद GitHub Actions secrets में जोड़ें; chat या repository में credentials न लिखें। UI connected source count और 3+ source से match हुए records अलग दिखाती है।
+तीसरे और चौथे feed public APIs नहीं हैं। इनके URLs/keys संबंधित सरकारी portal द्वारा approved
+integrator को मिलने के बाद GitHub Actions secrets में जोड़ें; chat या repository में credentials
+न लिखें। जब तक 3 feeds configured नहीं होते, dashboard "insufficient_sources" status दिखाता है
+और कोई भाव प्रकाशित नहीं करता।
+
+### मण्डी परिषद निर्देशिका (division, district, mandi, grade, secretary, CUG)
+
+`https://dashboard.mandiprojects.in/MandiDetails.aspx` से हर अधिसूचित मण्डी की आधिकारिक पंक्ति
+पढ़ी जाती है: **क्षेत्र (division), जिला, मण्डी नाम, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।**
+यह `data/benchmarks.json` और `data/mandis.json` दोनों में जाती है, और sidebar/detail modal में
+दिखती है। Portal पर `--` लिखा हो तो field खाली रहता है—कोई नकली नंबर नहीं भरा जाता।
+
+### राज्य-स्तरीय संदर्भ भाव (state benchmark, मंडी भाव नहीं)
+
+`https://www.upkrishivipran.in/Default.aspx` का official ticker पढ़ा जाता है और
+`scope: "state_benchmark"`, `is_mandi_rate: false` के साथ store होता है। UI इसे अलग indigo
+कार्ड में **"State-level benchmark — not an individual mandi rate"** लेबल के साथ दिखाता है।
+यह कभी मंडी-वार तालिका, state summary या 3-source gate में नहीं मिलाया जाता।
 
 ### e-NAM live lots
 
@@ -126,10 +153,23 @@ Feed JSON में `lot_number`, `district`, `mandi`, `commodity` और lot de
 
 ### Official sources
 
-1. Open Government Data (`data.gov.in`) / AGMARKNET — prices.
-2. UP e-Mandi contact directory — available mandi contacts and central helpdesk.
-3. e-NAM — authorised auction lot feed and official bidding portal.
-4. India Code / UP Mandi Parishad — Act, Rules and sections.
+1. [AGMARKNET](https://agmarknet.gov.in/home) — national mandi price portal.
+2. Open Government Data (`data.gov.in`) — official price API built from AGMARKNET.
+3. [UP Mandi Parishad directory](https://dashboard.mandiprojects.in/MandiDetails.aspx) — division, district, mandi, grade, secretary, CUG.
+4. [UP Krishi Vipran](https://www.upkrishivipran.in/Default.aspx) — state-level benchmark ticker only.
+5. UP e-Mandi contact directory — available mandi contacts and central helpdesk.
+6. e-NAM — authorised auction lot feed and official bidding portal.
+7. India Code / UP Mandi Parishad — Act, Rules and sections.
+
+ये सभी `data/benchmarks.json` के `official_portals` में हैं और dashboard पर **Official Portals**
+कार्ड तथा **Government Source Monitor** में live status के साथ दिखते हैं।
+
+### कोई simulated data नहीं
+
+Repository में price, arrival, weather, auction lot, bid, prediction या alert-success का कोई
+random/mock generator नहीं है। यह `tests/test_data_integrity.py` में enforce किया गया है
+(`test_no_module_generates_random_values`). Source fail होने पर UI last verified snapshot या
+स्पष्ट unavailable status दिखाता है।
 
 ---
 

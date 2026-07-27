@@ -29,6 +29,7 @@ DATA_GOV_RESOURCE_ID = os.environ.get(
     "DATA_GOV_RESOURCE_ID", "9ef84268-d588-465a-a308-a864a43d0070"
 )
 DATA_GOV_API = f"https://api.data.gov.in/resource/{DATA_GOV_RESOURCE_ID}"
+AGMARKNET_HOME_URL = "https://agmarknet.gov.in/home"
 AGMARKNET_URL = (
     "https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=0&Tx_State=UP"
     "&Tx_District=0&Tx_Market=0&Tx_Trend=0"
@@ -39,7 +40,17 @@ EMANDI_CONTACT_URLS = (
 )
 ENAM_PORTAL_URL = "https://www.enam.gov.in/web/"
 ENAM_TRADE_URL = "https://enam.gov.in/web/dashboard/trade-data"
+# Official UP Mandi Parishad (Rajya Krishi Utpadan Mandi Parishad) directory of
+# every notified mandi with its division, district, grade, secretary and CUG.
+MANDI_PARISHAD_HOME_URL = "https://dashboard.mandiprojects.in/Home.aspx"
+MANDI_PARISHAD_DIRECTORY_URL = "https://dashboard.mandiprojects.in/MandiDetails.aspx"
+# Official state ticker published by the UP Directorate of Agricultural
+# Marketing. It is a STATE-LEVEL benchmark, never an individual mandi rate.
+UP_KRISHI_VIPRAN_URL = "https://www.upkrishivipran.in/Default.aspx"
 UPDATE_SLOTS_IST = ("00:30", "04:30", "08:30", "12:30", "16:30", "20:30")
+# A market price is published only when this many configured government price
+# feeds report the same market, commodity, date and modal price.
+MIN_PRICE_SOURCE_MATCHES = 3
 USER_AGENT = "UP-Mandi-Dashboard/4.0 (+https://github.com/abhishekagrahari307-max/mandi)"
 
 DISTRICT_HI = {
@@ -83,6 +94,82 @@ COMMODITY_HI = {
     "Ginger(Green)": "अदरक", "Apple": "सेब", "Banana": "केला",
 }
 
+# Hindi labels used by the official UP Krishi Vipran state ticker.
+STATE_TICKER_COMMODITY_EN = {
+    "गेहू": "Wheat", "गेहूं": "Wheat", "चावल": "Rice", "धान": "Paddy",
+    "मटर": "Peas", "चना": "Bengal Gram (Gram)", "मूंग": "Green Gram (Moong)",
+    "उड़द": "Black Gram (Urd)", "अरहर": "Arhar (Tur/Red Gram)",
+    "सरसो": "Mustard", "सरसों": "Mustard", "गुड": "Jaggery (Gur)",
+    "गुड़": "Jaggery (Gur)", "आलू": "Potato", "प्याज": "Onion",
+    "टमाटर": "Tomato", "मक्का": "Maize", "जौ": "Barley", "बाजरा": "Bajra",
+    "ज्वार": "Jowar", "लहसुन": "Garlic", "मसूर": "Lentil (Masur)",
+}
+
+# Official portal cards rendered by the dashboard. Every entry is a public
+# government page; the dashboard only links to them and never mirrors a login.
+OFFICIAL_PORTALS = [
+    {
+        "id": "agmarknet",
+        "name_hi": "AGMARKNET (कृषि विपणन सूचना नेटवर्क)",
+        "name_en": "AGMARKNET — Agricultural Marketing Information Network",
+        "role_hi": "राष्ट्रीय मंडी भाव और आवक रिपोर्ट",
+        "role_en": "National mandi price and arrival reports",
+        "url": AGMARKNET_HOME_URL,
+        "owner": "Directorate of Marketing & Inspection, Government of India",
+        "data_used": "Cross-verified mandi modal prices",
+    },
+    {
+        "id": "data_gov_in",
+        "name_hi": "data.gov.in (ओपन गवर्नमेंट डेटा)",
+        "name_en": "data.gov.in — Open Government Data platform",
+        "role_hi": "AGMARKNET से बनी आधिकारिक मूल्य API",
+        "role_en": "Official price API generated from AGMARKNET",
+        "url": "https://data.gov.in/",
+        "owner": "NIC, Government of India",
+        "data_used": "Cross-verified mandi modal prices",
+    },
+    {
+        "id": "mandi_parishad",
+        "name_hi": "राज्य कृषि उत्पादन मण्डी परिषद, उ0प्र0",
+        "name_en": "UP State Agricultural Produce Market Board",
+        "role_hi": "मण्डी निर्देशिका — मंडल, जनपद, मण्डी, ग्रेड, सचिव और सी.यू.जी",
+        "role_en": "Mandi directory — division, district, mandi, grade, secretary and CUG",
+        "url": MANDI_PARISHAD_DIRECTORY_URL,
+        "owner": "Rajya Krishi Utpadan Mandi Parishad, Uttar Pradesh",
+        "data_used": "Mandi directory and official contacts",
+    },
+    {
+        "id": "up_krishi_vipran",
+        "name_hi": "कृषि विपणन एवं कृषि विदेश व्यापार निदेशालय, उ0प्र0",
+        "name_en": "UP Directorate of Agricultural Marketing & Agri Export",
+        "role_hi": "राज्य-स्तरीय संदर्भ भाव (benchmark) — किसी एक मंडी का भाव नहीं",
+        "role_en": "State-level benchmark rates — not an individual mandi rate",
+        "url": UP_KRISHI_VIPRAN_URL,
+        "owner": "Government of Uttar Pradesh",
+        "data_used": "State benchmark ticker only",
+    },
+    {
+        "id": "enam",
+        "name_hi": "e-NAM (राष्ट्रीय कृषि बाज़ार)",
+        "name_en": "e-NAM — National Agriculture Market",
+        "role_hi": "अधिकृत नीलामी lot feed और आधिकारिक बोली पोर्टल",
+        "role_en": "Authorised auction lot feed and official bidding portal",
+        "url": ENAM_PORTAL_URL,
+        "owner": "SFAC, Ministry of Agriculture & Farmers Welfare",
+        "data_used": "Auction lots when an authorised feed is configured",
+    },
+    {
+        "id": "up_emandi",
+        "name_hi": "उ0प्र0 ई-मण्डी पोर्टल",
+        "name_en": "UP e-Mandi portal",
+        "role_hi": "मंडी संपर्क निर्देशिका और गेट-पास सेवाएँ",
+        "role_en": "Mandi contact directory and gate-pass services",
+        "url": "https://emandi.up.gov.in/",
+        "owner": "Rajya Krishi Utpadan Mandi Parishad, Uttar Pradesh",
+        "data_used": "Mandi secretary/contact details",
+    },
+]
+
 
 class ContactTableParser(HTMLParser):
     def __init__(self) -> None:
@@ -107,6 +194,37 @@ class ContactTableParser(HTMLParser):
             value = html.unescape(" ".join(self.cell_parts))
             self.row.append(re.sub(r"\s+", " ", value).strip())
             self.in_td = False
+        elif tag == "tr":
+            if self.row:
+                self.rows.append(self.row)
+            self.row = []
+
+
+class TableRowParser(HTMLParser):
+    """Collect every ``<tr>`` of a page as a list of plain-text ``<td>`` cells."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.in_cell = False
+        self.cell_parts: list[str] = []
+        self.row: list[str] = []
+        self.rows: list[list[str]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in {"td", "th"}:
+            self.in_cell = True
+            self.cell_parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self.in_cell:
+            self.cell_parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag in {"td", "th"} and self.in_cell:
+            value = html.unescape(" ".join(self.cell_parts))
+            self.row.append(re.sub(r"\s+", " ", value).strip())
+            self.in_cell = False
         elif tag == "tr":
             if self.row:
                 self.rows.append(self.row)
@@ -269,8 +387,53 @@ def add_cross_verification(
         record["verification_sources"] = sources
         record["verification_count"] = len(sources)
         record["cross_verified"] = len(sources) >= 2
-        record["three_source_verified"] = len(sources) >= 3
+        record["three_source_verified"] = len(sources) >= MIN_PRICE_SOURCE_MATCHES
     return primary_records
+
+
+def select_publishable_records(
+    candidate_feeds: list[tuple[str, list[dict[str, Any]]]],
+    minimum_sources: int = MIN_PRICE_SOURCE_MATCHES,
+) -> tuple[list[dict[str, Any]], int]:
+    """Publish a price only when enough government feeds agree.
+
+    Records from every configured feed are grouped by (state, district, mandi,
+    commodity, arrival date) *and* modal price. A group is published only when
+    ``minimum_sources`` distinct government feeds reported that exact modal
+    price for that exact market, commodity and date.
+
+    Returns the publishable records and the total number of distinct
+    market/commodity/date/price groups that were examined.
+    """
+    grouped: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for source_name, records in candidate_feeds:
+        if not records:
+            continue
+        for record in records:
+            modal = record.get("modal_price")
+            if modal in (None, 0):
+                continue
+            key = record_verification_key(record) + (modal,)
+            bucket = grouped.setdefault(key, {"record": dict(record), "sources": []})
+            if source_name not in bucket["sources"]:
+                bucket["sources"].append(source_name)
+
+    published: list[dict[str, Any]] = []
+    for bucket in grouped.values():
+        sources = bucket["sources"]
+        record = bucket["record"]
+        record["verification_sources"] = sources
+        record["verification_count"] = len(sources)
+        record["cross_verified"] = len(sources) >= 2
+        record["three_source_verified"] = len(sources) >= minimum_sources
+        record["source"] = ", ".join(sources)
+        if len(sources) >= minimum_sources:
+            published.append(record)
+
+    published.sort(key=lambda row: (
+        row.get("district") or "", row.get("mandi") or "", row.get("commodity") or ""
+    ))
+    return published, len(grouped)
 
 
 def fetch_agmarknet_up() -> list[dict[str, Any]]:
@@ -299,6 +462,187 @@ def fetch_agmarknet_up() -> list[dict[str, Any]]:
             record["source"] = "AGMARKNET"
             output.append(record)
     return output
+
+
+def check_agmarknet_home() -> dict[str, Any]:
+    """Confirm the AGMARKNET portal itself is reachable.
+
+    AGMARKNET is the national price portal behind the OGD price resource, so the
+    dashboard records its availability separately from the parsed price table.
+    No price is ever derived from this check.
+    """
+    page = http_get(AGMARKNET_HOME_URL, headers={"Accept": "text/html"}, timeout=35).decode(
+        "utf-8", errors="ignore"
+    )
+    title_match = re.search(r"<title[^>]*>(.*?)</title>", page, re.DOTALL | re.IGNORECASE)
+    title = re.sub(r"\s+", " ", html.unescape(title_match.group(1))).strip() if title_match else ""
+    return {
+        "reachable": True,
+        "url": AGMARKNET_HOME_URL,
+        "title": title,
+        "checked_at": now_ist().isoformat(),
+    }
+
+
+def parse_mandi_parishad_directory(page: str) -> list[dict[str, Any]]:
+    """Parse the UP Mandi Parishad mandi directory table.
+
+    The published columns are: serial number, division (क्षेत्र), district,
+    mandi name, mandi grade, secretary name and CUG mobile number. Nothing is
+    inferred: a row is skipped unless the portal actually published a division,
+    district and mandi name, and "--" placeholders stay empty.
+    """
+    parser = TableRowParser()
+    parser.feed(page)
+    directory: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for row in parser.rows:
+        if len(row) < 7 or not row[0].strip().isdigit():
+            continue
+        serial, division, district, mandi, grade, secretary, cug = (
+            item.strip() for item in row[:7]
+        )
+        if not all((division, district, mandi)):
+            continue
+        key = (normalize_name(division), normalize_name(district), normalize_name(mandi))
+        if key in seen:
+            continue
+        seen.add(key)
+
+        def published(value: str) -> str | None:
+            cleaned = value.strip().strip("-").strip()
+            return cleaned or None
+
+        cug_digits = re.sub(r"[^0-9+]", "", cug)
+        directory.append({
+            "serial": int(serial),
+            "division": division,
+            "district": district,
+            "district_hi": DISTRICT_HI.get(district, district),
+            "mandi": mandi,
+            "grade": published(grade),
+            "secretary": published(secretary),
+            "cug": cug_digits or None,
+            "source": "UP Mandi Parishad directory",
+            "source_url": MANDI_PARISHAD_DIRECTORY_URL,
+        })
+    return directory
+
+
+def fetch_mandi_parishad_directory() -> list[dict[str, Any]]:
+    page = http_get(
+        MANDI_PARISHAD_DIRECTORY_URL, headers={"Accept": "text/html"}, timeout=40
+    ).decode("utf-8", errors="ignore")
+    return parse_mandi_parishad_directory(page)
+
+
+def parse_up_krishi_vipran_ticker(page: str) -> list[dict[str, Any]]:
+    """Parse the official state ticker on the UP Krishi Vipran home page.
+
+    Every entry is a STATE-LEVEL benchmark for a commodity, published by the
+    Directorate of Agricultural Marketing. It is deliberately NOT treated as an
+    individual mandi rate and never enters the mandi price feed.
+    """
+    text = re.sub(r"<[^>]+>", "\n", page)
+    text = html.unescape(text)
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    pattern = re.compile(
+        r"([\u0900-\u097F][\u0900-\u097F\s]{0,30}?)\s+(\d[\d,]*(?:\.\d+)?)\s*\(\s*([+-]?\d+(?:\.\d+)?)\s*%\s*\)"
+    )
+    for match in pattern.finditer(text):
+        commodity_hi = re.sub(r"\s+", " ", match.group(1)).strip()
+        price = clean_number(match.group(2))
+        if not commodity_hi or price in (None, 0):
+            continue
+        key = normalize_name(commodity_hi) or commodity_hi
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            change_percent = float(match.group(3))
+        except ValueError:
+            continue
+        entries.append({
+            "commodity_hi": commodity_hi,
+            "commodity": STATE_TICKER_COMMODITY_EN.get(commodity_hi, commodity_hi),
+            "state_benchmark_price": price,
+            "price_unit": "Quintal",
+            "change_percent": change_percent,
+            "scope": "state_benchmark",
+            "is_mandi_rate": False,
+        })
+    return entries
+
+
+def fetch_up_krishi_vipran_ticker() -> list[dict[str, Any]]:
+    page = http_get(UP_KRISHI_VIPRAN_URL, headers={"Accept": "text/html"}, timeout=40).decode(
+        "utf-8", errors="ignore"
+    )
+    return parse_up_krishi_vipran_ticker(page)
+
+
+def build_benchmarks(
+    state_ticker: list[dict[str, Any]],
+    ticker_status: str,
+    ticker_message: str | None,
+    parishad_rows: list[dict[str, Any]],
+    parishad_status: str,
+    agmarknet_status: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Assemble data/benchmarks.json from official portals only."""
+    divisions = sorted({row["division"] for row in parishad_rows})
+    districts = sorted({row["district"] for row in parishad_rows})
+    grade_counts = Counter(row["grade"] for row in parishad_rows if row.get("grade"))
+    return {
+        "updated_at": now_ist().isoformat(),
+        "policy": (
+            "Every value below is copied from an official government portal. "
+            "No simulated, random or interpolated figure is stored."
+        ),
+        "state_benchmark": {
+            "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
+            "title_en": "Uttar Pradesh state-level benchmark rate",
+            "scope": "state_benchmark",
+            "is_mandi_rate": False,
+            "disclaimer_hi": (
+                "यह उ0प्र0 कृषि विपणन निदेशालय द्वारा प्रकाशित राज्य-स्तरीय संदर्भ भाव है, "
+                "किसी एक मंडी का भाव नहीं। मंडी-वार भाव के लिए ऊपर सत्यापित तालिका देखें।"
+            ),
+            "disclaimer_en": (
+                "This is the state-level benchmark published by the UP Directorate of "
+                "Agricultural Marketing, not an individual mandi rate. See the verified "
+                "mandi table for market-wise prices."
+            ),
+            "source": "UP Krishi Vipran (Directorate of Agricultural Marketing, UP)",
+            "source_url": UP_KRISHI_VIPRAN_URL,
+            "status": ticker_status,
+            "message": ticker_message,
+            "commodities": state_ticker,
+        },
+        "mandi_parishad_directory": {
+            "title_hi": "राज्य कृषि उत्पादन मण्डी परिषद — मण्डी निर्देशिका",
+            "title_en": "UP State Agricultural Produce Market Board — mandi directory",
+            "source": "राज्य कृषि उत्पादन मण्डी परिषद, उत्तर प्रदेश",
+            "source_url": MANDI_PARISHAD_DIRECTORY_URL,
+            "status": parishad_status,
+            "fields": ["division", "district", "mandi", "grade", "secretary", "cug"],
+            "division_count": len(divisions),
+            "district_count": len(districts),
+            "mandi_count": len(parishad_rows),
+            "grades": dict(sorted(grade_counts.items())),
+            "divisions": divisions,
+            "mandis": parishad_rows,
+        },
+        "agmarknet": {
+            "title_hi": "AGMARKNET राष्ट्रीय मूल्य पोर्टल",
+            "title_en": "AGMARKNET national price portal",
+            "source_url": AGMARKNET_HOME_URL,
+            "report_url": AGMARKNET_URL,
+            "status": agmarknet_status,
+        },
+        "official_portals": OFFICIAL_PORTALS,
+    }
 
 
 def fetch_mandi_contacts() -> tuple[list[dict[str, str]], str | None]:
@@ -426,11 +770,30 @@ def aggregate_state_prices(records: list[dict[str, Any]], source: str, verified:
 
 
 def build_mandi_directory(
-    records: list[dict[str, Any]], contacts: list[dict[str, str]], contact_source: str | None
+    records: list[dict[str, Any]],
+    contacts: list[dict[str, str]],
+    contact_source: str | None,
+    parishad_rows: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     contact_map: dict[str, list[dict[str, str]]] = defaultdict(list)
     for contact in contacts:
         contact_map[normalize_name(contact["mandi"])].append(contact)
+
+    # Official UP Mandi Parishad directory rows keyed by mandi name so a mandi
+    # can be enriched with its division, grade, secretary and CUG number.
+    parishad_map: dict[str, dict[str, Any]] = {}
+    for row in parishad_rows or []:
+        parishad_map.setdefault(normalize_name(row["mandi"]), row)
+
+    def parishad_for(mandi_name: str) -> dict[str, Any]:
+        key = normalize_name(mandi_name.replace("APMC", "").replace("Mandi", ""))
+        entry = parishad_map.get(key)
+        if entry is None and len(key) >= 5:
+            entry = next(
+                (value for name, value in parishad_map.items() if key in name or name in key),
+                None,
+            )
+        return entry or {}
 
     grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for record in records:
@@ -454,12 +817,18 @@ def build_mandi_directory(
                 matched_contact_keys.add(matched_pair[0])
                 local_contacts = matched_pair[1]
         prices = [row["modal_price"] for row in rows if row.get("modal_price")]
+        official = parishad_for(mandi)
         mandis.append({
             "state": "Uttar Pradesh",
+            "division": official.get("division"),
             "district": district,
             "district_hi": DISTRICT_HI.get(district, district),
             "mandi": mandi,
             "mandi_hi": mandi_hi,
+            "grade": official.get("grade"),
+            "secretary": official.get("secretary"),
+            "cug": official.get("cug"),
+            "directory_source_url": official.get("source_url") if official else None,
             "address": None,
             "contacts": local_contacts,
             "central_helpdesk": ["+91-8765957686", "+91-8765958630"],
@@ -482,12 +851,18 @@ def build_mandi_directory(
         if contact_key in matched_contact_keys:
             continue
         mandi_name = local_contacts[0]["mandi"]
+        official = parishad_for(mandi_name)
         mandis.append({
             "state": "Uttar Pradesh",
-            "district": "Not published",
-            "district_hi": "प्रकाशित नहीं",
+            "division": official.get("division"),
+            "district": official.get("district") or "Not published",
+            "district_hi": official.get("district_hi") or "प्रकाशित नहीं",
             "mandi": mandi_name,
             "mandi_hi": mandi_name,
+            "grade": official.get("grade"),
+            "secretary": official.get("secretary"),
+            "cug": official.get("cug"),
+            "directory_source_url": official.get("source_url") if official else None,
             "address": None,
             "contacts": local_contacts,
             "central_helpdesk": ["+91-8765957686", "+91-8765958630"],
@@ -502,10 +877,52 @@ def build_mandi_directory(
                 f"{mandi_name} Mandi, Uttar Pradesh"
             ),
         })
-    mandis.sort(key=lambda item: (item["district"], item["mandi"]))
+
+    # Finally, every notified mandi published by the UP Mandi Parishad stays in
+    # the directory even when it reported neither a verified price nor an
+    # e-Mandi contact row. Price fields stay null: nothing is invented.
+    listed_keys = {normalize_name(item["mandi"]) for item in mandis}
+    for key, official in parishad_map.items():
+        if key in listed_keys or any(key in name or name in key for name in listed_keys if len(key) >= 5):
+            continue
+        mandi_name = official["mandi"]
+        mandis.append({
+            "state": "Uttar Pradesh",
+            "division": official.get("division"),
+            "district": official.get("district"),
+            "district_hi": official.get("district_hi"),
+            "mandi": mandi_name,
+            "mandi_hi": mandi_name,
+            "grade": official.get("grade"),
+            "secretary": official.get("secretary"),
+            "cug": official.get("cug"),
+            "directory_source_url": official.get("source_url"),
+            "address": None,
+            "contacts": [],
+            "central_helpdesk": ["+91-8765957686", "+91-8765958630"],
+            "commodities": [],
+            "commodity_count": 0,
+            "latest_price_date": None,
+            "minimum_modal_price": None,
+            "maximum_modal_price": None,
+            "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
+            "enam_portal_url": ENAM_PORTAL_URL,
+            "map_url": "https://www.google.com/maps/search/?api=1&query=" + urllib.parse.quote_plus(
+                f"{mandi_name} Mandi, {official.get('district') or 'Uttar Pradesh'}"
+            ),
+        })
+
+    mandis.sort(key=lambda item: (item.get("district") or "", item["mandi"]))
+    directory_sources = [source for source in (
+        contact_source,
+        MANDI_PARISHAD_DIRECTORY_URL if parishad_map else None,
+    ) if source]
     return {
         "updated_at": now_ist().isoformat(),
-        "source": contact_source or "AGMARKNET market list; e-Mandi contact portal unavailable",
+        "source": " + ".join(directory_sources)
+        or "AGMARKNET market list; official directory portals unavailable",
+        "directory_sources": directory_sources,
+        "parishad_directory_count": len(parishad_map),
         "central_office": {
             "name": "राज्य कृषि उत्पादन मण्डी परिषद्, उत्तर प्रदेश",
             "address": "किसान मंडी भवन, विभूति खंड, गोमती नगर, लखनऊ - 226010",
@@ -567,6 +984,30 @@ def main() -> None:
     except Exception as exc:
         sources.append({"name": "data.gov.in", "status": "error", "message": str(exc)})
 
+    # AGMARKNET portal availability, recorded independently of price parsing.
+    agmarknet_home: dict[str, Any] | None = None
+    if not offline:
+        try:
+            agmarknet_home = check_agmarknet_home()
+            sources.append({
+                "name": "AGMARKNET portal",
+                "status": "ok",
+                "records": 0,
+                "url": AGMARKNET_HOME_URL,
+                "message": agmarknet_home.get("title") or "portal reachable",
+            })
+        except Exception as exc:
+            agmarknet_home = {"reachable": False, "url": AGMARKNET_HOME_URL, "error": str(exc)}
+            sources.append({
+                "name": "AGMARKNET portal", "status": "error",
+                "url": AGMARKNET_HOME_URL, "message": str(exc),
+            })
+    else:
+        sources.append({
+            "name": "AGMARKNET portal", "status": "not_checked",
+            "url": AGMARKNET_HOME_URL, "message": "offline repository refresh",
+        })
+
     # Source 2: direct public AGMARKNET table, checked independently for a
     # matching modal price rather than used only as an invisible fallback.
     if not offline:
@@ -606,19 +1047,25 @@ def main() -> None:
         except Exception as exc:
             sources.append({"name": display_name, "status": "error", "message": str(exc)})
 
+    connected_feed_names = [name for name, records in candidate_feeds if records]
     if candidate_feeds:
-        source_name, primary_records = candidate_feeds[0]
-        checked_records = add_cross_verification(primary_records, source_name, candidate_feeds[1:])
         # The public dashboard is intentionally stricter than a normal single-
-        # source reader: publish a price only after three government feeds agree.
-        up_records = [record for record in checked_records if record.get("three_source_verified")]
+        # source reader: a market/commodity/date/modal price is published only
+        # after at least MIN_PRICE_SOURCE_MATCHES government feeds report it.
+        up_records, examined_groups = select_publishable_records(candidate_feeds)
         if up_records:
-            source_name = "3-source verified: " + ", ".join(name for name, records in candidate_feeds if records)
+            source_name = (
+                f"{MIN_PRICE_SOURCE_MATCHES}-source verified: " + ", ".join(connected_feed_names)
+            )
         sources.append({
-            "name": "3-source verification gate",
+            "name": f"{MIN_PRICE_SOURCE_MATCHES}-source verification gate",
             "status": "ok" if up_records else "insufficient_sources",
             "records": len(up_records),
-            "message": f"{len(up_records)} of {len(checked_records)} records matched across 3+ feeds",
+            "message": (
+                f"{len(up_records)} of {examined_groups} market/commodity/date/price groups "
+                f"matched across {MIN_PRICE_SOURCE_MATCHES}+ feeds "
+                f"({len(connected_feed_names)} feeds connected)"
+            ),
         })
     fresh_verified_data = bool(up_records)
     if not up_records:
@@ -642,6 +1089,91 @@ def main() -> None:
         "records": len(contacts),
         "url": contact_source,
     })
+
+    # Official UP Mandi Parishad directory: division, district, mandi, grade,
+    # secretary and CUG number. Retained from the previous snapshot when the
+    # portal is briefly unreachable; never regenerated.
+    previous_benchmarks = read_json(DATA_DIR / "benchmarks.json", {})
+    if not isinstance(previous_benchmarks, dict):
+        previous_benchmarks = {}
+    previous_directory = previous_benchmarks.get("mandi_parishad_directory") or {}
+    previous_state_block = previous_benchmarks.get("state_benchmark") or {}
+
+    parishad_rows: list[dict[str, Any]] = []
+    parishad_status = "not_checked"
+    if offline:
+        parishad_rows = list(previous_directory.get("mandis") or [])
+        parishad_status = "cached" if parishad_rows else "not_checked"
+        sources.append({
+            "name": "UP Mandi Parishad directory",
+            "status": parishad_status,
+            "records": len(parishad_rows),
+            "url": MANDI_PARISHAD_DIRECTORY_URL,
+            "message": "offline repository refresh",
+        })
+    else:
+        try:
+            parishad_rows = fetch_mandi_parishad_directory()
+            if not parishad_rows:
+                raise RuntimeError("directory returned no parseable mandi rows")
+            parishad_status = "ok"
+            sources.append({
+                "name": "UP Mandi Parishad directory",
+                "status": "ok",
+                "records": len(parishad_rows),
+                "url": MANDI_PARISHAD_DIRECTORY_URL,
+            })
+        except Exception as exc:
+            parishad_rows = list(previous_directory.get("mandis") or [])
+            parishad_status = "cached" if parishad_rows else "unavailable"
+            sources.append({
+                "name": "UP Mandi Parishad directory",
+                "status": "error",
+                "records": len(parishad_rows),
+                "url": MANDI_PARISHAD_DIRECTORY_URL,
+                "message": str(exc),
+            })
+
+    # Official UP Krishi Vipran state ticker. Clearly a state-level benchmark,
+    # never merged into mandi-wise prices.
+    state_ticker: list[dict[str, Any]] = []
+    ticker_status = "not_checked"
+    ticker_message: str | None = None
+    if offline:
+        state_ticker = list(previous_state_block.get("commodities") or [])
+        ticker_status = "cached" if state_ticker else "not_checked"
+        ticker_message = "offline repository refresh"
+        sources.append({
+            "name": "UP Krishi Vipran state benchmark",
+            "status": ticker_status,
+            "records": len(state_ticker),
+            "url": UP_KRISHI_VIPRAN_URL,
+            "message": ticker_message,
+        })
+    else:
+        try:
+            state_ticker = fetch_up_krishi_vipran_ticker()
+            if not state_ticker:
+                raise RuntimeError("state ticker returned no parseable benchmark rates")
+            ticker_status = "ok"
+            sources.append({
+                "name": "UP Krishi Vipran state benchmark",
+                "status": "ok",
+                "records": len(state_ticker),
+                "url": UP_KRISHI_VIPRAN_URL,
+                "message": "state-level benchmark, not an individual mandi rate",
+            })
+        except Exception as exc:
+            state_ticker = list(previous_state_block.get("commodities") or [])
+            ticker_status = "cached" if state_ticker else "unavailable"
+            ticker_message = str(exc)
+            sources.append({
+                "name": "UP Krishi Vipran state benchmark",
+                "status": "error",
+                "records": len(state_ticker),
+                "url": UP_KRISHI_VIPRAN_URL,
+                "message": ticker_message,
+            })
 
     try:
         auction, auction_status = fetch_auction_feed()
@@ -670,12 +1202,14 @@ def main() -> None:
         "source": source_name,
         "verified": effective_verified,
         "is_live": fresh_verified_data,
-        "connected_price_sources": [name for name, records in candidate_feeds if records],
-        "connected_price_source_count": len([1 for _, records in candidate_feeds if records]),
+        "connected_price_sources": connected_feed_names,
+        "connected_price_source_count": len(connected_feed_names),
+        "minimum_price_source_matches": MIN_PRICE_SOURCE_MATCHES,
         "cross_verified_record_count": sum(1 for record in up_records if record.get("cross_verified")),
         "three_source_verified_record_count": sum(1 for record in up_records if record.get("three_source_verified")),
         "verification_note": (
-            "A record is cross-verified only when another configured government feed reports the same market, commodity, date and modal price."
+            f"A mandi price is published only when at least {MIN_PRICE_SOURCE_MATCHES} configured "
+            "government price feeds report the same market, commodity, date and modal price."
         ),
         "update_frequency": "6 times daily",
         "update_slots_ist": list(UPDATE_SLOTS_IST),
@@ -683,7 +1217,11 @@ def main() -> None:
     }
 
     state_prices = aggregate_state_prices(all_india_records, source_name, effective_verified)
-    directory = build_mandi_directory(up_records, contacts, contact_source)
+    directory = build_mandi_directory(up_records, contacts, contact_source, parishad_rows)
+    benchmarks = build_benchmarks(
+        state_ticker, ticker_status, ticker_message,
+        parishad_rows, parishad_status, agmarknet_home,
+    )
     # Discard legacy generated trend points until a verified source has built a
     # real history over successive refreshes.
     history = update_history(up_records, reset=not previous_verified)
@@ -692,6 +1230,8 @@ def main() -> None:
         "update_frequency": "6 times daily",
         "update_slots_ist": list(UPDATE_SLOTS_IST),
         "sources": sources,
+        "official_portals": OFFICIAL_PORTALS,
+        "minimum_price_source_matches": MIN_PRICE_SOURCE_MATCHES,
         "policy": "No simulated prices, arrivals, contacts, lots, or bids are generated.",
     }
 
@@ -700,10 +1240,13 @@ def main() -> None:
     write_json_atomic(DATA_DIR / "state_prices.json", state_prices)
     write_json_atomic(DATA_DIR / "mandis.json", directory)
     write_json_atomic(DATA_DIR / "auction.json", auction)
+    write_json_atomic(DATA_DIR / "benchmarks.json", benchmarks)
     write_json_atomic(DATA_DIR / "sources.json", sources_payload)
     print(
         f"Updated dashboard: {len(up_records)} UP prices, {len(state_prices['states'])} states, "
-        f"{len(directory['mandis'])} mandis, {len(auction['lots'])} official auction lots."
+        f"{len(directory['mandis'])} mandis, {len(parishad_rows)} Mandi Parishad directory rows, "
+        f"{len(state_ticker)} state benchmark commodities, "
+        f"{len(auction['lots'])} official auction lots."
     )
 
 

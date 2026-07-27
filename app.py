@@ -615,6 +615,38 @@ def get_financial_reports(current_user: db.User = Depends(get_current_user), db_
         "recent_invoices": [sqlalchemy_to_dict(invoice) for invoice in invoices[-10:]]
     }
 
+# ================= OFFICIAL GOVERNMENT BENCHMARKS =================
+
+@app.get("/api/v2/benchmarks")
+def get_official_benchmarks():
+    """Expose data/benchmarks.json: state benchmark, directory and portals.
+
+    The state ticker is explicitly a state-level benchmark and is never mixed
+    into mandi-wise prices. Nothing here is generated locally.
+    """
+    try:
+        with open("data/benchmarks.json", "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No official benchmark snapshot is available yet",
+        )
+
+
+@app.get("/api/v2/sources")
+def get_source_monitor():
+    """Return the Government Source Monitor payload written by the pipeline."""
+    try:
+        with open("data/sources.json", "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No source-monitor snapshot is available yet",
+        )
+
+
 # ================= OFFICIAL e-NAM AUCTION SNAPSHOT =================
 
 @app.get("/api/v2/auction/lots")
