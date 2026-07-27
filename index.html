@@ -173,13 +173,68 @@
 
         <!-- ───────────────── SECTION: LIVE RATES ───────────────── -->
         <div id="section-rates" class="space-y-4">
-            <!-- Search & Filters -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <!-- 🌾 COMBINED WHEAT & RICE PRIMARY SECTION (मुख्य जिंस: गेहूं एवं चावल) 🌾 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Wheat Card -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border-2 border-amber-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-amber-200/20">
+                    <i data-lucide="wheat" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-2 relative z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="p-1.5 bg-amber-500/10 rounded-lg text-amber-700">
+                            <i data-lucide="wheat" class="w-5 h-5"></i>
+                        </span>
+                        <h4 class="font-extrabold text-amber-900 text-xs tracking-wide uppercase" data-translate="pinned_wheat_title">मुख्य अनाज: गेहूं भाव (Wheat Today)</h4>
+                    </div>
+                    <div class="flex items-baseline space-x-2">
+                        <span id="pinned-wheat-price" class="text-3xl font-black text-amber-800">₹ -</span>
+                        <span class="text-xs font-semibold text-amber-600 bg-amber-100/50 px-2 py-0.5 rounded-full" data-translate="per_quintal">प्रति क्विंटल</span>
+                    </div>
+                    <p class="text-xs text-amber-700/80 font-medium" id="pinned-wheat-desc">उत्तर प्रदेश की मंडियों का आज का औसत भाव</p>
+                </div>
+                <button onclick="quickAddStaple('Wheat')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-amber-700/10 relative z-10">
+                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <span data-translate="btn_quick_calc">कैलकुलेटर</span>
+                </button>
+            </div>
+
+            <!-- Rice Card -->
+            <div class="bg-gradient-to-br from-emerald-50 to-green-50/30 border-2 border-emerald-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-emerald-200/20">
+                    <i data-lucide="sprout" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-2 relative z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-700">
+                            <i data-lucide="sprout" class="w-5 h-5"></i>
+                        </span>
+                        <h4 class="font-extrabold text-emerald-900 text-sm tracking-wide uppercase" data-translate="pinned_rice_title">मुख्य अनाज: चावल भाव (Rice Today)</h4>
+                    </div>
+                    <div class="flex items-baseline space-x-2">
+                        <span id="pinned-rice-price" class="text-3xl font-black text-emerald-800">₹ -</span>
+                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full" data-translate="per_quintal">प्रति क्विंटल</span>
+                    </div>
+                    <p class="text-xs text-emerald-700/80 font-medium" id="pinned-rice-desc">उत्तर प्रदेश की मंडियों का आज का औसत भाव</p>
+                </div>
+                <button onclick="quickAddStaple('Rice')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-emerald-700/10 relative z-10">
+                    <i data-lucide="calculator" class="w-4 h-4"></i>
+                    <span data-translate="btn_quick_calc">कैलकुलेटर</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_search">फसल, मंडी या जिला खोजें</label>
-                    <div class="relative">
+                    <div class="relative flex items-center">
                         <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="rate-search" oninput="applyFilters()" placeholder="उदा. गेहूं, कानपुर..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        <input type="text" id="rate-search" oninput="applyFilters()" placeholder="उदा. गेहूं, कानपुर..." class="w-full pl-9 pr-12 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        <!-- AI Hindi Mic Button -->
+                        <button onclick="startVoiceRecognition()" id="mic-btn" class="absolute right-2 p-1.5 hover:bg-slate-200 rounded-md text-slate-500 hover:text-emerald-600 transition" title="आवाज से खोजें (Hindi Voice Search)">
+                            <i data-lucide="mic" class="w-4 h-4" id="mic-icon"></i>
+                        </button>
                     </div>
                 </div>
                 <div>
@@ -770,7 +825,11 @@
                 adv_rainy: "बारिश की संभावना। कटी हुई फसल को सुरक्षित गोदाम में रखें।",
                 btn_download_pdf: "मंडी भाव PDF",
                 btn_download_bill: "बिल PDF",
-                trends_dist_comparison: "ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)"
+                trends_dist_comparison: "ज़िला-वार भाव तुलना - न्यूनतम बनाम उच्चतम (रु/क्विंटल)",
+                pinned_wheat_title: "मुख्य अनाज: गेहूं भाव (Wheat Today)",
+                pinned_rice_title: "मुख्य अनाज: चावल भाव (Rice Today)",
+                per_quintal: "प्रति क्विंटल",
+                btn_quick_calc: "कैलकुलेटर"
             },
             en: {
                 title_main: "UP Mandi Rates",
@@ -862,7 +921,11 @@
                 adv_rainy: "Showers expected. Move harvested crops to indoor warehouse.",
                 btn_download_pdf: "Mandi Rates PDF",
                 btn_download_bill: "Bill PDF",
-                trends_dist_comparison: "District-wise Price Comparison - Min vs Max (₹/Quintal)"
+                trends_dist_comparison: "District-wise Price Comparison - Min vs Max (₹/Quintal)",
+                pinned_wheat_title: "Primary Staple: Wheat Rate",
+                pinned_rice_title: "Primary Staple: Rice Rate",
+                per_quintal: "per Quintal",
+                btn_quick_calc: "Quick Calc"
             }
         };
 
@@ -1033,6 +1096,7 @@
                 populateDropdowns();
                 renderRatesTable();
                 renderWeather();
+                updatePinnedStaples();
                 
                 if (refreshIcon) {
                     setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
@@ -1046,6 +1110,32 @@
 
         function refreshData() {
             fetchDashboardData();
+        }
+
+        // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
+        function updatePinnedStaples() {
+            // Calculate dynamic state-wide average modal price for Wheat (गेहूं)
+            const wheatRecords = latestData.filter(r => r.commodity === 'Wheat');
+            if (wheatRecords.length > 0) {
+                const avgWheat = Math.round(wheatRecords.reduce((sum, r) => sum + r.modal_price, 0) / wheatRecords.length);
+                document.getElementById('pinned-wheat-price').innerText = `₹ ${avgWheat.toLocaleString('en-IN')}`;
+            }
+
+            // Calculate dynamic state-wide average modal price for Rice (चावल)
+            const riceRecords = latestData.filter(r => r.commodity === 'Rice');
+            if (riceRecords.length > 0) {
+                const avgRice = Math.round(riceRecords.reduce((sum, r) => sum + r.modal_price, 0) / riceRecords.length);
+                document.getElementById('pinned-rice-price').innerText = `₹ ${avgRice.toLocaleString('en-IN')}`;
+            }
+        }
+
+        // Quick add staple to calculator
+        function quickAddStaple(cropName) {
+            const records = latestData.filter(r => r.commodity === cropName);
+            if (records.length > 0) {
+                const avgPrice = Math.round(records.reduce((sum, r) => sum + r.modal_price, 0) / records.length);
+                sendToCalculator(cropName, avgPrice);
+            }
         }
 
         function populateDropdowns() {
@@ -1467,6 +1557,53 @@
                 logBidTicker(trader, lotNum, price);
                 document.getElementById('bid-price').value = price + 5;
             });
+        }
+
+        // ================= AI HINDI VOICE SEARCH ENGINE (PHASE 5) =================
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("माफ़ करें, आपका ब्राउज़र वॉइस सर्च का समर्थन नहीं करता है। कृपया Google Chrome का उपयोग करें।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN'; // Set language to Hindi
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const micBtn = document.getElementById('mic-btn');
+            const micIcon = document.getElementById('mic-icon');
+            const searchInput = document.getElementById('rate-search');
+
+            recognition.onstart = () => {
+                micBtn.className = "absolute right-2 p-1.5 bg-red-100 rounded-md text-red-600 animate-pulse";
+                micIcon.innerHTML = `<i data-lucide="mic-off"></i>`;
+                lucide.createIcons();
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+            };
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                const cleanedText = spokenText.replace(/\.$/, '');
+                searchInput.value = cleanedText;
+                applyFilters();
+            };
+
+            recognition.onend = () => {
+                micBtn.className = "absolute right-2 p-1.5 hover:bg-slate-200 rounded-md text-slate-500 hover:text-emerald-600 transition";
+                micIcon.innerHTML = `<i data-lucide="mic"></i>`;
+                lucide.createIcons();
+            };
+
+            recognition.onerror = () => {
+                recognition.stop();
+            };
+
+            recognition.start();
         }
 
         // ================= AI PRICE PREDICTION LOGIC =================
