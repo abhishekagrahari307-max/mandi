@@ -109,7 +109,7 @@
                     <span data-translate="live_badge">ताज़ा भाव अपडेटेड</span>
                 </span>
                 <h2 class="text-2xl md:text-3xl font-extrabold" data-translate="welcome_title">किसान और व्यापारियों का डिजिटल साथी</h2>
-                <p class="text-sm text-emerald-50 max-w-2xl" data-translate="welcome_desc">उत्तर प्रदेश की सभी बड़ी मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।</p>
+                <p class="text-sm text-emerald-50 max-w-2xl" data-translate="welcome_desc">उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।</p>
                 
                 <!-- Summary Data Row -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-white/20">
@@ -171,7 +171,7 @@
             <!-- Search & Filters -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_search">फसल या मंडी खोजें</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_search">फसल, मंडी या जिला खोजें</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
                         <input type="text" id="rate-search" oninput="applyFilters()" placeholder="उदा. गेहूं, कानपुर..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
@@ -180,7 +180,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_district">जिला चुनें</label>
                     <select id="filter-district" onchange="applyFilters()" class="w-full py-2 px-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                        <option value="all" data-translate="opt_all_districts">सभी जिले</option>
+                        <option value="all" data-translate="opt_all_districts">सभी 75 जिले</option>
                     </select>
                 </div>
                 <div>
@@ -213,9 +213,12 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider">
-                                <th class="py-3 px-4" data-translate="th_district">जिला / जिला</th>
+                                <th class="py-3 px-4" data-translate="th_district">जिला</th>
                                 <th class="py-3 px-4" data-translate="th_mandi">मंडी नाम</th>
                                 <th class="py-3 px-4" data-translate="th_crop">फसल (जिंस)</th>
+                                <th class="py-3 px-4" data-translate="th_variety">किस्म (Variety)</th>
+                                <th class="py-3 px-4" data-translate="th_grade">ग्रेड (Grade)</th>
+                                <th class="py-3 px-4 text-right" data-translate="th_arrivals">आवक (Arrivals)</th>
                                 <th class="py-3 px-4 text-right" data-translate="th_min">न्यूनतम</th>
                                 <th class="py-3 px-4 text-right" data-translate="th_modal">मॉडल (औसत)</th>
                                 <th class="py-3 px-4 text-right" data-translate="th_max">अधिकतम</th>
@@ -518,7 +521,7 @@
                 title_sub: "Vijay Kumar Traders — डिजिटल मंडी सेवा",
                 live_badge: "ताज़ा भाव अपडेटेड",
                 welcome_title: "किसान और व्यापारियों का डिजिटल साथी",
-                welcome_desc: "उत्तर प्रदेश की सभी बड़ी मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
+                welcome_desc: "उत्तर प्रदेश की सभी 75 जिलों की मंडियों के अनाज, सब्जी, फल, दलहन और तिलहन के आधिकारिक भाव। घर बैठे देखें रोज़ाना का मंडी रेट उतार-चढ़ाव।",
                 stat_update: "आखिरी अपडेट",
                 stat_count: "सक्रिय मंडियां",
                 stat_hot: "शीर्ष फसल",
@@ -530,15 +533,18 @@
                 tab_calc: "मंडी कैलकुलेटर",
                 tab_weather: "मौसम और सलाह",
                 tab_info: "मंडी नियमावली",
-                filter_search: "फसल या मंडी खोजें",
+                filter_search: "फसल, मंडी या जिला खोजें",
                 filter_district: "जिला चुनें",
                 filter_commodity: "फसल चुनें",
-                opt_all_districts: "सभी जिले",
+                opt_all_districts: "सभी 75 जिले",
                 opt_all_crops: "सभी फसलें",
                 rates_heading: "मंडी भाव सूची (रु/क्विंटल)",
                 th_district: "जिला",
                 th_mandi: "मंडी नाम",
                 th_crop: "फसल (जिंस)",
+                th_variety: "किस्म",
+                th_grade: "ग्रेड",
+                th_arrivals: "दैनिक आवक",
                 th_min: "न्यूनतम",
                 th_modal: "मॉडल (औसत)",
                 th_max: "अधिकतम",
@@ -604,7 +610,7 @@
                 title_sub: "Vijay Kumar Traders — Digital Mandi Service",
                 live_badge: "LATEST PRICES UPDATED",
                 welcome_title: "Your Digital Mandi Partner",
-                welcome_desc: "Official prices for grains, vegetables, fruits, pulses, and oilseeds from all major mandis in Uttar Pradesh. Stay updated with market trends.",
+                welcome_desc: "Official prices for grains, vegetables, fruits, pulses, and oilseeds from all 75 districts in Uttar Pradesh. Stay updated with market trends.",
                 stat_update: "Last Updated",
                 stat_count: "Active Mandis",
                 stat_hot: "Hot Crop",
@@ -616,15 +622,18 @@
                 tab_calc: "Mandi Calculator",
                 tab_weather: "Weather Advisory",
                 tab_info: "Rules & Regulations",
-                filter_search: "Search Crop or Mandi",
+                filter_search: "Search Crop, Mandi or District",
                 filter_district: "Select District",
                 filter_commodity: "Select Crop",
-                opt_all_districts: "All Districts",
+                opt_all_districts: "All 75 Districts",
                 opt_all_crops: "All Crops",
                 rates_heading: "Mandi Prices List (INR/Quintal)",
                 th_district: "District",
                 th_mandi: "Mandi Name",
                 th_crop: "Crop / Commodity",
+                th_variety: "Variety",
+                th_grade: "Grade",
+                th_arrivals: "Daily Arrivals",
                 th_min: "Min Price",
                 th_modal: "Modal (Avg)",
                 th_max: "Max Price",
@@ -937,6 +946,10 @@
                 const distName = currentLang === 'hi' ? r.district_hi : r.district;
                 const mandiName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
                 const cropName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                const varietyName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
+                const gradeName = currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade;
+                const arrivalsText = `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : r.arrivals_unit}`;
+                
                 const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
                 tableHtml += `
@@ -944,6 +957,9 @@
                         <td class="py-3 px-4 font-medium text-slate-700">${distName}</td>
                         <td class="py-3 px-4 font-bold text-slate-900">${mandiName}</td>
                         <td class="py-3 px-4 text-emerald-700 font-semibold">${cropName}</td>
+                        <td class="py-3 px-4 text-slate-600 text-xs">${varietyName}</td>
+                        <td class="py-3 px-4 text-slate-500 text-xs">${gradeName}</td>
+                        <td class="py-3 px-4 text-right font-medium text-slate-700 text-xs">${arrivalsText}</td>
                         <td class="py-3 px-4 text-right text-slate-600">₹${r.min_price}</td>
                         <td class="py-3 px-4 text-right font-black text-slate-800 text-base">₹${r.modal_price}</td>
                         <td class="py-3 px-4 text-right text-slate-600">₹${r.max_price}</td>
@@ -965,12 +981,19 @@
                             </div>
                             <span class="bg-emerald-50 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-100">${cropName}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg text-center">
+                        
+                        <div class="text-[11px] text-slate-500 flex justify-between bg-slate-50 p-2 rounded border border-slate-100">
+                            <span>🌾 <b>${currentLang === 'hi' ? 'किस्म' : 'Variety'}:</b> ${varietyName}</span>
+                            <span>⭐ <b>${currentLang === 'hi' ? 'ग्रेड' : 'Grade'}:</b> ${gradeName}</span>
+                            <span>🚚 <b>${currentLang === 'hi' ? 'आवक' : 'Arrivals'}:</b> ${arrivalsText}</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 bg-emerald-50/50 p-2.5 rounded-lg text-center">
                             <div>
                                 <span class="text-[10px] text-slate-400 block">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</span>
                                 <span class="text-xs font-semibold text-slate-600">₹${r.min_price}</span>
                             </div>
-                            <div class="border-x border-slate-200">
+                            <div class="border-x border-emerald-100">
                                 <span class="text-[10px] font-bold text-emerald-600 block">${currentLang === 'hi' ? 'औसत' : 'Modal'}</span>
                                 <span class="text-sm font-extrabold text-emerald-800">₹${r.modal_price}</span>
                             </div>
@@ -1193,7 +1216,6 @@
             const totalExpenses = commAmt + laborAmt + taxAmt + transport;
             const netPayout = Math.max(0, grossVal - totalExpenses);
 
-            // Store in global state
             globalBillDetails = {
                 rawWeight, calcWeightUnit, rate, commPercent, commAmt, laborPerBag, 
                 totalBags, bagSize, laborAmt, transport, cessPercent, taxAmt, grossVal, totalExpenses, netPayout
@@ -1215,51 +1237,55 @@
 
         // ================= PDF GENERATION SCRIPTS =================
 
-        // 1. Export Current Mandi Rates List to beautifully-formatted PDF
+        // 1. Export Current Mandi Rates List with ALL extra details (Variety, Grade, Arrivals) to PDF
         function downloadRatesPDF() {
             const filteredRecords = getFilteredRecords();
             const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
                 year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
-            // Create offscreen container for PDF layout
             const pdfContainer = document.createElement('div');
-            pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-sm";
-            pdfContainer.style.width = "750px"; // standard A4 printable width equivalent
+            pdfContainer.className = "p-6 bg-white text-slate-900 space-y-4 text-xs";
+            pdfContainer.style.width = "790px"; // wider print canvas for extra columns
 
-            // Construct formal header
             const headerHtml = `
-                <div class="border-b-4 border-emerald-600 pb-4 flex items-center justify-between">
+                <div class="border-b-4 border-emerald-600 pb-3 flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl font-black text-emerald-800">Vijay Kumar Traders</h1>
-                        <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — डिजिटल मंडी सेवा</p>
+                        <h1 class="text-xl font-black text-emerald-800">Vijay Kumar Traders</h1>
+                        <p class="text-[10px] text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — डिजिटल मंडी सेवा</p>
                     </div>
                     <div class="text-right">
-                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">आधिकारिक मंडी भाव</span>
-                        <p class="text-[10px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
+                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">आधिकारिक मंडी भाव सूची</span>
+                        <p class="text-[9px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
                     </div>
                 </div>
                 <div>
-                    <h2 class="text-center text-lg font-bold text-slate-700 underline uppercase mt-2">
-                        ${currentLang === 'hi' ? 'दैनिक उत्तर प्रदेश कृषि मंडी भाव सूची' : 'DAILY UP AGRICULTURAL MANDI RATES LIST'}
+                    <h2 class="text-center text-sm font-bold text-slate-700 underline uppercase my-1">
+                        ${currentLang === 'hi' ? 'दैनिक उत्तर प्रदेश कृषि मंडी भाव एवं आवक सूची' : 'DAILY UP AGRICULTURAL MANDI RATES & ARRIVALS LIST'}
                     </h2>
                 </div>
             `;
 
-            // Build rates table rows
             let rowsHtml = '';
             filteredRecords.forEach(r => {
                 const dName = currentLang === 'hi' ? r.district_hi : r.district;
                 const mName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
                 const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                const vName = currentLang === 'hi' ? (r.variety_hi || r.variety) : r.variety;
+                const gName = currentLang === 'hi' ? (r.grade_hi || r.grade) : r.grade;
+                const aText = `${r.arrivals} ${currentLang === 'hi' ? (r.arrivals_unit_hi || 'टन') : r.arrivals_unit}`;
+
                 rowsHtml += `
-                    <tr class="border-b border-slate-200 text-xs">
-                        <td class="py-2.5 px-3 font-medium">${dName}</td>
-                        <td class="py-2.5 px-3 font-bold">${mName}</td>
-                        <td class="py-2.5 px-3 text-emerald-700 font-semibold">${cName}</td>
-                        <td class="py-2.5 px-3 text-right">₹${r.min_price}</td>
-                        <td class="py-2.5 px-3 text-right font-bold text-slate-800">₹${r.modal_price}</td>
-                        <td class="py-2.5 px-3 text-right">₹${r.max_price}</td>
+                    <tr class="border-b border-slate-200 text-[10px]">
+                        <td class="py-2 px-2 font-medium">${dName}</td>
+                        <td class="py-2 px-2 font-bold">${mName}</td>
+                        <td class="py-2 px-2 text-emerald-700 font-semibold">${cName}</td>
+                        <td class="py-2 px-2 text-slate-500">${vName}</td>
+                        <td class="py-2 px-2 text-slate-400">${gName}</td>
+                        <td class="py-2 px-2 text-right text-slate-600">${aText}</td>
+                        <td class="py-2 px-2 text-right">₹${r.min_price}</td>
+                        <td class="py-2 px-2 text-right font-bold text-slate-800">₹${r.modal_price}</td>
+                        <td class="py-2 px-2 text-right">₹${r.max_price}</td>
                     </tr>
                 `;
             });
@@ -1267,13 +1293,16 @@
             const tableHtml = `
                 <table class="w-full text-left border-collapse border border-slate-300">
                     <thead>
-                        <tr class="bg-slate-100 border-b border-slate-300 text-slate-700 text-[11px] font-extrabold uppercase">
-                            <th class="py-2 px-3">${currentLang === 'hi' ? 'जिला' : 'District'}</th>
-                            <th class="py-2 px-3">${currentLang === 'hi' ? 'मंडी नाम' : 'Mandi Name'}</th>
-                            <th class="py-2 px-3">${currentLang === 'hi' ? 'फसल (जिंस)' : 'Crop'}</th>
-                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</th>
-                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'औसत (Modal)' : 'Modal'}</th>
-                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</th>
+                        <tr class="bg-slate-100 border-b border-slate-300 text-slate-700 text-[9px] font-extrabold uppercase">
+                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'जिला' : 'District'}</th>
+                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'मंडी नाम' : 'Mandi Name'}</th>
+                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'फसल (जिंस)' : 'Crop'}</th>
+                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'किस्म (Variety)' : 'Variety'}</th>
+                            <th class="py-1.5 px-2">${currentLang === 'hi' ? 'ग्रेड' : 'Grade'}</th>
+                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'दैनिक आवक' : 'Arrivals'}</th>
+                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</th>
+                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'मॉडल (औसत)' : 'Modal'}</th>
+                            <th class="py-1.5 px-2 text-right">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1282,9 +1311,8 @@
                 </table>
             `;
 
-            // Footer / Terms
             const footerHtml = `
-                <div class="border-t border-slate-200 pt-6 mt-8 flex justify-between text-[10px] text-slate-400">
+                <div class="border-t border-slate-200 pt-4 mt-6 flex justify-between text-[9px] text-slate-400">
                     <div>
                         <p>© Vijay Kumar Traders - Kanpur. All rights reserved.</p>
                         <p>यह सूची Agmarknet और उत्तर प्रदेश मंडी परिषद के डेटा पर आधारित है।</p>
@@ -1296,16 +1324,14 @@
                 </div>
             `;
 
-            // Put it all together
             pdfContainer.innerHTML = headerHtml + tableHtml + footerHtml;
 
-            // Generate PDF using html2pdf
             const opt = {
-                margin:       10,
+                margin:       8,
                 filename:     `UP_Mandi_Bhav_List_${new Date().toISOString().slice(0,10)}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // landscape due to wide table columns!
             };
 
             html2pdf().from(pdfContainer).set(opt).save();
