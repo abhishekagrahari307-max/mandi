@@ -1272,19 +1272,25 @@
 
             const host = window.location.origin;
 
+            // Dynamically resolve base path to prevent 404 relative path errors on GitHub Pages (with or without trailing slash)
+            let basePath = './';
+            if (window.location.pathname.includes('/mandi')) {
+                basePath = '/mandi/';
+            }
+
             const fetchLatest = fetch(`${host}/api/v2/rates?limit=500`)
                 .then(res => {
                     if (!res.ok) throw new Error();
                     return res.json();
                 })
-                .catch(() => fetch('data/latest.json').then(res => res.json()))
+                .catch(() => fetch(`${basePath}data/latest.json`).then(res => res.json()))
                 .catch(() => ({ records: [] }));
 
-            const fetchHistory = fetch('data/history.json')
+            const fetchHistory = fetch(`${basePath}data/history.json`)
                 .then(res => res.json())
                 .catch(() => ({}));
 
-            const fetchWeather = fetch('data/weather.json')
+            const fetchWeather = fetch(`${basePath}data/weather.json`)
                 .then(res => res.json())
                 .catch(() => []);
 
