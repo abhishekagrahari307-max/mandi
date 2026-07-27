@@ -78,6 +78,70 @@ class AppSmokeTests(unittest.TestCase):
         response = self.client.get("/api/v2/prediction/Wheat")
         self.assertEqual(response.status_code, 503)
 
+    def test_csv_export_keeps_columns_aligned_and_inert(self):
+        """Official names contain commas and quotes, and a leading '=' is
+        executed as a formula by Excel. Both must be handled."""
+        import csv
+        import io
+
+        session = mandi_app.db.SessionLocal()
+        try:
+            session.add(mandi_app.db.MandiRecord(
+                district="Kanpur Nagar", district_hi="कानपुर नगर",
+                mandi="Kanpur, Grain Market", mandi_hi="कानपुर गल्ला",
+                commodity="Arhar (Tur/Red Gram)(Whole)", commodity_hi="अरहर",
+                variety='Dara "FAQ"', grade="FAQ", arrivals=None,
+                min_price=2400, max_price=2500, modal_price=2450,
+                arrival_date="27/07/2026",
+            ))
+            session.add(mandi_app.db.MandiRecord(
+                district="=cmd|'/C calc'!A0", district_hi="x",
+                mandi="X", mandi_hi="X", commodity="Y", commodity_hi="Y",
+                variety="V", grade="G", arrivals=1,
+                min_price=1, max_price=2, modal_price=1,
+                arrival_date="27/07/2026",
+            ))
+            session.commit()
+        finally:
+            session.close()
+
+        body = self.client.get("/api/v2/excel/sync").text
+        rows = list(csv.reader(io.StringIO(body)))
+        self.assertGreaterEqual(len(rows), 3)
+        width = len(rows[0])
+        for row in rows[1:]:
+            self.assertEqual(len(row), width, f"misaligned CSV row: {row}")
+
+        # The comma inside the mandi name must stay in a single cell.
+        commas = [r for r in rows if "Kanpur, Grain Market" in r]
+        self.assertEqual(len(commas), 1)
+        # No cell may start with a spreadsheet formula trigger.
+        for row in rows:
+            for cell in row:
+                self.assertNotIn(cell[:1], ("=", "+", "@"))
+
+    def test_alert_subscription_rejects_undeliverable_contacts(self):
+        for payload in (
+            {"contact_type": "carrier-pigeon", "contact_value": "9876543210"},
+            {"contact_type": "whatsapp", "contact_value": "not-a-phone!!"},
+            {"contact_type": "whatsapp", "contact_value": "<script>x</script>"},
+            {"contact_type": "telegram", "contact_value": "abcdefgh"},
+        ):
+            response = self.client.post("/api/v2/alerts/subscribe", json=payload)
+            self.assertEqual(
+                response.status_code, 422,
+                f"{payload} should not create a dead subscription",
+            )
+
+    def test_alert_subscription_accepts_a_valid_contact(self):
+        response = self.client.post("/api/v2/alerts/subscribe", json={
+            "contact_type": "whatsapp", "contact_value": "+91 98765-43210",
+        })
+        self.assertEqual(response.status_code, 200)
+        # The stored value is normalised, and a missing provider is never
+        # reported as a successful delivery.
+        self.assertFalse(response.json()["welcome_delivered"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-07-27T15:55:16.183609+05:30",
+  "last_checked_at": "2026-07-27T20:34:25.575311+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -122,6 +122,6 @@
       "data_used": "Mandi secretary/contact details"
     }
   ],
-  "minimum_price_source_matches": 3,
+  "minimum_price_source_matches": 2,
   "policy": "No simulated prices, arrivals, contacts, lots, or bids are generated."
 }

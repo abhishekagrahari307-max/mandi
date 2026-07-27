@@ -2,6 +2,8 @@ import os
 import json
 import urllib.request
 import re
+import csv
+import io
 import hashlib
 import logging
 import secrets
@@ -112,11 +114,21 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+# Only providers the alert engine can actually deliver to. A subscription with
+# any other channel could never receive a message, so it is rejected instead of
+# being stored as a silently dead row.
+SUPPORTED_CONTACT_TYPES = ("telegram", "whatsapp")
+# Telegram chat ids are numeric (optionally negative for groups); WhatsApp
+# numbers are digits with an optional leading +/country code.
+TELEGRAM_ID_PATTERN = re.compile(r"^-?\d{5,20}$")
+PHONE_PATTERN = re.compile(r"^\+?\d{10,15}$")
+
+
 class SubscribeRequest(BaseModel):
-    contact_type: str
+    contact_type: str = Field(..., pattern=r"^(telegram|whatsapp)$")
     contact_value: str = Field(..., min_length=5, max_length=100)
-    district: str = "all"
-    commodity: str = "all"
+    district: str = Field(default="all", max_length=60)
+    commodity: str = Field(default="all", max_length=60)
 
 class InvoiceCreate(BaseModel):
     farmer_name: str = Field(default="Anonymous Farmer", min_length=3, max_length=100)
@@ -446,18 +458,64 @@ def trigger_system_update(
         "message": f"Successfully pulled and stored {len(records)} live mandi rates from Agmarknet sources into DB!"
     }
 
+CSV_COLUMNS = (
+    "Record_ID", "District", "Mandi", "Commodity", "Variety", "Grade",
+    "Arrivals", "Min_Price", "Modal_Price", "Max_Price", "Date", "Last_Sync",
+)
+
+
+def _csv_safe(value) -> str:
+    """Render a cell that stays in its own column and never executes.
+
+    Two separate hazards are handled here:
+
+    1. Official mandi and commodity names legitimately contain commas and
+       quotes (for example "Arhar (Tur/Red Gram)(Whole)" or "Kanpur, Grain
+       Market"). Interpolating them into an f-string shifted every later
+       column, so prices landed under the wrong headers. The csv module now
+       quotes them properly.
+    2. A value beginning with =, +, - or @ is treated as a formula by Excel,
+       Google Sheets and LibreOffice. Government feeds are upstream input, so
+       such a cell is prefixed with an apostrophe to keep it plain text.
+    """
+    if value is None:
+        return ""
+    text_value = str(value)
+    if text_value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + text_value
+    return text_value
+
+
 @app.get("/api/v2/excel/sync")
 def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
     records = db_sess.query(db.MandiRecord).all()
-    csv_headers = "Record_ID,District,Mandi,Commodity,Variety,Grade,Arrivals,Min_Price,Modal_Price,Max_Price,Date,Last_Sync\n"
+
     def generate_csv_rows():
-        yield csv_headers
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, lineterminator="\n")
+
+        def flush() -> str:
+            buffer.seek(0)
+            chunk = buffer.read()
+            buffer.seek(0)
+            buffer.truncate(0)
+            return chunk
+
+        writer.writerow(CSV_COLUMNS)
+        yield flush()
+
+        synced_at = datetime.utcnow().isoformat()
         for r in records:
-            row = f"{r.id},{r.district},{r.mandi},{r.commodity},{r.variety},{r.grade},{r.arrivals},{r.min_price},{r.modal_price},{r.max_price},{r.arrival_date},{datetime.utcnow().isoformat()}\n"
-            yield row
+            writer.writerow([_csv_safe(cell) for cell in (
+                r.id, r.district, r.mandi, r.commodity, r.variety, r.grade,
+                r.arrivals, r.min_price, r.modal_price, r.max_price,
+                r.arrival_date, synced_at,
+            )])
+            yield flush()
+
     return StreamingResponse(
-        generate_csv_rows(), 
-        media_type="text/csv", 
+        generate_csv_rows(),
+        media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=UP_Mandi_Live_Sync.csv"}
     )
 
@@ -486,8 +544,33 @@ def get_price_prediction(crop: str):
             detail=str(exc),
         ) from exc
 
+def _validated_contact_value(contact_type: str, contact_value: str) -> str:
+    """Reject a contact the alert engine could never deliver to.
+
+    Storing "not-a-phone!!" or an HTML fragment produced a subscription that
+    looked successful to the farmer but silently never sent anything.
+    """
+    cleaned = contact_value.strip().replace(" ", "").replace("-", "")
+    pattern = TELEGRAM_ID_PATTERN if contact_type == "telegram" else PHONE_PATTERN
+    if not pattern.fullmatch(cleaned):
+        # Literal 422 rather than the status constant: Starlette renamed
+        # HTTP_422_UNPROCESSABLE_ENTITY to ..._CONTENT and the old name now
+        # emits a DeprecationWarning, while the new name is missing on older
+        # releases. The numeric code is stable across both.
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Enter a numeric Telegram chat id"
+                if contact_type == "telegram"
+                else "Enter a valid 10-15 digit mobile number"
+            ),
+        )
+    return cleaned
+
+
 @app.post("/api/v2/alerts/subscribe")
 def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get_db)):
+    sub.contact_value = _validated_contact_value(sub.contact_type, sub.contact_value)
     existing = db_sess.query(db.AlertSubscription).filter(
         db.AlertSubscription.contact_type == sub.contact_type,
         db.AlertSubscription.contact_value == sub.contact_value
