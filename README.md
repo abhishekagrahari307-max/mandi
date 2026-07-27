@@ -47,24 +47,40 @@
    python3 update_data.py
    ```
 
-3. **स्थानीय सर्वर पर चलाएं:**
-   आप इसे सीधे ब्राउज़र में `index.html` खोलकर या VS Code के Live Server एक्सटेंशन से चला सकते हैं।
+3. **स्थानीय static server चलाएं:**
+   ```bash
+   python3 -m http.server 8000
+   ```
+   फिर `http://localhost:8000` खोलें। Data fetch और PWA service worker के लिए `index.html` को `file://` से सीधे न खोलें।
+
+### API/Docker मोड
+
+```bash
+cp .env.example .env
+# .env में अपना JWT_SECRET और मजबूत ADMIN_PASSWORD भरें
+docker compose up --build
+```
+
+`JWT_SECRET` बनाने के लिए `openssl rand -hex 32` का उपयोग कर सकते हैं। असली secret, password या access token को कभी commit न करें।
 
 ---
 
 ## 🌐 GitHub Pages पर लाइव डिप्लॉय करें (Deploy to GitHub Pages)
 
-हमने आपके लिए एक ऑटो-डिप्लॉय स्क्रिप्ट तैयार की है। बस नीचे दिए गए निर्देश का पालन करें:
+सुरक्षित deploy के लिए [GitHub CLI](https://cli.github.com/) install और authenticate करें:
 
 ```bash
+gh auth login
 bash deploy.sh
 ```
 
 ### यह स्क्रिप्ट क्या करेगी?
-1. आपके लोकल फोल्डर में Git रिपॉजिटरी सेट करेगी।
-2. लोकल कोड को कमिट करेगी।
-3. यदि आपके पास `gh` CLI इंस्टॉल और लॉग इन है, तो यह अपने आप आपके GitHub अकाउंट पर रिपॉजिटरी बनाकर पुश कर देगी और GitHub Pages व Actions को सक्रिय कर देगी।
-4. यदि आपके पास `gh` CLI नहीं है, तो यह आपसे आपका **GitHub Username** और **Personal Access Token (PAT)** मांगेगी और उसके ज़रिए रिपॉजिटरी बनाकर पुश कर देगी।
+1. आपके local folder में Git repository तैयार करेगी।
+2. बदलाव commit करेगी।
+3. आपके authenticated GitHub account में repository बनाएगी या मौजूदा repository उपयोग करेगी।
+4. GitHub Pages और Actions permissions चालू करेगी।
+
+यह script कभी Personal Access Token नहीं मांगती और credential को Git remote URL में store नहीं करती।
 
 ---
 

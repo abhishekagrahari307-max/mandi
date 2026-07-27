@@ -1,40 +1,22 @@
-version: '3.8'
-
 services:
   web:
     build: .
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
     environment:
-      - DATABASE_URL=${DATABASE_URL:-sqlite:///./mandi_v2.db}
-      - REDIS_URL=redis://redis:6379/0
-      - JWT_SECRET=${JWT_SECRET:-9ef842f824b44749a978d0c17b101cff356e9}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY}
-    depends_on:
-      - db
-      - redis
-
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER:-mandi_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mandi_pass}
-      - POSTGRES_DB=${POSTGRES_DB:-mandi_db}
-    ports:
-      - "5432:5432"
+      ENVIRONMENT: production
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/runtime/mandi_v2.db}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (generate it with openssl rand -hex 32)}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set a strong ADMIN_PASSWORD in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000}
+      DATA_GOV_IN_API_KEY: ${DATA_GOV_IN_API_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      WHATSAPP_API_KEY: ${WHATSAPP_API_KEY:-}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+      - mandi_runtime:/app/runtime
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
-  redis_data:
+  mandi_runtime:

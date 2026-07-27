@@ -4,6 +4,8 @@ import random
 import urllib.request
 import re
 import hashlib
+import logging
+import secrets
 from datetime import datetime, timedelta
 from typing import List, Dict
 from fastapi import FastAPI, Depends, HTTPException, status, Security, Request, WebSocket, WebSocketDisconnect
@@ -21,6 +23,50 @@ import database as db
 import prediction as pred_engine
 import alerts as alert_engine
 
+logger = logging.getLogger(__name__)
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
+IS_PRODUCTION = ENVIRONMENT in {"prod", "production"}
+
+
+def _load_jwt_secret() -> str:
+    """Load the JWT signing key without ever falling back to a public constant."""
+    configured_secret = os.environ.get("JWT_SECRET", "").strip()
+    if configured_secret:
+        if len(configured_secret.encode("utf-8")) < 32:
+            raise RuntimeError("JWT_SECRET must be at least 32 bytes")
+        return configured_secret
+    if IS_PRODUCTION:
+        raise RuntimeError("JWT_SECRET is required when ENVIRONMENT=production")
+
+    logger.warning(
+        "JWT_SECRET is not configured; using an ephemeral development key. "
+        "Existing sessions will be invalid after restart."
+    )
+    return secrets.token_urlsafe(48)
+
+
+SECRET_KEY = _load_jwt_secret()
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com").strip() or None
+
+if ADMIN_PASSWORD:
+    admin_password_bytes = ADMIN_PASSWORD.encode("utf-8")
+    if not 12 <= len(admin_password_bytes) <= 72:
+        raise RuntimeError("ADMIN_PASSWORD must be between 12 and 72 bytes")
+elif IS_PRODUCTION:
+    raise RuntimeError("ADMIN_PASSWORD is required when ENVIRONMENT=production")
+
+cors_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000"
+    ).split(",")
+    if origin.strip()
+]
+if "*" in cors_origins:
+    raise RuntimeError("CORS_ORIGINS must list explicit origins; wildcard access is not allowed")
+
 # Initialize Database
 db.init_db()
 
@@ -30,17 +76,16 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS for cross-origin live connections
+# Permit only explicitly configured browser origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-SECRET_KEY = os.environ.get("JWT_SECRET", "9ef842f824b44749a978d0c17b101cff356e9")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -143,8 +188,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    issued_at = datetime.utcnow()
+    expire = issued_at + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"iat": issued_at, "exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Depends(get_db)):
@@ -162,7 +208,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Dep
         raise credentials_exception
         
     user = db_sess.query(db.User).filter(db.User.username == username).first()
-    if user is None:
+    if user is None or not user.is_active:
         raise credentials_exception
     return user
 
@@ -183,17 +229,41 @@ def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, 
 def seed_database():
     session = db.SessionLocal()
     try:
-        # Seed default admin user
-        admin_exists = session.query(db.User).filter(db.User.username == "admin").first()
-        if not admin_exists:
-            admin_user = db.User(
-                username="admin",
-                hashed_password=get_password_hash("admin123"),
-                email="admin@mandi-up.gov.in",
-                role="admin"
-            )
-            session.add(admin_user)
+        # Create or update the configured administrator. There is deliberately
+        # no built-in password: production startup already requires one.
+        if ADMIN_PASSWORD:
+            admin_user = session.query(db.User).filter(
+                db.User.username == ADMIN_USERNAME
+            ).first()
+            if admin_user is None:
+                admin_user = db.User(
+                    username=ADMIN_USERNAME,
+                    hashed_password=get_password_hash(ADMIN_PASSWORD),
+                    email=ADMIN_EMAIL,
+                    role="admin",
+                    is_active=True,
+                )
+                session.add(admin_user)
+            elif not verify_password(ADMIN_PASSWORD, admin_user.hashed_password):
+                admin_user.hashed_password = get_password_hash(ADMIN_PASSWORD)
+                admin_user.email = ADMIN_EMAIL
+                admin_user.role = "admin"
+                admin_user.is_active = True
+
+            # Disable the formerly hard-coded account when a differently named
+            # administrator is configured in an existing database.
+            if ADMIN_USERNAME != "admin":
+                legacy_admin = session.query(db.User).filter(
+                    db.User.username == "admin"
+                ).first()
+                if legacy_admin is not None:
+                    legacy_admin.is_active = False
             session.commit()
+        else:
+            logger.warning(
+                "ADMIN_PASSWORD is not configured; no administrator account "
+                "will be created in development mode."
+            )
             
         # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
@@ -279,7 +349,7 @@ manager = AuctionConnectionManager()
 @app.post("/api/v2/auth/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = Depends(get_db)):
     user = db_sess.query(db.User).filter(db.User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not user.is_active or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -729,5 +799,3 @@ if os.path.isdir("data"):
     app.mount("/data", StaticFiles(directory="data"), name="data")
 if os.path.isdir("images"):
     app.mount("/images", StaticFiles(directory="images"), name="images")
-if os.path.isdir("uploads"):
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
