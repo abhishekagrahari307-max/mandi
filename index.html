@@ -18,6 +18,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js for generating PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -39,7 +41,6 @@
     </script>
     
     <style>
-        /* Custom styles for native feeling bottom navigation */
         @media (max-width: 768px) {
             .mobile-bottom-nav {
                 box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
@@ -192,16 +193,23 @@
 
             <!-- Rates Table/Cards container -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50">
                     <h3 class="font-bold text-slate-800 flex items-center space-x-2">
                         <i data-lucide="table-properties" class="w-4 h-4 text-emerald-600"></i>
                         <span data-translate="rates_heading">मंडी भाव सूची (रु/क्विंटल)</span>
                     </h3>
-                    <span id="records-count" class="text-xs bg-slate-200 font-bold px-2 py-1 rounded text-slate-700">0 records</span>
+                    <div class="flex items-center space-x-2">
+                        <span id="records-count" class="text-xs bg-slate-200 font-bold px-2 py-1 rounded text-slate-700 mr-2">0 records</span>
+                        <!-- PDF Download Button -->
+                        <button onclick="downloadRatesPDF()" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold py-1.5 px-3 rounded-lg flex items-center space-x-1.5 transition shadow-sm">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span data-translate="btn_download_pdf">मंडी भाव PDF</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Desktop Table View -->
-                <div class="hidden md:block overflow-x-auto custom-scrollbar">
+                <div id="print-area-rates" class="hidden md:block overflow-x-auto custom-scrollbar">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider">
@@ -343,11 +351,18 @@
                 </div>
 
                 <!-- Outputs panel -->
-                <div class="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+                <div class="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between" id="calculator-bill-box">
                     <div class="space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                            <span class="text-xs tracking-wider uppercase font-bold text-emerald-400" data-translate="calc_bill_receipt">मंडी बिक्री रसीद (मेमो)</span>
-                            <span class="text-xs text-slate-400">Vijay Kumar Traders — UP Mandi</span>
+                            <div class="flex flex-col">
+                                <span class="text-xs tracking-wider uppercase font-bold text-emerald-400" data-translate="calc_bill_receipt">मंडी बिक्री रसीद (मेमो)</span>
+                                <span class="text-[10px] text-slate-400">Vijay Kumar Traders — UP Mandi</span>
+                            </div>
+                            <!-- Bill PDF Button -->
+                            <button onclick="downloadBillPDF()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 px-3 rounded-lg flex items-center space-x-1.5 shadow-sm transition">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span data-translate="btn_download_bill">बिल PDF</span>
+                            </button>
                         </div>
 
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-3">
@@ -521,7 +536,7 @@
                 opt_all_districts: "सभी जिले",
                 opt_all_crops: "सभी फसलें",
                 rates_heading: "मंडी भाव सूची (रु/क्विंटल)",
-                th_district: "जिला / District",
+                th_district: "जिला",
                 th_mandi: "मंडी नाम",
                 th_crop: "फसल (जिंस)",
                 th_min: "न्यूनतम",
@@ -580,7 +595,9 @@
                 wind_text: "हवा",
                 recommendation: "सलाह",
                 adv_sunny: "मौसम साफ है। फसल सुखाने या भंडारण के लिए उत्तम समय है।",
-                adv_rainy: "बारिश की संभावना। कटी हुई फसल को सुरक्षित गोदाम में रखें।"
+                adv_rainy: "बारिश की संभावना। कटी हुई फसल को सुरक्षित गोदाम में रखें।",
+                btn_download_pdf: "मंडी भाव PDF",
+                btn_download_bill: "बिल PDF"
             },
             en: {
                 title_main: "UP Mandi Rates",
@@ -664,7 +681,9 @@
                 wind_text: "Wind",
                 recommendation: "Advisory",
                 adv_sunny: "Clear sky. Excellent weather for drying crops or storage.",
-                adv_rainy: "Showers expected. Move harvested crops to indoor warehouse."
+                adv_rainy: "Showers expected. Move harvested crops to indoor warehouse.",
+                btn_download_pdf: "Mandi Rates PDF",
+                btn_download_bill: "Bill PDF"
             }
         };
 
@@ -682,14 +701,12 @@
             loadLanguage(currentLang);
             fetchDashboardData();
             
-            // Register service worker if available
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                     .then(() => console.log('Service Worker Registered'))
                     .catch(err => console.log('Service Worker Failed to Register', err));
             }
 
-            // Connection states
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
@@ -709,7 +726,6 @@
             currentLang = (currentLang === 'hi') ? 'en' : 'hi';
             loadLanguage(currentLang);
             
-            // Re-render components with new language
             populateDropdowns();
             renderRatesTable();
             renderWeather();
@@ -722,10 +738,8 @@
         function loadLanguage(lang) {
             const dict = TRANSLATIONS[lang];
             
-            // Set toggle text
             document.getElementById('lang-btn-text').innerText = (lang === 'hi') ? 'English' : 'हिन्दी';
             
-            // Update items with data-translate attribute
             document.querySelectorAll('[data-translate]').forEach(el => {
                 const key = el.getAttribute('data-translate');
                 if (dict[key]) {
@@ -733,13 +747,11 @@
                 }
             });
 
-            // Update placeholders
             const searchBox = document.getElementById('rate-search');
             if (searchBox) {
                 searchBox.placeholder = (lang === 'hi') ? 'उदा. गेहूं, कानपुर...' : 'e.g. Wheat, Kanpur...';
             }
             
-            // Update document title and lang attribute
             document.documentElement.lang = lang;
             document.title = (lang === 'hi') 
                 ? "उत्तर प्रदेश मंडी भाव — Live UP Mandi Dashboard"
@@ -750,39 +762,32 @@
         function switchTab(tabId) {
             const sections = ['rates', 'trends', 'calculator', 'weather', 'info'];
             
-            // Hide all
             sections.forEach(sec => {
                 document.getElementById(`section-${sec}`).classList.add('hidden');
                 
-                // Desktop tabs
                 const dBtn = document.getElementById(`tab-btn-${sec}`);
                 if (dBtn) {
                     dBtn.className = "flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition text-slate-600 hover:bg-slate-50";
                 }
                 
-                // Mobile tabs
                 const mBtn = document.getElementById(`mob-btn-${sec}`);
                 if (mBtn) {
                     mBtn.className = "flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600";
                 }
             });
 
-            // Show active
             document.getElementById(`section-${tabId}`).classList.remove('hidden');
             
-            // Select Desktop active
             const dBtnActive = document.getElementById(`tab-btn-${tabId}`);
             if (dBtnActive) {
                 dBtnActive.className = "flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition bg-emerald-600 text-white shadow-sm";
             }
             
-            // Select Mobile active
             const mBtnActive = document.getElementById(`mob-btn-${tabId}`);
             if (mBtnActive) {
                 mBtnActive.className = "flex flex-col items-center justify-center text-emerald-600";
             }
 
-            // Custom init behavior per screen
             if (tabId === 'trends') {
                 setTimeout(renderTrendChart, 50);
             }
@@ -803,18 +808,15 @@
                 historicalData = history || {};
                 weatherData = weather || [];
                 
-                // Update stats
                 const lastUpdatedDate = new Date(latest.updated_at);
                 document.getElementById('stat-updated-time').innerText = lastUpdatedDate.toLocaleTimeString(
                     currentLang === 'hi' ? 'hi-IN' : 'en-US', 
                     { hour: '2-digit', minute: '2-digit' }
                 );
                 
-                // Mandis set
                 const uniqueMandis = new Set(latestData.map(r => r.mandi));
                 document.getElementById('stat-mandi-count').innerText = uniqueMandis.size;
                 
-                // Hot crop (often highest modal price or garlic/onion)
                 const sortedPrices = [...latestData].sort((a,b) => b.modal_price - a.modal_price);
                 if (sortedPrices.length > 0) {
                     document.getElementById('stat-hot-crop').innerText = (currentLang === 'hi') 
@@ -846,12 +848,10 @@
             const cropSelect = document.getElementById('filter-commodity');
             const trendCropSelect = document.getElementById('trend-crop-select');
 
-            // Keep "All"
             const currentDistValue = distSelect.value;
             const currentCropValue = cropSelect.value;
             const currentTrendValue = trendCropSelect.value;
 
-            // Gather Unique Items
             const uniqueDistricts = [];
             const districtKeys = new Set();
             const uniqueCrops = [];
@@ -868,43 +868,33 @@
                 }
             });
 
-            // Rebuild district dropdown
             distSelect.innerHTML = `<option value="all">${TRANSLATIONS[currentLang].opt_all_districts}</option>`;
             uniqueDistricts.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(d => {
                 distSelect.innerHTML += `<option value="${d.en}">${d[currentLang]}</option>`;
             });
 
-            // Rebuild crop dropdown
             cropSelect.innerHTML = `<option value="all">${TRANSLATIONS[currentLang].opt_all_crops}</option>`;
             uniqueCrops.sort((a,b) => a[currentLang].localeCompare(b[currentLang])).forEach(c => {
                 cropSelect.innerHTML += `<option value="${c.en}">${c[currentLang]}</option>`;
             });
 
-            // Rebuild trend graph dropdown
             trendCropSelect.innerHTML = "";
             uniqueCrops.forEach((c, index) => {
                 trendCropSelect.innerHTML += `<option value="${c.en}" ${index === 0 ? 'selected' : ''}>${c[currentLang]}</option>`;
             });
 
-            // Restore previous selections if possible
             if (currentDistValue) distSelect.value = currentDistValue;
             if (currentCropValue) cropSelect.value = currentCropValue;
             if (currentTrendValue) trendCropSelect.value = currentTrendValue;
         }
 
-        // Render Rates Table & Cards (Filtered)
-        function renderRatesTable() {
-            const tableBody = document.getElementById('rates-table-body');
-            const cardsContainer = document.getElementById('rates-cards-mobile');
-            const emptyState = document.getElementById('rates-empty-state');
-            const countBadge = document.getElementById('records-count');
-
+        // Get active filtered records
+        function getFilteredRecords() {
             const searchVal = document.getElementById('rate-search').value.toLowerCase();
             const distVal = document.getElementById('filter-district').value;
             const cropVal = document.getElementById('filter-commodity').value;
 
-            // Filter logic
-            const filtered = latestData.filter(r => {
+            return latestData.filter(r => {
                 const matchesSearch = 
                     r.commodity.toLowerCase().includes(searchVal) ||
                     r.commodity_hi.toLowerCase().includes(searchVal) ||
@@ -918,6 +908,16 @@
 
                 return matchesSearch && matchesDistrict && matchesCrop;
             });
+        }
+
+        // Render Rates Table & Cards (Filtered)
+        function renderRatesTable() {
+            const tableBody = document.getElementById('rates-table-body');
+            const cardsContainer = document.getElementById('rates-cards-mobile');
+            const emptyState = document.getElementById('rates-empty-state');
+            const countBadge = document.getElementById('records-count');
+
+            const filtered = getFilteredRecords();
 
             countBadge.innerText = `${filtered.length} ${currentLang === 'hi' ? 'रिकॉर्ड' : 'records'}`;
 
@@ -930,9 +930,7 @@
                 emptyState.classList.add('hidden');
             }
 
-            // Populate Desktop
             let tableHtml = '';
-            // Populate Mobile
             let cardsHtml = '';
 
             filtered.forEach(r => {
@@ -941,7 +939,6 @@
                 const cropName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
                 const btnLabel = currentLang === 'hi' ? 'जोड़ें' : 'Add';
 
-                // Desktop Row
                 tableHtml += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="py-3 px-4 font-medium text-slate-700">${distName}</td>
@@ -959,7 +956,6 @@
                     </tr>
                 `;
 
-                // Mobile Card
                 cardsHtml += `
                     <div class="p-4 space-y-3">
                         <div class="flex justify-between items-start">
@@ -971,15 +967,15 @@
                         </div>
                         <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg text-center">
                             <div>
-                                <span class="text-[10px] text-slate-400 block" data-translate="th_min">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</span>
+                                <span class="text-[10px] text-slate-400 block">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</span>
                                 <span class="text-xs font-semibold text-slate-600">₹${r.min_price}</span>
                             </div>
                             <div class="border-x border-slate-200">
-                                <span class="text-[10px] font-bold text-emerald-600 block" data-translate="th_modal">${currentLang === 'hi' ? 'औसत' : 'Modal'}</span>
+                                <span class="text-[10px] font-bold text-emerald-600 block">${currentLang === 'hi' ? 'औसत' : 'Modal'}</span>
                                 <span class="text-sm font-extrabold text-emerald-800">₹${r.modal_price}</span>
                             </div>
                             <div>
-                                <span class="text-[10px] text-slate-400 block" data-translate="th_max">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</span>
+                                <span class="text-[10px] text-slate-400 block">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</span>
                                 <span class="text-xs font-semibold text-slate-600">₹${r.max_price}</span>
                             </div>
                         </div>
@@ -997,7 +993,6 @@
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
             
-            // Re-render lucide icons inside generated html
             lucide.createIcons();
         }
 
@@ -1165,6 +1160,8 @@
             calculateBill();
         }
 
+        let globalBillDetails = {}; // Stores latest calculation state for PDF export
+
         function calculateBill() {
             const rawWeight = parseFloat(document.getElementById('calc-weight').value) || 0;
             const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
@@ -1174,7 +1171,6 @@
             const transport = parseFloat(document.getElementById('calc-transport').value) || 0;
             const cessPercent = parseFloat(document.getElementById('calc-cess-rate').value) || 0;
 
-            // Convert weight unit to standard Quintals & Kilos
             let totalQ = 0;
             let totalKg = 0;
 
@@ -1185,33 +1181,24 @@
                 totalQ = rawWeight / 100;
                 totalKg = rawWeight;
             } else if (calcWeightUnit === 'm') {
-                // 1 Maund (मन) = 40 kg
                 totalKg = rawWeight * 40;
                 totalQ = totalKg / 100;
             }
 
-            // Estimate bags
             const totalBags = Math.ceil(totalKg / bagSize);
-
-            // Gross Value = weight in quintals * rate per quintal
             const grossVal = totalQ * rate;
-
-            // Commission amount (typically taken on gross value)
             const commAmt = (grossVal * commPercent) / 100;
-
-            // Labor charges (per bag)
             const laborAmt = totalBags * laborPerBag;
-
-            // Mandi Tax and development cess (usually on gross value)
             const taxAmt = (grossVal * cessPercent) / 100;
-
-            // Total expense
             const totalExpenses = commAmt + laborAmt + taxAmt + transport;
-
-            // Net payout
             const netPayout = Math.max(0, grossVal - totalExpenses);
 
-            // Set outputs
+            // Store in global state
+            globalBillDetails = {
+                rawWeight, calcWeightUnit, rate, commPercent, commAmt, laborPerBag, 
+                totalBags, bagSize, laborAmt, transport, cessPercent, taxAmt, grossVal, totalExpenses, netPayout
+            };
+
             document.getElementById('res-total-q').innerText = `${totalQ.toFixed(2)} Q`;
             document.getElementById('res-total-kg').innerText = `(${totalKg.toFixed(0)} KG)`;
             document.getElementById('res-bags').innerText = totalBags;
@@ -1224,6 +1211,233 @@
             document.getElementById('res-transport-amt').innerText = `₹${transport.toFixed(2)}`;
             
             document.getElementById('res-net-payout').innerText = `₹${netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+        }
+
+        // ================= PDF GENERATION SCRIPTS =================
+
+        // 1. Export Current Mandi Rates List to beautifully-formatted PDF
+        function downloadRatesPDF() {
+            const filteredRecords = getFilteredRecords();
+            const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // Create offscreen container for PDF layout
+            const pdfContainer = document.createElement('div');
+            pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-sm";
+            pdfContainer.style.width = "750px"; // standard A4 printable width equivalent
+
+            // Construct formal header
+            const headerHtml = `
+                <div class="border-b-4 border-emerald-600 pb-4 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-black text-emerald-800">Vijay Kumar Traders</h1>
+                        <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश — डिजिटल मंडी सेवा</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full uppercase">आधिकारिक मंडी भाव</span>
+                        <p class="text-[10px] text-slate-400 mt-1">तारीख: ${dateStr}</p>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-center text-lg font-bold text-slate-700 underline uppercase mt-2">
+                        ${currentLang === 'hi' ? 'दैनिक उत्तर प्रदेश कृषि मंडी भाव सूची' : 'DAILY UP AGRICULTURAL MANDI RATES LIST'}
+                    </h2>
+                </div>
+            `;
+
+            // Build rates table rows
+            let rowsHtml = '';
+            filteredRecords.forEach(r => {
+                const dName = currentLang === 'hi' ? r.district_hi : r.district;
+                const mName = currentLang === 'hi' ? r.mandi_hi : r.mandi;
+                const cName = currentLang === 'hi' ? r.commodity_hi : r.commodity;
+                rowsHtml += `
+                    <tr class="border-b border-slate-200 text-xs">
+                        <td class="py-2.5 px-3 font-medium">${dName}</td>
+                        <td class="py-2.5 px-3 font-bold">${mName}</td>
+                        <td class="py-2.5 px-3 text-emerald-700 font-semibold">${cName}</td>
+                        <td class="py-2.5 px-3 text-right">₹${r.min_price}</td>
+                        <td class="py-2.5 px-3 text-right font-bold text-slate-800">₹${r.modal_price}</td>
+                        <td class="py-2.5 px-3 text-right">₹${r.max_price}</td>
+                    </tr>
+                `;
+            });
+
+            const tableHtml = `
+                <table class="w-full text-left border-collapse border border-slate-300">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-slate-300 text-slate-700 text-[11px] font-extrabold uppercase">
+                            <th class="py-2 px-3">${currentLang === 'hi' ? 'जिला' : 'District'}</th>
+                            <th class="py-2 px-3">${currentLang === 'hi' ? 'मंडी नाम' : 'Mandi Name'}</th>
+                            <th class="py-2 px-3">${currentLang === 'hi' ? 'फसल (जिंस)' : 'Crop'}</th>
+                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'न्यूनतम' : 'Min'}</th>
+                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'औसत (Modal)' : 'Modal'}</th>
+                            <th class="py-2 px-3 text-right">${currentLang === 'hi' ? 'अधिकतम' : 'Max'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+
+            // Footer / Terms
+            const footerHtml = `
+                <div class="border-t border-slate-200 pt-6 mt-8 flex justify-between text-[10px] text-slate-400">
+                    <div>
+                        <p>© Vijay Kumar Traders - Kanpur. All rights reserved.</p>
+                        <p>यह सूची Agmarknet और उत्तर प्रदेश मंडी परिषद के डेटा पर आधारित है।</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-emerald-700">डिजिटल किसान सेवा</p>
+                        <p>धन्यवाद, आपका व्यापार मंगलमय हो।</p>
+                    </div>
+                </div>
+            `;
+
+            // Put it all together
+            pdfContainer.innerHTML = headerHtml + tableHtml + footerHtml;
+
+            // Generate PDF using html2pdf
+            const opt = {
+                margin:       10,
+                filename:     `UP_Mandi_Bhav_List_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(pdfContainer).set(opt).save();
+        }
+
+        // 2. Export Mandi Bill Cash Memo to PDF
+        function downloadBillPDF() {
+            const bill = globalBillDetails;
+            const dateStr = new Date().toLocaleDateString(currentLang === 'hi' ? 'hi-IN' : 'en-US', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.className = "p-8 bg-white text-slate-900 space-y-6 text-sm";
+            pdfContainer.style.width = "750px";
+
+            const unitText = bill.calcWeightUnit === 'q' ? 'क्विंटल (Quintal)' : (bill.calcWeightUnit === 'kg' ? 'किलोग्राम (KG)' : 'मन (Maund = 40kg)');
+
+            const contentHtml = `
+                <div class="border-b-4 border-slate-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-900">Vijay Kumar Traders</h1>
+                        <p class="text-xs text-slate-500">कानपुर गल्ला मंडी, उत्तर प्रदेश</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">मंडी बिक्री पर्ची (Cash Memo)</span>
+                        <p class="text-[10px] text-slate-400 mt-1">दिनांक: ${dateStr}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-bold block uppercase">व्यापारी / आढ़ती</span>
+                        <p class="font-bold text-slate-800">Vijay Kumar Traders, Kanpur</p>
+                        <p class="text-xs text-slate-500">लाइसेंस संख्या: UP-KN-2026/1093</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 font-bold block uppercase">किसान / ग्राहक विवरण</span>
+                        <p class="font-bold text-slate-800">स्वयं (Self/Farmer)</p>
+                        <p class="text-xs text-slate-500">मंडी यार्ड: कानपुर मुख्य यार्ड</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-slate-800 border-b border-slate-300 pb-2 mb-3 uppercase tracking-wider text-xs">सौदा और वजन का विवरण (Transaction Details)</h3>
+                    <table class="w-full text-left border-collapse border border-slate-300">
+                        <thead>
+                            <tr class="bg-slate-100 text-[11px] font-bold text-slate-700 uppercase border-b border-slate-300">
+                                <th class="py-2 px-3">विवरण (Description)</th>
+                                <th class="py-2 px-3 text-right">वजन (Weight)</th>
+                                <th class="py-2 px-3 text-right">बोरी संख्या (Bags)</th>
+                                <th class="py-2 px-3 text-right">दर (Rate / Q)</th>
+                                <th class="py-2 px-3 text-right">कुल मूल्य (Gross Total)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="text-xs border-b border-slate-200">
+                                <td class="py-3 px-3 font-semibold text-slate-800">कृषि जिंस बिक्री सौदा (${unitText})</td>
+                                <td class="py-3 px-3 text-right font-medium">${bill.rawWeight} ${bill.calcWeightUnit.toUpperCase()}</td>
+                                <td class="py-3 px-3 text-right">${bill.totalBags} बोरियां (@${bill.bagSize}kg)</td>
+                                <td class="py-3 px-3 text-right">₹${bill.rate.toFixed(2)}</td>
+                                <td class="py-3 px-3 text-right font-bold text-slate-900">₹${bill.grossVal.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <h4 class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 uppercase tracking-wider text-[11px]">नियम व शर्तें (Terms)</h4>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">
+                            1. यह रसीद यूपी कृषि उत्पादन मंडी अधिनियम 1964 के तहत जारी एक डिजिटल गणना रसीद है।<br>
+                            2. मंडी शुल्क (1.5%) एवं विकास सेस (0.5%) कुल 2% मंडी परिषद के नियमानुसार काटा गया है।<br>
+                            3. पल्लेदारी / मजदूरी दरें सरकारी मानकों के अनुरूप हैं।
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-slate-800 border-b border-slate-300 pb-1 mb-2 uppercase tracking-wider text-[11px] text-right">कटौतियां और खर्च (Deductions)</h4>
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>आढ़त कमीशन (${bill.commPercent}%):</span>
+                            <span>(-) ₹${bill.commAmt.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>मजदूरी / पल्लेदारी (₹${bill.laborPerBag}/बोरी):</span>
+                            <span>(-) ₹${bill.laborAmt.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>मंडी शुल्क व विकास सेस (${bill.cessPercent ? bill.cessPercent+'%' : '0%'}):</span>
+                            <span>(-) ₹${bill.taxAmt.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>परिवहन भाड़ा (Transport):</span>
+                            <span>(-) ₹${bill.transport.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-red-700 border-t border-slate-200 pt-2">
+                            <span>कुल कटौतियां (Total Expenses):</span>
+                            <span>₹${bill.totalExpenses.toLocaleString('en-IN', {maximumFractionDigits:2})}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t-2 border-slate-800 pt-4 flex items-center justify-between mt-8">
+                    <div>
+                        <span class="text-xs font-bold uppercase block text-emerald-800">किसान/व्यापारी को शुद्ध भुगतान (Net Payout)</span>
+                        <p class="text-[10px] text-slate-400">सभी कटौतियों को घटाने के बाद शुद्ध देय राशि</p>
+                    </div>
+                    <span class="text-2xl font-black text-emerald-800">₹${bill.netPayout.toLocaleString('en-IN', {maximumFractionDigits:0})}</span>
+                </div>
+
+                <div class="border-t border-slate-200 pt-6 mt-12 flex justify-between items-center">
+                    <div class="text-[9px] text-slate-400">
+                        <p>यह एक कंप्यूटर जनरेटेड बिल पर्ची है, इस पर हस्ताक्षर की आवश्यकता नहीं है।</p>
+                        <p>डिजिटल मंडी भारत — विकसित किसान, समृद्ध व्यापारी।</p>
+                    </div>
+                    <div class="text-center w-40">
+                        <div class="h-10 border-b border-slate-300 mb-1"></div>
+                        <span class="text-[10px] font-bold text-slate-500">हस्ताक्षर आढ़ती (Sign)</span>
+                    </div>
+                </div>
+            `;
+
+            pdfContainer.innerHTML = contentHtml;
+
+            const opt = {
+                margin:       10,
+                filename:     `Mandi_Sale_Receipt_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(pdfContainer).set(opt).save();
         }
     </script>
 </body>
