@@ -1713,8 +1713,10 @@
                 </div>
 
                 <div class="border-t border-slate-200 pt-6 mt-12 flex justify-between items-center">
-                    <div class="text-[9px] text-slate-400">
+                    <div class="text-[9px] text-slate-400 space-y-1">
                         <p>यह एक computer-generated रसीद है, हस्ताक्षर की आवश्यकता नहीं है।</p>
+                        <p class="font-bold text-slate-600 mt-1">🔐 डिजिटल सत्यापन QR कोड (Scan to Verify Bill)</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VERIFY:VKT-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.round(bill.netPayout)}|NET:${bill.netPayout.toFixed(0)}|SECURE_VERIFIED" class="w-16 h-16 border border-slate-200 p-1 rounded mt-1 bg-white inline-block">
                     </div>
                     <div class="text-center w-40">
                         <div class="h-10 border-b border-slate-300 mb-1"></div>

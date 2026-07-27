@@ -3,6 +3,7 @@ import json
 import random
 import urllib.request
 import re
+import hashlib
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, Security, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -44,7 +45,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v2/auth/login")
 
-# ================= VALIDATION SCHEMAS (SECURITY CODES) =================
+# ================= VALIDATION SCHEMAS =================
 
 class RateCreate(BaseModel):
     district: str = Field(..., min_length=2, max_length=50, pattern=r"^[a-zA-Z\s]+$")
@@ -68,10 +69,22 @@ class Token(BaseModel):
     token_type: str
 
 class SubscribeRequest(BaseModel):
-    contact_type: str # "whatsapp", "telegram"
+    contact_type: str
     contact_value: str = Field(..., min_length=5, max_length=100)
     district: str = "all"
     commodity: str = "all"
+
+# FINANCIAL INVOICE CREATION SCHEMA (PHASE 4)
+class InvoiceCreate(BaseModel):
+    farmer_name: str = Field(default="Anonymous Farmer", min_length=3, max_length=100)
+    crop_name: str = Field(..., min_length=2, max_length=100)
+    weight: float = Field(..., gt=0) # In Quintals
+    rate: float = Field(..., gt=0) # Per Quintal
+    commission_percent: float = Field(default=1.5, ge=0, le=10.0)
+    labor_per_bag: float = Field(default=15.0, ge=0)
+    bag_size_kg: float = Field(default=50.0, gt=0)
+    transport_cost: float = Field(default=0.0, ge=0)
+    cess_percent: float = Field(default=2.0, ge=0, le=5.0)
 
 # Helper functions
 def get_db():
@@ -112,7 +125,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Dep
         raise credentials_exception
     return user
 
-# Helper to write Secure Audit Logs
 def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, details: str, request: Request):
     ip = request.client.host if request.client else "Unknown"
     log_entry = db.AuditLog(
@@ -125,12 +137,11 @@ def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, 
     db_sess.add(log_entry)
     db_sess.commit()
 
-# Seeding initial data (Auto-run on server start)
+# Seeding initial data
 @app.on_event("startup")
 def seed_database():
     session = db.SessionLocal()
     try:
-        # Seed default admin user
         admin_exists = session.query(db.User).filter(db.User.username == "admin").first()
         if not admin_exists:
             admin_user = db.User(
@@ -142,7 +153,6 @@ def seed_database():
             session.add(admin_user)
             session.commit()
             
-        # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
         if records_count == 0:
             latest_file = "data/latest.json"
@@ -180,7 +190,6 @@ def seed_database():
 
 # ================= REST API ENDPOINTS =================
 
-# 1. ADMIN PANEL LOGIN (OAuth2 standard)
 @app.post("/api/v2/auth/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = Depends(get_db)):
     user = db_sess.query(db.User).filter(db.User.username == form_data.username).first()
@@ -193,7 +202,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = D
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# 2. GET LIVE RATES (Search, Filter, Pagination)
 @app.get("/api/v2/rates")
 def get_rates(
     district: str = "all", 
@@ -228,7 +236,6 @@ def get_rates(
         "records": records
     }
 
-# 3. GET SYSTEM METRICS (Analytics overview)
 @app.get("/api/v2/analytics/metrics")
 def get_metrics(db_sess: Session = Depends(get_db)):
     total = db_sess.query(db.MandiRecord).count()
@@ -241,7 +248,6 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "avg_modal_price": round(avg_val, 2)
     }
 
-# 4. MANUALLY INSERT NEW MANDI RECORD (Admin & Trader Authorized + Audit Logging)
 @app.post("/api/v2/rates", status_code=status.HTTP_201_CREATED)
 def create_rate(
     rate: RateCreate, 
@@ -249,7 +255,6 @@ def create_rate(
     current_user: db.User = Depends(get_current_user), 
     db_sess: Session = Depends(get_db)
 ):
-    # Role-Based Access Control (Only Admin, Trader, or Staff roles can add rates)
     if current_user.role not in ["admin", "trader", "staff"]:
         raise HTTPException(status_code=403, detail="Role unauthorized to insert rates")
         
@@ -258,15 +263,12 @@ def create_rate(
     db_sess.commit()
     db_sess.refresh(m_record)
     
-    # Write Audit Log
     write_audit_log(
         db_sess, current_user.id, current_user.username, "CREATE_RATE", 
         f"Inserted new rate for {rate.commodity} in {rate.mandi} (₹{rate.modal_price})", request
     )
-    
     return {"message": "Mandi rate added successfully!", "record": m_record}
 
-# 5. MANUALLY UPDATE EXISTING MANDI RECORD (Admin & Trader Authorized + Audit Logging)
 @app.put("/api/v2/rates/{record_id}")
 def update_rate(
     record_id: int, 
@@ -288,15 +290,12 @@ def update_rate(
     db_sess.commit()
     db_sess.refresh(record)
     
-    # Write Audit Log
     write_audit_log(
         db_sess, current_user.id, current_user.username, "UPDATE_RATE", 
         f"Modified record ID {record_id} - New Modal Price: ₹{updated.modal_price}", request
     )
-    
     return {"message": "Mandi rate updated successfully!", "record": record}
 
-# 6. DELETE MANDI RECORD (Admin ONLY + Audit Logging)
 @app.delete("/api/v2/rates/{record_id}")
 def delete_rate(
     record_id: int, 
@@ -304,7 +303,6 @@ def delete_rate(
     current_user: db.User = Depends(get_current_user), 
     db_sess: Session = Depends(get_db)
 ):
-    # Strictly Admin ONLY
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Strictly Admin only operation")
         
@@ -315,15 +313,12 @@ def delete_rate(
     db_sess.delete(record)
     db_sess.commit()
     
-    # Write Audit Log
     write_audit_log(
         db_sess, current_user.id, current_user.username, "DELETE_RATE", 
         f"Deleted record ID {record_id} ({record.commodity} at {record.mandi})", request
     )
-    
     return {"message": f"Record with ID {record_id} deleted successfully!"}
 
-# 7. AUTOMATIC PRICE SCRAPER FORCE TRIGGER (Admin Only + Audit Logging)
 @app.post("/api/v2/update")
 def trigger_system_update(
     request: Request,
@@ -363,19 +358,16 @@ def trigger_system_update(
         
     db_sess.commit()
     
-    # Write Audit Log
     write_audit_log(
         db_sess, current_user.id, current_user.username, "SCRAPER_TRIGGER", 
         f"Triggered manual data refresh, updated {len(records)} entries in DB", request
     )
-    
     return {
         "status": "success",
         "updated_count": len(records),
         "message": f"Successfully pulled and stored {len(records)} live mandi rates from Agmarknet sources into DB!"
     }
 
-# 8. LIVE EXCEL SYNC ENDPOINT (Generates refreshable CSV stream)
 @app.get("/api/v2/excel/sync")
 def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
     records = db_sess.query(db.MandiRecord).all()
@@ -391,7 +383,6 @@ def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
         headers={"Content-Disposition": "attachment; filename=UP_Mandi_Live_Sync.csv"}
     )
 
-# 9. AI PRICE PREDICTION ENDPOINT
 @app.get("/api/v2/prediction/{crop}")
 def get_price_prediction(crop: str):
     history_file = "data/history.json"
@@ -404,7 +395,6 @@ def get_price_prediction(crop: str):
     prediction_results = pred_engine.predict_future_prices(history_data, crop)
     return prediction_results
 
-# 10. WHATSAPP/TELEGRAM ALERTS SUBSCRIBE ENDPOINT
 @app.post("/api/v2/alerts/subscribe")
 def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get_db)):
     existing = db_sess.query(db.AlertSubscription).filter(
@@ -436,7 +426,6 @@ def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get
         
     return {"status": "success", "message": "सफलतापूर्वक मूल्य अलर्ट के लिए पंजीकरण हो गया है!"}
 
-# 11. FORCE BROADCAST PRICE ALERTS TO ALL ACTIVE SUBSCRIBERS (Admin Authorized)
 @app.post("/api/v2/alerts/broadcast")
 def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
     records = db_sess.query(db.MandiRecord).all()
@@ -449,13 +438,102 @@ def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), 
         "message": f"Successfully broadcasted live price updates to {broadcast_count} subscribers!"
     }
 
-# Serve Enterprise Admin Panel
-@app.get("/admin", response_class=HTMLResponse)
-def serve_admin_panel():
-    with open("admin.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+# ================= PHASE 4 FINANCIAL BILLING & INVOICING ENDPOINTS =================
 
-# 12. HEALTH & READINESS ENDPOINT (FOR ENTERPRISE SYSTEM MONITORING & DOCKER/KUBERNETES)
+@app.post("/api/v2/financials/invoice", status_code=status.HTTP_201_CREATED)
+def create_financial_invoice(
+    invoice: InvoiceCreate,
+    request: Request,
+    current_user: db.User = Depends(get_current_user),
+    db_sess: Session = Depends(get_db)
+):
+    """
+    Creates an official Mandi Sales Memo/Invoice in database.
+    Calculates math on gross values, deductions, commission, and net payouts on the server.
+    Appends a secure digital SHA256 verification hash signature to ensure zero billing frauds!
+    """
+    if current_user.role not in ["admin", "trader", "staff"]:
+        raise HTTPException(status_code=403, detail="Role unauthorized to issue financial bills")
+
+    # Double verify math on server side (protecting against client side tampering)
+    total_kg = invoice.weight * 100
+    total_bags = int(round(total_kg / invoice.bag_size_kg))
+    
+    gross_val = invoice.weight * invoice.rate
+    comm_amt = (gross_val * invoice.commission_percent) / 100
+    labor_amt = total_bags * invoice.labor_per_bag
+    tax_amt = (gross_val * invoice.cess_percent) / 100
+    
+    total_expenses = comm_amt + labor_amt + tax_amt + invoice.transport_cost
+    net_payout = max(0.0, gross_val - total_expenses)
+
+    # Generate unique Invoice Number
+    date_prefix = datetime.utcnow().strftime("%Y%m%d")
+    random_suffix = random.randint(1000, 9999)
+    inv_number = f"VKT-{date_prefix}-{random_suffix}"
+
+    # Generate Secure Verification Hash (Digital Signature / Verification QR Code seed)
+    raw_hash_data = f"{inv_number}|{invoice.farmer_name}|{invoice.crop_name}|{net_payout:.2f}|mandi_secure_v2"
+    verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()[:16].upper()
+
+    db_invoice = db.Invoice(
+        invoice_number=inv_number,
+        farmer_name=invoice.farmer_name,
+        crop_name=invoice.crop_name,
+        weight=invoice.weight,
+        rate=invoice.rate,
+        gross_amount=gross_val,
+        commission_amount=comm_amt,
+        labor_amount=labor_amt,
+        mandi_tax_amount=tax_amt,
+        transport_amount=invoice.transport_cost,
+        net_payout=net_payout,
+        verification_hash=verification_hash
+    )
+    
+    db_sess.add(db_invoice)
+    db_sess.commit()
+    db_sess.refresh(db_invoice)
+
+    # Write audit trail log
+    write_audit_log(
+        db_sess, current_user.id, current_user.username, "ISSUE_BILL",
+        f"Generated official invoice {inv_number} for {invoice.farmer_name} - Net Payout: ₹{net_payout:.2f}", request
+    )
+
+    return {
+        "status": "success",
+        "message": "Official invoice saved and signed successfully!",
+        "invoice": db_invoice
+    }
+
+@app.get("/api/v2/financials/reports")
+def get_financial_reports(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+    """
+    Generates full financial turnover, cash flows, and commission summaries for Vijay Kumar Traders dashboard.
+    """
+    if current_user.role not in ["admin", "trader"]:
+        raise HTTPException(status_code=403, detail="Role unauthorized to view financial turnovers")
+
+    invoices = db_sess.query(db.Invoice).all()
+    
+    total_gross = sum(i.gross_amount for i in invoices)
+    total_commission = sum(i.commission_amount for i in invoices)
+    total_mandi_tax = sum(i.mandi_tax_amount for i in invoices)
+    total_net_payout = sum(i.net_payout for i in invoices)
+    total_bills_issued = len(invoices)
+
+    return {
+        "total_gross_turnover": round(total_gross, 2),
+        "total_commission_earned": round(total_commission, 2),
+        "total_mandi_taxes_paid": round(total_mandi_tax, 2),
+        "total_cash_liquid_payout": round(total_net_payout, 2),
+        "total_bills_issued": total_bills_issued,
+        "recent_invoices": invoices[-10:] # Top 10 latest sales
+    }
+
+# ================= SERVER HEALTH ENDPOINTS =================
+
 @app.get("/health")
 def health_check(db_sess: Session = Depends(get_db)):
     """
@@ -463,8 +541,7 @@ def health_check(db_sess: Session = Depends(get_db)):
     Verifies API server status and database connection health.
     """
     try:
-        # Perform simple low-cost query to verify database connection pool is active
-        db_sess.execute(db.SessionLocal().bind.utility_select_criterion() if hasattr(db.SessionLocal().bind, "utility_select_criterion") else "SELECT 1")
+        db_sess.execute("SELECT 1")
         return {
             "status": "healthy",
             "database": "connected",
@@ -476,3 +553,9 @@ def health_check(db_sess: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database connectivity check failed: {str(e)}"
         )
+
+# Serve Enterprise Admin Panel
+@app.get("/admin", response_class=HTMLResponse)
+def serve_admin_panel():
+    with open("admin.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())

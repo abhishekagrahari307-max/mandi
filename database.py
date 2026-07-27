@@ -53,7 +53,6 @@ class MandiRecord(Base):
     arrival_date = Column(String, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Multi-Column Indexing for ultra-fast query and filtering performance
     __table_args__ = (
         Index('idx_district_commodity', 'district', 'commodity'),
         Index('idx_mandi_commodity', 'mandi', 'commodity'),
@@ -71,17 +70,36 @@ class AlertSubscription(Base):
     is_active = Column(Boolean, default=True)
     subscribed_at = Column(DateTime, default=datetime.utcnow)
 
-# 4. ENTERPRISE AUDIT LOGS TABLE (FOR SYSTEM SECURITY AUDITS)
+# 4. ENTERPRISE AUDIT LOGS TABLE
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True, nullable=True) # ID of user performing the action
+    user_id = Column(Integer, index=True, nullable=True)
     username = Column(String, index=True, nullable=True)
-    action = Column(String, nullable=False) # e.g. "CREATE_RATE", "DELETE_USER", "SCRAPER_TRIGGER"
-    details = Column(String, nullable=True) # JSON or text payload description
+    action = Column(String, nullable=False)
+    details = Column(String, nullable=True)
     ip_address = Column(String, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+# 5. ENTERPRISE FINANCIAL INVOICES TABLE (NEW PHASE 4 FINANCIAL MODULE)
+class Invoice(Base):
+    __tablename__ = "financial_invoices"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_number = Column(String, unique=True, index=True, nullable=False)
+    farmer_name = Column(String, index=True, default="Anonymous Farmer")
+    crop_name = Column(String, nullable=False)
+    weight = Column(Float, nullable=False) # In Quintals
+    rate = Column(Float, nullable=False) # Per Quintal
+    gross_amount = Column(Float, nullable=False)
+    commission_amount = Column(Float, default=0.0)
+    labor_amount = Column(Float, default=0.0)
+    mandi_tax_amount = Column(Float, default=0.0)
+    transport_amount = Column(Float, default=0.0)
+    net_payout = Column(Float, nullable=False)
+    verification_hash = Column(String, nullable=True) # Security digital signature
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 # Initialize Database tables
 def init_db():
