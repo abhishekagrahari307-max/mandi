@@ -103,7 +103,8 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
                     <div>
                         <span class="block text-xs font-bold text-slate-400 uppercase">ऑटो सिंक आवृति</span>
-                        <span class="text-lg font-extrabold text-white mt-1 block">6 बार दैनिक (Daily)</span>
+                        <span class="text-lg font-extrabold text-white mt-1 block">4 बार दैनिक (Daily)</span>
+                        <span class="block text-[10px] text-slate-500 mt-0.5">06:30 • 12:30 • 16:30 • 20:30 IST</span>
                     </div>
                     <div class="p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
                         <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-400"></i>
@@ -175,7 +176,7 @@
                                         <th class="py-2.5 px-4">मंडी (Mandi)</th>
                                         <th class="py-2.5 px-4">फसल (Crop)</th>
                                         <th class="py-2.5 px-4 text-right">मॉडल भाव</th>
-                                        <th class="py-2.5 px-4 text-center">कार्रवाई (Action)</th>
+                                        <th class="py-2.5 px-4 text-center">स्रोत स्थिति (Source status)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="admin-rates-body" class="divide-y divide-slate-800/60">
@@ -189,107 +190,32 @@
         </main>
     </div>
 
-    <!-- 3. ADD/EDIT MANUALLY RATE MODAL DIALOG -->
-    <div id="rate-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h4 id="modal-title" class="font-bold text-white text-base">नया भाव विवरण जोड़ें (Add/Edit Custom Rate)</h4>
-                <button onclick="closeRateModal()" class="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <form onsubmit="handleSaveRate(event)" class="grid grid-cols-2 gap-4 text-xs">
-                <input type="hidden" id="modal-record-id">
-                
-                <!-- District -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">जिला (English)</label>
-                    <input type="text" id="m-dist" required placeholder="Kanpur" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">जिला (हिन्दी)</label>
-                    <input type="text" id="m-dist-hi" required placeholder="कानपुर" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Mandi -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">मंडी नाम (English)</label>
-                    <input type="text" id="m-mandi" required placeholder="Kanpur Mandi" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">मंडी नाम (हिन्दी)</label>
-                    <input type="text" id="m-mandi-hi" required placeholder="कानपुर मंडी" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Crop -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">फसल (English)</label>
-                    <input type="text" id="m-crop" required placeholder="Wheat" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">फसल (हिन्दी)</label>
-                    <input type="text" id="m-crop-hi" required placeholder="गेहूं" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Variety & Grade -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">किस्म (Variety)</label>
-                    <input type="text" id="m-variety" value="FAQ" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">ग्रेड (Grade)</label>
-                    <input type="text" id="m-grade" value="FAQ" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Prices -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">न्यूनतम मूल्य (₹/Q)</label>
-                    <input type="number" id="m-min" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">मॉडल (औसत) मूल्य (₹/Q)</label>
-                    <input type="number" id="m-modal" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">अधिकतम मूल्य (₹/Q)</label>
-                    <input type="number" id="m-max" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Arrivals & Date -->
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1">दैनिक आवक (टन में)</label>
-                    <input type="number" id="m-arrivals" value="50" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-slate-400 font-bold mb-1">भाव तिथि (dd/mm/yyyy)</label>
-                    <input type="text" id="m-date" required value="27/07/2026" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </div>
-
-                <!-- Submit -->
-                <div class="col-span-2 flex justify-end space-x-2 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="closeRateModal()" class="px-4 py-2 bg-slate-850 hover:bg-slate-800 rounded-lg font-bold text-slate-300">रद्द करें</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-white shadow-lg">सुरक्षित करें (Save)</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- The manual add/edit/delete rate modal was removed: official price
+         records are read-only. app.py answers POST/PUT/DELETE /api/v2/rates
+         with HTTP 405, so this dialog could never save anything. Prices come
+         only from the verified government feeds via update_data.py. -->
 
     <!-- Scripting logic -->
     <script>
         let JWT_TOKEN = "";
 
+        // Escape anything interpolated into innerHTML. Rate rows come from an
+        // upstream government feed, so they are treated as untrusted input.
+        function esc(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         window.addEventListener('load', () => {
             lucide.createIcons();
             
-            // Auto fill current date in modal
-            const today = new Date();
-            const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-            document.getElementById('m-date').value = dateStr;
-
             // Set excel link text
-            const host = window.location.origin;
-            document.getElementById('excel-url').innerText = `${host}/api/v2/excel/sync`;
+            const excelUrl = document.getElementById('excel-url');
+            if (excelUrl) excelUrl.innerText = `${window.location.origin}/api/v2/excel/sync`;
 
             // Keep the access token only for this browser tab. Remove tokens
             // persisted by older releases so they do not survive a browser restart.
@@ -374,13 +300,22 @@
                     let html = '';
                     
                     data.records.forEach(r => {
+                        // Feeds do not publish a Hindi label for every district,
+                        // mandi or crop, so fall back to the English spelling
+                        // instead of printing "undefined". Values are escaped
+                        // because they originate from an upstream feed.
+                        const district = esc(r.district_hi || r.district);
+                        const districtEn = r.district && r.district_hi ? ` (${esc(r.district)})` : '';
+                        const mandi = esc(r.mandi_hi || r.mandi);
+                        const crop = esc(r.commodity_hi || r.commodity);
+                        const price = Number(r.modal_price);
                         html += `
                             <tr class="hover:bg-slate-900/40 transition border-b border-slate-800/40">
-                                <td class="py-2.5 px-4 font-bold text-slate-500">${r.id}</td>
-                                <td class="py-2.5 px-4 font-semibold text-white">${r.district_hi} (${r.district})</td>
-                                <td class="py-2.5 px-4 text-slate-300">${r.mandi_hi}</td>
-                                <td class="py-2.5 px-4 text-emerald-400 font-bold">${r.commodity_hi}</td>
-                                <td class="py-2.5 px-4 text-right font-extrabold text-white">₹${r.modal_price}</td>
+                                <td class="py-2.5 px-4 font-bold text-slate-500">${esc(r.id)}</td>
+                                <td class="py-2.5 px-4 font-semibold text-white">${district}${districtEn}</td>
+                                <td class="py-2.5 px-4 text-slate-300">${mandi}</td>
+                                <td class="py-2.5 px-4 text-emerald-400 font-bold">${crop}</td>
+                                <td class="py-2.5 px-4 text-right font-extrabold text-white">${Number.isFinite(price) ? '₹' + price.toLocaleString('en-IN') : '—'}</td>
                                 <td class="py-2.5 px-4 text-center text-blue-300 font-bold text-[10px]">Verified feed</td>
                             </tr>
                         `;
@@ -412,7 +347,13 @@
                 return res.json();
             })
             .then(data => {
-                alert(`सफलता! Agmarknet से ${data.updated_count} नए रेट्स को खींचकर डेटाबेस को सिंक कर दिया गया है!`);
+                // The pipeline reads several government feeds and only stores
+                // rows that passed the cross-verification gate, so report the
+                // real count instead of implying every rate came from one feed.
+                const count = Number(data.updated_count) || 0;
+                alert(count > 0
+                    ? `सफलता! सरकारी feeds से ${count} सत्यापित भाव डेटाबेस में सिंक कर दिए गए।`
+                    : "सिंक पूरा हुआ, लेकिन कोई सत्यापित भाव नहीं मिला। पिछला verified snapshot सुरक्षित है।");
                 loadMetrics();
                 loadRates();
             })
@@ -426,122 +367,11 @@
             });
         }
 
-        // 5. CRUD ACTION SCRIPTS
-        function openAddModal() {
-            document.getElementById('modal-title').innerText = "नया भाव विवरण जोड़ें";
-            document.getElementById('modal-record-id').value = "";
-            
-            document.getElementById('m-dist').value = "";
-            document.getElementById('m-dist-hi').value = "";
-            document.getElementById('m-mandi').value = "";
-            document.getElementById('m-mandi-hi').value = "";
-            document.getElementById('m-crop').value = "";
-            document.getElementById('m-crop-hi').value = "";
-            document.getElementById('m-variety').value = "FAQ";
-            document.getElementById('m-grade').value = "FAQ";
-            document.getElementById('m-min').value = "";
-            document.getElementById('m-modal').value = "";
-            document.getElementById('m-max').value = "";
-            document.getElementById('m-arrivals').value = "100";
-
-            document.getElementById('rate-modal').classList.remove('hidden');
-        }
-
-        function editRate(r) {
-            document.getElementById('modal-title').innerText = "दर विवरण संशोधित करें";
-            document.getElementById('modal-record-id').value = r.id;
-            
-            document.getElementById('m-dist').value = r.district;
-            document.getElementById('m-dist-hi').value = r.district_hi;
-            document.getElementById('m-mandi').value = r.mandi;
-            document.getElementById('m-mandi-hi').value = r.mandi_hi;
-            document.getElementById('m-crop').value = r.commodity;
-            document.getElementById('m-crop-hi').value = r.commodity_hi;
-            document.getElementById('m-variety').value = r.variety;
-            document.getElementById('m-grade').value = r.grade;
-            document.getElementById('m-min').value = r.min_price;
-            document.getElementById('m-modal').value = r.modal_price;
-            document.getElementById('m-max').value = r.max_price;
-            document.getElementById('m-arrivals').value = r.arrivals;
-            document.getElementById('m-date').value = r.arrival_date;
-
-            document.getElementById('rate-modal').classList.remove('hidden');
-        }
-
-        function closeRateModal() {
-            document.getElementById('rate-modal').classList.add('hidden');
-        }
-
-        function handleSaveRate(e) {
-            e.preventDefault();
-            const id = document.getElementById('modal-record-id').value;
-            
-            const payload = {
-                district: document.getElementById('m-dist').value,
-                district_hi: document.getElementById('m-dist-hi').value,
-                mandi: document.getElementById('m-mandi').value,
-                mandi_hi: document.getElementById('m-mandi-hi').value,
-                commodity: document.getElementById('m-crop').value,
-                commodity_hi: document.getElementById('m-crop-hi').value,
-                variety: document.getElementById('m-variety').value,
-                variety_hi: document.getElementById('m-variety').value, // auto same
-                grade: document.getElementById('m-grade').value,
-                grade_hi: document.getElementById('m-grade').value, // auto same
-                arrivals: parseInt(document.getElementById('m-arrivals').value) || 0,
-                min_price: parseFloat(document.getElementById('m-min').value),
-                max_price: parseFloat(document.getElementById('m-max').value),
-                modal_price: parseFloat(document.getElementById('m-modal').value),
-                arrival_date: document.getElementById('m-date').value
-            };
-
-            const url = id ? `/api/v2/rates/${id}` : '/api/v2/rates';
-            const method = id ? 'PUT' : 'POST';
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${JWT_TOKEN}`
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("Save failed");
-                return res.json();
-            })
-            .then(data => {
-                alert(data.message);
-                closeRateModal();
-                loadMetrics();
-                loadRates();
-            })
-            .catch(err => {
-                alert("त्रुटि: डेटा सेव नहीं किया जा सका!");
-            });
-        }
-
-        function deleteRate(id) {
-            if (!confirm(`क्या आप वाकई इस रिकॉर्ड (ID: ${id}) को डेटाबेस से हटाना चाहते हैं?`)) return;
-
-            fetch(`/api/v2/rates/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${JWT_TOKEN}`
-                }
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("Delete failed");
-                return res.json();
-            })
-            .then(data => {
-                alert(data.message);
-                loadMetrics();
-                loadRates();
-            })
-            .catch(err => {
-                alert("त्रुटि: रिकॉर्ड हटाया नहीं जा सका!");
-            });
-        }
+        // The manual add / edit / delete rate functions were removed along
+        // with their modal. Official price records are read-only: app.py
+        // returns HTTP 405 for POST, PUT and DELETE on /api/v2/rates, so those
+        // handlers could never save anything. Use the live scraper sync above
+        // to refresh from the verified government feeds instead.
 
         function copyExcelLink() {
             const code = document.getElementById('excel-url').innerText;

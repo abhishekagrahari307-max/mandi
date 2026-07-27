@@ -435,6 +435,43 @@ class DashboardResilienceTests(unittest.TestCase):
         )
 
 
+class AdminPanelTests(unittest.TestCase):
+    """The admin panel must not offer actions the API refuses."""
+
+    SOURCE = (ROOT / "admin.html").read_text(encoding="utf-8")
+    APP = (ROOT / "app.py").read_text(encoding="utf-8")
+
+    def test_manual_rate_editing_ui_is_removed(self):
+        """POST/PUT/DELETE /api/v2/rates all return 405, so the manual
+        add/edit/delete dialog could never save and was dead UI."""
+        for gone in ("openAddModal", "editRate(", "deleteRate(",
+                     "handleSaveRate", 'id="rate-modal"', 'id="m-modal"'):
+            self.assertNotIn(gone, self.SOURCE, f"{gone} is unreachable dead code")
+
+    def test_api_still_refuses_manual_rate_writes(self):
+        """The read-only policy the removed UI violated must stay enforced."""
+        self.assertIn("Manual rates are disabled", self.APP)
+        self.assertIn("Official feed records are read-only", self.APP)
+
+    def test_admin_escapes_feed_values(self):
+        self.assertIn("function esc(", self.SOURCE)
+        self.assertNotIn("${r.district_hi} (${r.district})", self.SOURCE)
+
+    def test_admin_has_no_dangling_element_references(self):
+        """Every getElementById target and inline handler must exist."""
+        defined_ids = set(re.findall(r'id="([^"]+)"', self.SOURCE))
+        used_ids = set(re.findall(r"getElementById\(['\"]([^'\"]+)['\"]\)", self.SOURCE))
+        self.assertEqual(used_ids - defined_ids, set())
+
+        handlers = set(re.findall(r'on(?:click|submit)="([A-Za-z0-9_]+)\(', self.SOURCE))
+        functions = set(re.findall(r"function ([A-Za-z0-9_]+)\(", self.SOURCE))
+        self.assertEqual(handlers - functions, set())
+
+    def test_admin_token_is_not_persisted_across_restarts(self):
+        self.assertIn('sessionStorage', self.SOURCE)
+        self.assertIn('localStorage.removeItem("mandi_jwt_token")', self.SOURCE)
+
+
 class DeterministicServicesTests(unittest.TestCase):
     def test_prediction_is_deterministic(self):
         history = {"Wheat": [

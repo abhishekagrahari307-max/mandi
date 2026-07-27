@@ -30,6 +30,7 @@
 
 ```bash
 ├── index.html                  # मुख्य डैशबोर्ड (HTML + Tailwind + Chart.js)
+├── admin.html                  # Admin panel (read-only: भाव देखें + official sync trigger)
 ├── manifest.json               # PWA कॉन्फ़िगरेशन (फ़ोन इंस्टॉल के लिए)
 ├── sw.js                       # सर्विस वर्कर (ऑफ़लाइन कैशिंग के लिए)
 ├── update_data.py              # Official multi-source data pipeline (no simulation)
@@ -228,6 +229,14 @@ Feed JSON में `lot_number`, `district`, `mandi`, `commodity` और lot de
 
 ये सभी `data/benchmarks.json` के `official_portals` में हैं और dashboard पर **Official Portals**
 कार्ड तथा **Government Source Monitor** में live status के साथ दिखते हैं।
+
+### एडमिन पैनल read-only क्यों है?
+
+`admin.html` में भाव को हाथ से जोड़ने/बदलने/हटाने का कोई विकल्प नहीं है, क्योंकि
+`app.py` इन तीनों पर **HTTP 405** लौटाता है (`POST`/`PUT`/`DELETE /api/v2/rates`)।
+पहले पैनल में एक Add/Edit modal मौजूद था जो कभी save कर ही नहीं सकता था — वह dead
+UI हटा दी गई है। भाव केवल सत्यापित सरकारी feeds से `update_data.py` के ज़रिए आते हैं।
+पैनल से आप भाव **देख** सकते हैं और **Official Data Sync** चला सकते हैं।
 
 ### कोई simulated data नहीं
 
