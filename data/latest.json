@@ -10,11 +10,9 @@
   "cross_verified_record_count": 0,
   "three_source_verified_record_count": 0,
   "verification_note": "A mandi price is published only when at least 3 configured government price feeds report the same market, commodity, date and modal price.",
-  "update_frequency": "6 times daily",
+  "update_frequency": "4 times daily",
   "update_slots_ist": [
-    "00:30",
-    "04:30",
-    "08:30",
+    "06:30",
     "12:30",
     "16:30",
     "20:30"

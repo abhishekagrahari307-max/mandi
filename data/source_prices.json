@@ -1,0 +1,64 @@
+{
+  "last_checked_at": "2026-07-27T15:55:16.183609+05:30",
+  "policy": "Each feed is displayed separately exactly as reported. Prices are not averaged or merged. These rows are single-source observations; only data/latest.json contains prices that passed the three-source gate.",
+  "policy_hi": "हर feed का भाव उसके अपने नाम से अलग दिखाया गया है। भावों को मिलाया या औसत नहीं किया जाता। ये single-source भाव हैं; तीन-source जाँच पास भाव केवल data/latest.json में होते हैं।",
+  "record_limit_per_feed": 5000,
+  "feeds": [
+    {
+      "id": "data_gov_in",
+      "name": "data.gov.in OGD price API",
+      "name_hi": "data.gov.in सरकारी मूल्य API",
+      "source_url": "https://data.gov.in/",
+      "status": "not_configured",
+      "latest_check_status": "not_configured",
+      "message": "DATA_GOV_IN_API_KEY is not configured",
+      "data_updated_at": null,
+      "total_record_count": 0,
+      "stored_record_count": 0,
+      "records_truncated": false,
+      "records": []
+    },
+    {
+      "id": "agmarknet",
+      "name": "AGMARKNET public price report",
+      "name_hi": "AGMARKNET सार्वजनिक मूल्य रिपोर्ट",
+      "source_url": "https://agmarknet.gov.in/home",
+      "status": "not_checked",
+      "latest_check_status": "not_checked",
+      "message": "offline repository refresh",
+      "data_updated_at": null,
+      "total_record_count": 0,
+      "stored_record_count": 0,
+      "records_truncated": false,
+      "records": []
+    },
+    {
+      "id": "enam_trade",
+      "name": "e-NAM authorised trade feed",
+      "name_hi": "e-NAM अधिकृत ट्रेड फीड",
+      "source_url": "https://www.enam.gov.in/web/",
+      "status": "not_configured",
+      "latest_check_status": "not_configured",
+      "message": null,
+      "data_updated_at": null,
+      "total_record_count": 0,
+      "stored_record_count": 0,
+      "records_truncated": false,
+      "records": []
+    },
+    {
+      "id": "up_emandi_trade",
+      "name": "UP e-Mandi authorised trade feed",
+      "name_hi": "UP e-Mandi अधिकृत ट्रेड फीड",
+      "source_url": "https://emandi.up.gov.in/",
+      "status": "not_configured",
+      "latest_check_status": "not_configured",
+      "message": null,
+      "data_updated_at": null,
+      "total_record_count": 0,
+      "stored_record_count": 0,
+      "records_truncated": false,
+      "records": []
+    }
+  ]
+}

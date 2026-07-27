@@ -200,7 +200,7 @@
                     <div>
                         <span class="block text-xs text-emerald-200" data-translate="stat_source">डेटा स्रोत / आवृत्ति</span>
                         <span id="stat-data-source" class="font-bold text-xs md:text-sm text-green-100">-</span>
-                        <span id="stat-update-frequency" class="block text-[10px] text-emerald-100">दिन में 6 बार</span>
+                        <span id="stat-update-frequency" class="block text-[10px] text-emerald-100">दिन में 4 बार</span>
                     </div>
                 </div>
             </div>
@@ -316,6 +316,31 @@
 
         <!-- ───────────────── SECTION: LIVE RATES ───────────────── -->
         <div id="section-rates" class="space-y-4">
+            <!-- Official prices kept separate by source. These are never averaged. -->
+            <section class="bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden" aria-labelledby="source-prices-heading">
+                <div class="p-4 border-b border-indigo-100 bg-indigo-50/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h3 id="source-prices-heading" class="font-extrabold text-indigo-950 flex items-center gap-2">
+                            <i data-lucide="panels-top-left" class="w-5 h-5 text-indigo-600"></i>
+                            <span>सरकारी स्रोत-वार भाव / Official source-wise prices</span>
+                        </h3>
+                        <p id="source-prices-policy" class="text-xs text-indigo-800 mt-1">
+                            हर source का भाव अलग है; भावों को मिलाया या औसत नहीं किया जाता।
+                        </p>
+                    </div>
+                    <div class="relative w-full md:w-72">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+                        <input id="source-price-search" type="search" oninput="renderSourcePrices()" placeholder="फसल, मंडी या जिला खोजें..." class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-amber-50 border-b border-amber-100 text-[11px] text-amber-900">
+                    <b>ध्यान दें:</b> ये single-source reported भाव हैं। नीचे की सत्यापित मुख्य तालिका में केवल 3 सरकारी feeds का exact match आता है।
+                </div>
+                <div id="source-price-feeds" class="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4">
+                    <div class="col-span-full text-center text-sm text-slate-400 py-6">Source prices loading...</div>
+                </div>
+            </section>
+
             <!-- Search & Filters -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div>
@@ -366,7 +391,7 @@
                 <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50">
                     <h3 class="font-bold text-slate-800 flex items-center space-x-2">
                         <i data-lucide="table-properties" class="w-4 h-4 text-emerald-600"></i>
-                        <span data-translate="rates_heading">मंडी भाव सूची (रु/क्विंटल)</span>
+                        <span data-translate="rates_heading">3-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)</span>
                     </h3>
                     <div class="flex items-center space-x-2">
                         <span id="records-count" class="text-xs bg-slate-200 font-bold px-2 py-1 rounded text-slate-700 mr-2">0 records</span>
@@ -1035,7 +1060,7 @@
                 filter_commodity: "फसल चुनें",
                 opt_all_districts: "सभी 75 जिले",
                 opt_all_crops: "सभी फसलें",
-                rates_heading: "मंडी भाव सूची (रु/क्विंटल)",
+                rates_heading: "3-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)",
                 th_district: "जिला",
                 th_mandi: "मंडी नाम",
                 th_crop: "फसल (जिंस)",
@@ -1135,7 +1160,7 @@
                 filter_commodity: "Select Crop",
                 opt_all_districts: "All 75 Districts",
                 opt_all_crops: "All Crops",
-                rates_heading: "Mandi Prices List (INR/Quintal)",
+                rates_heading: "Three-source verified mandi prices (INR/Quintal)",
                 th_district: "District",
                 th_mandi: "Mandi Name",
                 th_crop: "Crop / Commodity",
@@ -1200,6 +1225,7 @@
         let mandiDetailsData = { mandis: [] };
         let lawsData = { chapters: [], practical_rules: [], official_sources: [] };
         let sourceData = { sources: [] };
+        let sourcePriceData = { feeds: [] };
         let benchmarkData = { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
         let auctionSnapshot = { status: 'loading', lots: [] };
         let calcWeightUnit = 'q';
@@ -1270,10 +1296,10 @@
             if (!latest.verified) {
                 if (liveBadge) liveBadge.innerText = currentLang === 'hi' ? 'Official feed unavailable' : 'Official feed unavailable';
                 banner.className = 'border-l-4 border-red-500 bg-red-50 text-red-800 p-4 rounded-xl shadow-sm text-xs';
-                title.innerText = currentLang === 'hi' ? 'डेटा सत्यापित नहीं है' : 'Data is not verified';
+                title.innerText = currentLang === 'hi' ? '3-स्रोत सत्यापित भाव उपलब्ध नहीं है' : 'Three-source verified prices are unavailable';
                 message.innerText = currentLang === 'hi'
-                    ? 'DATA_GOV_IN_API_KEY जोड़ने तक पुराना cached snapshot दिख सकता है। इसे लाइव सरकारी भाव न मानें।'
-                    : 'A legacy cached snapshot may be shown until DATA_GOV_IN_API_KEY is configured. Do not treat it as a live government rate.';
+                    ? 'ऊपर source-wise cards में हर सरकारी feed का अपना भाव अलग दिख सकता है; उसे 3-source verified भाव न मानें।'
+                    : 'The source-wise cards above may show each government feed separately; do not treat a single-source row as three-source verified.';
                 banner.classList.remove('hidden');
             } else if (latest.is_live && (
                 (latest.connected_price_source_count || 0) < 3 ||
@@ -1311,6 +1337,7 @@
             renderStateBenchmark();
             renderOfficialPortals();
             renderSourceMonitor();
+            renderSourcePrices();
             renderLaws();
             renderAuctionLots();
             buildAtoZMandiDirectory();
@@ -1668,14 +1695,15 @@
             const fetchMandiDetails = fetchJson('data/mandis.json', { mandis: [] });
             const fetchLaws = fetchJson('data/laws.json', { chapters: [], practical_rules: [], official_sources: [] });
             const fetchSources = fetchJson('data/sources.json', { sources: [] });
+            const fetchSourcePrices = fetchJson('data/source_prices.json', { feeds: [] });
             const fetchBenchmarks = fetchJson('data/benchmarks.json', {
                 state_benchmark: { commodities: [] },
                 mandi_parishad_directory: { mandis: [] },
                 official_portals: []
             });
 
-            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchBenchmarks])
-            .then(([latest, history, states, mandis, laws, sources, benchmarks]) => {
+            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchSourcePrices, fetchBenchmarks])
+            .then(([latest, history, states, mandis, laws, sources, sourcePrices, benchmarks]) => {
                 latestData = (latest && latest.records) ? latest.records : (latest || []);
                 latestMetadata = latest && !Array.isArray(latest) ? latest : {};
                 historicalData = history || {};
@@ -1683,6 +1711,7 @@
                 mandiDetailsData = mandis || { mandis: [] };
                 lawsData = laws || { chapters: [], practical_rules: [], official_sources: [] };
                 sourceData = sources || { sources: [] };
+                sourcePriceData = sourcePrices || { feeds: [] };
                 benchmarkData = benchmarks || { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
                 
                 // Safe UI Element updates with individual Try-Catch blocks
@@ -1705,8 +1734,8 @@
                         elSource.innerText = `${latest?.source || '-'} • ${sourceCount} sources • ${verifiedByThree} verified by 3+`;
                     }
                     if (elFrequency) elFrequency.innerText = currentLang === 'hi'
-                        ? 'दिन में 6 बार • ' + (latest?.update_slots_ist || []).join(', ')
-                        : '6 times daily • ' + (latest?.update_slots_ist || []).join(', ');
+                        ? 'दिन में 4 बार • ' + (latest?.update_slots_ist || []).join(', ')
+                        : '4 times daily • ' + (latest?.update_slots_ist || []).join(', ');
                     updateDataStatus(latest || {});
                 } catch (e) { console.error("Error setting update metadata:", e); }
 
@@ -1745,6 +1774,7 @@
                 safeRun('renderStateBenchmark', renderStateBenchmark);
                 safeRun('renderOfficialPortals', renderOfficialPortals);
                 safeRun('renderSourceMonitor', renderSourceMonitor);
+                safeRun('renderSourcePrices', renderSourcePrices);
                 safeRun('buildAtoZMandiDirectory', buildAtoZMandiDirectory);
                 safeRun('renderLaws', renderLaws);
                 safeRun('updatePinnedStaples', updatePinnedStaples);
@@ -2916,6 +2946,103 @@
                     ${sourceItem.url ? `<a href="${escapeHtml(sourceItem.url)}" target="_blank" rel="noopener noreferrer" class="text-[9px] font-bold text-slate-500 underline mt-1 inline-block">source ↗</a>` : ''}
                 </div>`;
             }).join('') || `<p class="text-xs text-amber-700">${currentLang === 'hi' ? 'Source status उपलब्ध नहीं है।' : 'Source status is unavailable.'}</p>`;
+            renderIcons();
+        }
+
+        function renderSourcePrices() {
+            const container = document.getElementById('source-price-feeds');
+            const policy = document.getElementById('source-prices-policy');
+            const searchInput = document.getElementById('source-price-search');
+            if (!container) return;
+
+            const feeds = Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : [];
+            const query = (searchInput?.value || '').trim().toLocaleLowerCase();
+            if (searchInput) {
+                searchInput.placeholder = currentLang === 'hi'
+                    ? 'फसल, मंडी या जिला खोजें...'
+                    : 'Search crop, mandi or district...';
+            }
+            if (policy) {
+                policy.innerText = currentLang === 'hi'
+                    ? (sourcePriceData?.policy_hi || 'हर source का भाव अलग है; भावों को मिलाया या औसत नहीं किया जाता।')
+                    : (sourcePriceData?.policy || 'Each source is separate; prices are not merged or averaged.');
+            }
+
+            const statusLabels = {
+                live: currentLang === 'hi' ? 'ताज़ा' : 'live',
+                cached: currentLang === 'hi' ? 'पुराना official snapshot' : 'cached official snapshot',
+                not_configured: currentLang === 'hi' ? 'कॉन्फ़िगरेशन बाकी' : 'not configured',
+                not_checked: currentLang === 'hi' ? 'जाँच नहीं हुई' : 'not checked',
+                error: currentLang === 'hi' ? 'उपलब्ध नहीं' : 'unavailable',
+                unavailable: currentLang === 'hi' ? 'उपलब्ध नहीं' : 'unavailable'
+            };
+            const money = value => {
+                const numeric = Number(value);
+                return Number.isFinite(numeric) && numeric > 0
+                    ? `₹${numeric.toLocaleString('en-IN')}`
+                    : '—';
+            };
+
+            container.innerHTML = feeds.map(feed => {
+                const allRecords = Array.isArray(feed.records) ? feed.records : [];
+                const filtered = query ? allRecords.filter(record => [
+                    record.district, record.district_hi, record.mandi, record.mandi_hi,
+                    record.commodity, record.commodity_hi, record.variety, record.grade
+                ].some(value => String(value || '').toLocaleLowerCase().includes(query))) : allRecords;
+                const visible = filtered.slice(0, 25);
+                const status = feed.status || 'unavailable';
+                const isLive = status === 'live';
+                const isCached = status === 'cached';
+                const tone = isLive
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : (isCached ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700');
+                const name = currentLang === 'hi' ? (feed.name_hi || feed.name) : (feed.name || feed.name_hi);
+                const rows = visible.map(record => {
+                    const district = currentLang === 'hi'
+                        ? (record.district_hi || record.district || '—')
+                        : (record.district || record.district_hi || '—');
+                    const mandi = currentLang === 'hi'
+                        ? (record.mandi_hi || record.mandi || '—')
+                        : (record.mandi || record.mandi_hi || '—');
+                    const commodity = currentLang === 'hi'
+                        ? (record.commodity_hi || record.commodity || '—')
+                        : (record.commodity || record.commodity_hi || '—');
+                    return `<tr class="border-b border-slate-100 last:border-0">
+                        <td class="py-2 px-2"><span class="font-bold text-slate-800 block">${escapeHtml(mandi)}</span><span class="text-[9px] text-slate-400">${escapeHtml(district)}</span></td>
+                        <td class="py-2 px-2 text-slate-700">${escapeHtml(commodity)}</td>
+                        <td class="py-2 px-2 text-right text-slate-500">${money(record.min_price)}</td>
+                        <td class="py-2 px-2 text-right font-black text-indigo-800">${money(record.modal_price)}</td>
+                        <td class="py-2 px-2 text-right text-slate-500">${money(record.max_price)}</td>
+                        <td class="py-2 px-2 text-right text-[9px] text-slate-400 whitespace-nowrap">${escapeHtml(record.arrival_date || '—')}</td>
+                    </tr>`;
+                }).join('');
+                const checkedStatus = feed.latest_check_status && feed.latest_check_status !== status
+                    ? `<span class="text-[9px] text-slate-500">${currentLang === 'hi' ? 'नई जाँच' : 'Latest check'}: ${escapeHtml(feed.latest_check_status)}</span>`
+                    : '';
+
+                return `<article class="border border-slate-200 rounded-xl overflow-hidden bg-white min-w-0">
+                    <div class="p-3 border-b border-slate-100 flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h4 class="font-extrabold text-sm text-slate-900 truncate" title="${escapeHtml(name || '')}">${escapeHtml(name || '')}</h4>
+                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                <span class="border rounded-full px-2 py-0.5 text-[9px] uppercase font-black ${tone}">${escapeHtml(statusLabels[status] || status)}</span>
+                                ${checkedStatus}
+                                <span class="text-[9px] text-slate-500">${feed.total_record_count || allRecords.length} ${currentLang === 'hi' ? 'रिकॉर्ड' : 'records'}</span>
+                            </div>
+                        </div>
+                        <a href="${escapeHtml(feed.source_url || '#')}" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-indigo-700 underline">${currentLang === 'hi' ? 'सरकारी स्रोत' : 'Official source'} ↗</a>
+                    </div>
+                    ${rows ? `<div class="overflow-x-auto max-h-96 custom-scrollbar"><table class="w-full text-[10px] min-w-[620px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-500 uppercase"><tr>
+                            <th class="py-2 px-2 text-left">${currentLang === 'hi' ? 'मंडी / जिला' : 'Mandi / district'}</th>
+                            <th class="py-2 px-2 text-left">${currentLang === 'hi' ? 'फसल' : 'Commodity'}</th>
+                            <th class="py-2 px-2 text-right">Min</th><th class="py-2 px-2 text-right">Modal</th><th class="py-2 px-2 text-right">Max</th>
+                            <th class="py-2 px-2 text-right">${currentLang === 'hi' ? 'तारीख' : 'Date'}</th>
+                        </tr></thead><tbody>${rows}</tbody></table></div>
+                        <p class="px-3 py-2 text-[9px] text-slate-400 border-t border-slate-100">${currentLang === 'hi' ? 'दिखाए गए' : 'Showing'} ${visible.length}/${filtered.length}${feed.records_truncated ? ` • ${currentLang === 'hi' ? 'snapshot सीमित है' : 'snapshot is limited'}` : ''}</p>`
+                        : `<div class="p-6 text-center"><p class="text-xs font-bold text-slate-500">${query ? (currentLang === 'hi' ? 'इस खोज के लिए भाव नहीं मिला।' : 'No price matches this search.') : (currentLang === 'hi' ? 'इस source से अभी कोई भाव उपलब्ध नहीं है।' : 'No price is currently available from this source.')}</p>${feed.message ? `<p class="text-[9px] text-slate-400 mt-2">${escapeHtml(feed.message)}</p>` : ''}</div>`}
+                </article>`;
+            }).join('') || `<div class="col-span-full text-center text-sm text-amber-700 py-6">${currentLang === 'hi' ? 'Source-wise भाव snapshot उपलब्ध नहीं है।' : 'The source-wise price snapshot is unavailable.'}</div>`;
             renderIcons();
         }
 

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'up-mandi-v10';
+const CACHE_NAME = 'up-mandi-v11';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './data/latest.json',
+  './data/source_prices.json',
   './data/history.json',
   './data/state_prices.json',
   './data/mandis.json',

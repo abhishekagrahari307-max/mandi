@@ -11,6 +11,7 @@
 - **🌐 पूर्णतः द्विभाषी (Bilingual):** एक क्लिक में हिन्दी और English के बीच बदलें।
 - **📱 PWA इंस्टॉल करें (Add to Home Screen):** इसे फोन में इंस्टॉल करके बिना इंटरनेट (Offline Mode) के भी पुराने भाव देख सकते हैं।
 - **🧮 मंडी बिल कैलकुलेटर (Interactive Calculator):** कुल वजन, भाव, आढ़त कमीशन, मजदूरी/पल्लेदारी, मंडी टैक्स और भाड़ा घटाकर किसान/व्यापारी का शुद्ध भुगतान (Net Payout) सेकंडों में निकालें।
+- **🏷️ स्रोत-वार सरकारी भाव:** data.gov.in, AGMARKNET, e-NAM और UP e-Mandi के अपने-अपने reported भाव अलग cards में देखें—कोई mixing या averaging नहीं।
 - **📈 सत्यापित मूल्य ग्राफ (Verified Price Trends):** सफल सरकारी snapshots से बने वास्तविक ऐतिहासिक भाव देखें।
 - **🏛️ पूरी मंडी निर्देशिका:** मंडी, जिला, जिंस, भाव सीमा, उपलब्ध स्थानीय अधिकारी संपर्क, केंद्रीय helpdesk और official links।
 - **⚖️ अधिनियम और नियमावली:** U.P. Krishi Utpadan Mandi Adhiniyam 1964, Niyamawali 1965, अध्याय और धारा-सूची के official India Code links।
@@ -19,7 +20,7 @@
 - **🏢 मण्डी परिषद निर्देशिका:** UP Mandi Parishad से मंडल (division), जनपद, मण्डी, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।
 - **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
 - **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
-- **🔄 दिन में 6 बार auto-update:** 00:30, 04:30, 08:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
+- **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
 
@@ -31,7 +32,8 @@
 ├── sw.js                       # सर्विस वर्कर (ऑफ़लाइन कैशिंग के लिए)
 ├── update_data.py              # Official multi-source data pipeline (no simulation)
 ├── data/
-│   ├── latest.json             # UP official/cached verified prices
+│   ├── latest.json             # 3-source gate पास UP verified prices
+│   ├── source_prices.json      # हर official feed के अलग single-source prices
 │   ├── state_prices.json       # State/district/mandi price summary
 │   ├── mandis.json             # Mandi directory and available contacts
 │   ├── auction.json            # Authorised e-NAM lot snapshot/status
@@ -44,7 +46,7 @@
 │   └── icon-192.png            # 192px ऐप आइकन
 └── .github/
     └── workflows/
-        └── update.yml          # दिन में 6 बार official feeds refresh करने का Action
+        └── update.yml          # दिन में 4 बार official feeds refresh करने का Action
 ```
 
 ---
@@ -106,7 +108,7 @@ bash deploy.sh
 3. एक नया Secret बनाएं:
    - **Name:** `DATA_GOV_IN_API_KEY`
    - **Value:** *[आपकी API Key]*
-4. इसके बाद dashboard दिन में 6 बार (00:30, 04:30, 08:30, 12:30, 16:30, 20:30 IST) official
+4. इसके बाद dashboard दिन में 4 बार (06:30, 12:30, 16:30, 20:30 IST) official
    OGD/AGMARKNET rates refresh करेगा। Key न होने या portal failure पर updater **कोई random/simulated rate नहीं बनाता**; UI last verified snapshot या स्पष्ट unavailable/unverified status दिखाता है।
 
 ### 3-source publication gate (कड़ा नियम)
@@ -123,6 +125,12 @@ Pipeline इन सरकारी sources को अलग-अलग monitor �
 3. authorised e-NAM trade feed (`ENAM_TRADE_FEED_URL`, `ENAM_TRADE_API_KEY`)
 4. authorised UP e-Mandi trade feed (`UP_EMANDI_TRADE_FEED_URL`, `UP_EMANDI_TRADE_API_KEY`)
 
+इन चारों के अपने reported records `data/source_prices.json` में **अलग-अलग** रखे और dashboard
+पर source label के साथ दिखाए जाते हैं। इनमें averaging, merging या missing भाव का अनुमान नहीं
+लगाया जाता। ये single-source observations हैं; 3-source exact-match gate पास records ही
+`data/latest.json` की सत्यापित मुख्य तालिका में जाते हैं। Feed की नई जाँच fail होने पर उसका आखिरी
+official snapshot `cached` label के साथ रह सकता है।
+
 तीसरे और चौथे feed public APIs नहीं हैं। इनके URLs/keys संबंधित सरकारी portal द्वारा approved
 integrator को मिलने के बाद GitHub Actions secrets में जोड़ें; chat या repository में credentials
 न लिखें। जब तक 3 feeds configured नहीं होते, dashboard "insufficient_sources" status दिखाता है
@@ -131,9 +139,9 @@ integrator को मिलने के बाद GitHub Actions secrets मे
 `.github/workflows/update.yml` इन सभी optional secrets (`ENAM_TRADE_*`, `UP_EMANDI_TRADE_*`,
 `ENAM_AUCTION_*`, `DATA_GOV_RESOURCE_ID`) को updater तक पास करता है। जो secret set नहीं है वह
 खाली रहता है और उसका feed `not_configured` के रूप में Government Source Monitor में दिखता है—
-कोई fallback data नहीं बनता। हर run में updater `data/latest.json`, `data/history.json`,
-`data/state_prices.json`, `data/mandis.json`, `data/auction.json`, `data/benchmarks.json` और
-`data/sources.json` commit करता है (simulated `data/weather.json` हटा दिया गया है)।
+कोई fallback data नहीं बनता। हर run में updater `data/latest.json`, `data/source_prices.json`,
+`data/history.json`, `data/state_prices.json`, `data/mandis.json`, `data/auction.json`,
+`data/benchmarks.json` और `data/sources.json` commit करता है (simulated `data/weather.json` हटा दिया गया है)।
 
 ### मण्डी परिषद निर्देशिका (division, district, mandi, grade, secretary, CUG)
 

@@ -73,6 +73,42 @@ class OfficialDataIntegrityTests(unittest.TestCase):
         self.assertEqual(published, [])
         self.assertEqual(examined, 2)
 
+    def test_source_prices_remain_separate_without_averaging(self):
+        base = {
+            "state": "Uttar Pradesh", "district": "Kanpur Nagar",
+            "market": "Kanpur Grain", "commodity": "Wheat",
+            "min_price": 2400, "max_price": 2550,
+            "arrival_date": "27/07/2026",
+        }
+        data_gov = update_data.format_record(dict(base, modal_price=2450))
+        agmarknet = update_data.format_record(dict(base, modal_price=2500))
+        snapshot = update_data.build_source_prices_snapshot({
+            "data_gov_in": {"status": "live", "records": [data_gov]},
+            "agmarknet": {"status": "live", "records": [agmarknet]},
+            "enam_trade": {"status": "not_configured", "records": []},
+            "up_emandi_trade": {"status": "not_configured", "records": []},
+        }, checked_at="2026-07-27T20:30:00+05:30")
+
+        feeds = {feed["id"]: feed for feed in snapshot["feeds"]}
+        self.assertEqual(feeds["data_gov_in"]["records"][0]["modal_price"], 2450)
+        self.assertEqual(feeds["agmarknet"]["records"][0]["modal_price"], 2500)
+        self.assertFalse(feeds["data_gov_in"]["records"][0]["cross_verified"])
+        self.assertFalse(feeds["agmarknet"]["records"][0]["three_source_verified"])
+        self.assertEqual(feeds["enam_trade"]["status"], "not_configured")
+
+    def test_source_prices_snapshot_lists_every_feed(self):
+        payload = json.loads((ROOT / "data/source_prices.json").read_text(encoding="utf-8"))
+        feeds = {feed["id"]: feed for feed in payload["feeds"]}
+        self.assertEqual(
+            set(feeds),
+            {"data_gov_in", "agmarknet", "enam_trade", "up_emandi_trade"},
+        )
+        for feed in feeds.values():
+            for record in feed["records"]:
+                self.assertEqual(record["verification_count"], 1)
+                self.assertFalse(record["cross_verified"])
+                self.assertFalse(record["three_source_verified"])
+
     def test_publication_gate_requires_matching_market_commodity_and_date(self):
         template = {
             "state": "Uttar Pradesh", "district": "Kanpur Nagar",
@@ -204,20 +240,20 @@ class OfficialDataIntegrityTests(unittest.TestCase):
     def test_weather_simulation_was_removed(self):
         self.assertFalse((ROOT / "data/weather.json").exists())
 
-    def test_six_daily_schedule(self):
+    def test_four_daily_schedule(self):
         workflow = (ROOT / ".github/workflows/update.yml").read_text(encoding="utf-8")
-        self.assertIn("0 3,7,11,15,19,23 * * *", workflow)
+        self.assertIn("0 1,7,11,15 * * *", workflow)
 
     def test_schedule_matches_the_documented_ist_slots(self):
-        """00:30, 04:30, 08:30, 12:30, 16:30 and 20:30 IST == UTC+5:30."""
-        expected = ("00:30", "04:30", "08:30", "12:30", "16:30", "20:30")
+        """01:00, 07:00, 11:00 and 15:00 UTC == the documented IST cycles."""
+        expected = ("06:30", "12:30", "16:30", "20:30")
         self.assertEqual(update_data.UPDATE_SLOTS_IST, expected)
 
         workflow = (ROOT / ".github/workflows/update.yml").read_text(encoding="utf-8")
         cron = re.search(r"cron:\s*'0 ([0-9,]+) \* \* \*'", workflow)
         self.assertIsNotNone(cron)
         utc_hours = sorted(int(hour) for hour in cron.group(1).split(","))
-        self.assertEqual(len(utc_hours), 6)
+        self.assertEqual(len(utc_hours), 4)
 
         derived = sorted(
             f"{(hour + 5) % 24:02d}:30" for hour in utc_hours
@@ -227,7 +263,7 @@ class OfficialDataIntegrityTests(unittest.TestCase):
     def test_workflow_publishes_every_official_snapshot(self):
         workflow = (ROOT / ".github/workflows/update.yml").read_text(encoding="utf-8")
         for data_file in (
-            "data/latest.json", "data/state_prices.json", "data/mandis.json",
+            "data/latest.json", "data/source_prices.json", "data/state_prices.json", "data/mandis.json",
             "data/auction.json", "data/benchmarks.json", "data/sources.json",
         ):
             self.assertIn(data_file, workflow)
