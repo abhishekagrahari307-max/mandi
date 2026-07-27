@@ -808,7 +808,21 @@
             
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
-                    .then(() => console.log('Service Worker Registered'))
+                    .then(reg => {
+                        console.log('Service Worker Registered');
+                        // Automatically update and reload the page when a new service worker is installed
+                        reg.onupdatefound = () => {
+                            const installingWorker = reg.installing;
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        console.log('New version found, clearing cache and reloading...');
+                                        window.location.reload(true);
+                                    }
+                                }
+                            };
+                        };
+                    })
                     .catch(err => console.log('Service Worker Failed to Register', err));
             }
 
