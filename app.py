@@ -15,6 +15,8 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 import database as db
+import prediction as pred_engine
+import alerts as alert_engine
 
 # Initialize Database
 db.init_db()
@@ -25,7 +27,7 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS for cross-origin live connections (e.g., from custom apps or excel plugins)
+# Enable CORS for cross-origin live connections
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,10 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# JWT configurations
 SECRET_KEY = os.environ.get("JWT_SECRET", "9ef842f824b44749a978d0c17b101cff356e9")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
@@ -65,6 +65,12 @@ class RateCreate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class SubscribeRequest(BaseModel):
+    contact_type: str # "whatsapp", "telegram"
+    contact_value: str
+    district: str = "all"
+    commodity: str = "all"
 
 # Helper functions
 def get_db():
@@ -187,16 +193,10 @@ def get_rates(
     db_sess: Session = Depends(get_db)
 ):
     query = db_sess.query(db.MandiRecord)
-    
-    # Filter by District
     if district != "all":
         query = query.filter(db.MandiRecord.district == district)
-        
-    # Filter by Commodity
     if commodity != "all":
         query = query.filter(db.MandiRecord.commodity == commodity)
-        
-    # Full Text Search
     if search:
         search_pattern = f"%{search}%"
         query = query.filter(
@@ -207,13 +207,9 @@ def get_rates(
             db.MandiRecord.commodity.like(search_pattern) |
             db.MandiRecord.commodity_hi.like(search_pattern)
         )
-        
     total_records = query.count()
-    
-    # Pagination
     offset = (page - 1) * limit
     records = query.order_by(db.MandiRecord.modal_price.desc()).offset(offset).limit(limit).all()
-    
     return {
         "total": total_records,
         "page": page,
@@ -228,7 +224,6 @@ def get_metrics(db_sess: Session = Depends(get_db)):
     active_mandis = db_sess.query(db.MandiRecord.mandi).distinct().count()
     avg_price = db_sess.query(db.MandiRecord).with_entities(db.MandiRecord.modal_price).all()
     avg_val = sum([p[0] for p in avg_price]) / len(avg_price) if avg_price else 0
-    
     return {
         "total_records": total,
         "active_mandis": active_mandis,
@@ -250,10 +245,8 @@ def update_rate(record_id: int, updated: RateCreate, current_user: db.User = Dep
     record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
-        
     for key, value in updated.dict().items():
         setattr(record, key, value)
-        
     db_sess.commit()
     db_sess.refresh(record)
     return {"message": "Mandi rate updated successfully!", "record": record}
@@ -264,7 +257,6 @@ def delete_rate(record_id: int, current_user: db.User = Depends(get_current_user
     record = db_sess.query(db.MandiRecord).filter(db.MandiRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="Mandi record not found")
-        
     db_sess.delete(record)
     db_sess.commit()
     return {"message": f"Record with ID {record_id} deleted successfully!"}
@@ -273,12 +265,8 @@ def delete_rate(record_id: int, current_user: db.User = Depends(get_current_user
 @app.post("/api/v2/update")
 def trigger_system_update(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
     print("Force Update Engine Triggered via Admin Panel...")
-    
-    # Run the scraping logic (directly inside backend to save results to DB)
     import update_data as updater
-    records = updater.generate_mock_data() # Smart-Simulation fallback is built-in
-    
-    # We drop existing and refresh with the latest scraped/synced items
+    records = updater.generate_mock_data()
     db_sess.query(db.MandiRecord).delete()
     for r in records:
         m_record = db.MandiRecord(
@@ -302,7 +290,6 @@ def trigger_system_update(current_user: db.User = Depends(get_current_user), db_
             arrival_date=r["arrival_date"]
         )
         db_sess.add(m_record)
-        
     db_sess.commit()
     return {
         "status": "success",
@@ -314,23 +301,92 @@ def trigger_system_update(current_user: db.User = Depends(get_current_user), db_
 @app.get("/api/v2/excel/sync")
 def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
     records = db_sess.query(db.MandiRecord).all()
-    
-    # Formulate CSV Headers
     csv_headers = "Record_ID,District,Mandi,Commodity,Variety,Grade,Arrivals,Min_Price,Modal_Price,Max_Price,Date,Last_Sync\n"
-    
     def generate_csv_rows():
         yield csv_headers
         for r in records:
             row = f"{r.id},{r.district},{r.mandi},{r.commodity},{r.variety},{r.grade},{r.arrivals},{r.min_price},{r.modal_price},{r.max_price},{r.arrival_date},{datetime.utcnow().isoformat()}\n"
             yield row
-            
     return StreamingResponse(
         generate_csv_rows(), 
         media_type="text/csv", 
         headers={"Content-Disposition": "attachment; filename=UP_Mandi_Live_Sync.csv"}
     )
 
-# 9. SERVE ENTERPRISE ADMIN PANEL FRONTEND
+# ================= PHASE 2 NEW ENHANCED ENDPOINTS =================
+
+# 9. AI PRICE PREDICTION ENDPOINT
+@app.get("/api/v2/prediction/{crop}")
+def get_price_prediction(crop: str):
+    """
+    Analyzes historical price data and provides AI predictions 
+    for 1-day, 3-day, and 7-day projected prices and buying/selling recommendations.
+    """
+    history_file = "data/history.json"
+    if not os.path.exists(history_file):
+        raise HTTPException(status_code=404, detail="Historical records not found")
+        
+    with open(history_file, "r", encoding="utf-8") as f:
+        history_data = json.load(f)
+        
+    # Run the regression analytics model
+    prediction_results = pred_engine.predict_future_prices(history_data, crop)
+    return prediction_results
+
+# 10. WHATSAPP/TELEGRAM ALERTS SUBSCRIBE ENDPOINT
+@app.post("/api/v2/alerts/subscribe")
+def subscribe_price_alerts(sub: SubscribeRequest, db_sess: Session = Depends(get_db)):
+    """
+    Registers a farmer or trader for automated daily WhatsApp/Telegram price alerts.
+    """
+    # Check if subscription already exists
+    existing = db_sess.query(db.AlertSubscription).filter(
+        db.AlertSubscription.contact_type == sub.contact_type,
+        db.AlertSubscription.contact_value == sub.contact_value
+    ).first()
+    
+    if existing:
+        existing.district = sub.district
+        existing.commodity = sub.commodity
+        existing.is_active = True
+        db_sess.commit()
+        return {"status": "success", "message": "सफलतापूर्वक आपकी सबरक्रिप्शन प्रोफाइल अपडेट कर दी गई है!"}
+        
+    new_sub = db.AlertSubscription(
+        contact_type=sub.contact_type,
+        contact_value=sub.contact_value,
+        district=sub.district,
+        commodity=sub.commodity
+    )
+    db_sess.add(new_sub)
+    db_sess.commit()
+    
+    # Send a quick welcome greeting
+    welcome_text = "🌾 <b>Welcome to UP Mandi Price Alerts!</b> 🌾\nVijay Kumar Traders has registered your phone. You will receive daily rate summaries as soon as Agmarknet rates update! Thank you."
+    if sub.contact_type == "telegram":
+        alert_engine.send_telegram_alert(sub.contact_value, welcome_text)
+    elif sub.contact_type == "whatsapp":
+        alert_engine.send_whatsapp_alert(sub.contact_value, welcome_text)
+        
+    return {"status": "success", "message": "सफलतापूर्वक मूल्य अलर्ट के लिए पंजीकरण हो गया है!"}
+
+# 11. FORCE BROADCAST PRICE ALERTS TO ALL ACTIVE SUBSCRIBERS (Admin Authorized)
+@app.post("/api/v2/alerts/broadcast")
+def trigger_alerts_broadcast(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
+    """
+    Triggers immediate price alert notifications to all registered subscribers.
+    """
+    records = db_sess.query(db.MandiRecord).all()
+    subscriptions = db_sess.query(db.AlertSubscription).filter(db.AlertSubscription.is_active == True).all()
+    
+    broadcast_count = alert_engine.broadcast_price_alerts(records, subscriptions)
+    return {
+        "status": "success",
+        "broadcast_sent_count": broadcast_count,
+        "message": f"Successfully broadcasted live price updates to {broadcast_count} subscribers!"
+    }
+
+# Serve Enterprise Admin Panel
 @app.get("/admin", response_class=HTMLResponse)
 def serve_admin_panel():
     with open("admin.html", "r", encoding="utf-8") as f:

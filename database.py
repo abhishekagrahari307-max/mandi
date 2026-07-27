@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -51,6 +51,18 @@ class MandiRecord(Base):
     price_unit = Column(String, default="Quintal")
     arrival_date = Column(String, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+# 3. ALERTS SUBSCRIPTION TABLE (WhatsApp / Telegram / Email Alerts)
+class AlertSubscription(Base):
+    __tablename__ = "alert_subscriptions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    contact_type = Column(String, nullable=False) # "whatsapp", "telegram", "email"
+    contact_value = Column(String, nullable=False, index=True) # phone number, chat ID, or email
+    district = Column(String, default="all") # Specific district or all
+    commodity = Column(String, default="all") # Specific crop or all
+    is_active = Column(Boolean, default=True)
+    subscribed_at = Column(DateTime, default=datetime.utcnow)
 
 # Initialize Database tables
 def init_db():
