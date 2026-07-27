@@ -957,10 +957,15 @@
                 const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
                 const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
                 
-                document.getElementById('pinned-wheat-min').innerText = `₹ ${minRec.modal_price}/Q`;
-                document.getElementById('pinned-wheat-min-mandi').innerText = minMandi;
-                document.getElementById('pinned-wheat-max').innerText = `₹ ${maxRec.modal_price}/Q`;
-                document.getElementById('pinned-wheat-max-mandi').innerText = maxMandi;
+                const elMin = document.getElementById('pinned-wheat-min');
+                const elMinM = document.getElementById('pinned-wheat-min-mandi');
+                const elMax = document.getElementById('pinned-wheat-max');
+                const elMaxM = document.getElementById('pinned-wheat-max-mandi');
+                
+                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
+                if (elMinM) elMinM.innerText = minMandi;
+                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
+                if (elMaxM) elMaxM.innerText = maxMandi;
             }
 
             const riceRecords = latestData.filter(r => r.commodity === 'Rice');
@@ -971,10 +976,15 @@
                 const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
                 const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
                 
-                document.getElementById('pinned-rice-min').innerText = `₹ ${minRec.modal_price}/Q`;
-                document.getElementById('pinned-rice-min-mandi').innerText = minMandi;
-                document.getElementById('pinned-rice-max').innerText = `₹ ${maxRec.modal_price}/Q`;
-                document.getElementById('pinned-rice-max-mandi').innerText = maxMandi;
+                const elMin = document.getElementById('pinned-rice-min');
+                const elMinM = document.getElementById('pinned-rice-min-mandi');
+                const elMax = document.getElementById('pinned-rice-max');
+                const elMaxM = document.getElementById('pinned-rice-max-mandi');
+                
+                if (elMin) elMin.innerText = `₹ ${minRec.modal_price}/Q`;
+                if (elMinM) elMinM.innerText = minMandi;
+                if (elMax) elMax.innerText = `₹ ${maxRec.modal_price}/Q`;
+                if (elMaxM) elMaxM.innerText = maxMandi;
             }
         }
 
