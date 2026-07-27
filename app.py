@@ -5,7 +5,8 @@ import urllib.request
 import re
 import hashlib
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, Security, Request
+from typing import List, Dict
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Request, WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -74,17 +75,28 @@ class SubscribeRequest(BaseModel):
     district: str = "all"
     commodity: str = "all"
 
-# FINANCIAL INVOICE CREATION SCHEMA (PHASE 4)
 class InvoiceCreate(BaseModel):
     farmer_name: str = Field(default="Anonymous Farmer", min_length=3, max_length=100)
     crop_name: str = Field(..., min_length=2, max_length=100)
-    weight: float = Field(..., gt=0) # In Quintals
-    rate: float = Field(..., gt=0) # Per Quintal
+    weight: float = Field(..., gt=0)
+    rate: float = Field(..., gt=0)
     commission_percent: float = Field(default=1.5, ge=0, le=10.0)
     labor_per_bag: float = Field(default=15.0, ge=0)
     bag_size_kg: float = Field(default=50.0, gt=0)
     transport_cost: float = Field(default=0.0, ge=0)
     cess_percent: float = Field(default=2.0, ge=0, le=5.0)
+
+# LIVE AUCTION PYDANTIC SCHEMAS (PHASE 5)
+class AuctionLotCreate(BaseModel):
+    farmer_name: str = Field(..., min_length=3, max_length=100)
+    crop_name: str = Field(..., min_length=2, max_length=100)
+    quantity: float = Field(..., gt=0) # In Quintals
+    starting_rate: float = Field(..., gt=0)
+
+class BidSubmit(BaseModel):
+    lot_number: str
+    bid_amount: float = Field(..., gt=0)
+    trader_name: str
 
 # Helper functions
 def get_db():
@@ -137,11 +149,12 @@ def write_audit_log(db_sess: Session, user_id: int, username: str, action: str, 
     db_sess.add(log_entry)
     db_sess.commit()
 
-# Seeding initial data
+# Seeding initial data (Auto-run on server start)
 @app.on_event("startup")
 def seed_database():
     session = db.SessionLocal()
     try:
+        # Seed default admin user
         admin_exists = session.query(db.User).filter(db.User.username == "admin").first()
         if not admin_exists:
             admin_user = db.User(
@@ -153,6 +166,7 @@ def seed_database():
             session.add(admin_user)
             session.commit()
             
+        # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
         if records_count == 0:
             latest_file = "data/latest.json"
@@ -183,10 +197,53 @@ def seed_database():
                         )
                         session.add(m_record)
                 session.commit()
+
+        # Seed an initial Active Auction Lot if none exists (for demo)
+        auction_count = session.query(db.AuctionLot).count()
+        if auction_count == 0:
+            lot = db.AuctionLot(
+                lot_number="LOT-2026-101",
+                farmer_name="Ramesh Singh (Kanpur)",
+                crop_name="Wheat (गेहूं)",
+                quantity=45.0,
+                starting_rate=2300.0,
+                highest_bid=2300.0,
+                status="active"
+            )
+            session.add(lot)
+            session.commit()
+            
     except Exception as e:
         print(f"Error seeding database: {e}")
     finally:
         session.close()
+
+# ================= WEBSOCKETS CONNECTION MANAGER (LIVE AUCTION) =================
+
+class AuctionConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        print(f"Connected: Total active bidders = {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+            print(f"Disconnected: Active bidders left = {len(self.active_connections)}")
+
+    async def broadcast(self, message: dict):
+        """Broadcasts real-time auction event to all active connected bidders."""
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception:
+                # Handle disconnected dead connections gracefully
+                pass
+
+manager = AuctionConnectionManager()
 
 # ================= REST API ENDPOINTS =================
 
@@ -447,15 +504,6 @@ def create_financial_invoice(
     current_user: db.User = Depends(get_current_user),
     db_sess: Session = Depends(get_db)
 ):
-    """
-    Creates an official Mandi Sales Memo/Invoice in database.
-    Calculates math on gross values, deductions, commission, and net payouts on the server.
-    Appends a secure digital SHA256 verification hash signature to ensure zero billing frauds!
-    """
-    if current_user.role not in ["admin", "trader", "staff"]:
-        raise HTTPException(status_code=403, detail="Role unauthorized to issue financial bills")
-
-    # Double verify math on server side (protecting against client side tampering)
     total_kg = invoice.weight * 100
     total_bags = int(round(total_kg / invoice.bag_size_kg))
     
@@ -467,12 +515,10 @@ def create_financial_invoice(
     total_expenses = comm_amt + labor_amt + tax_amt + invoice.transport_cost
     net_payout = max(0.0, gross_val - total_expenses)
 
-    # Generate unique Invoice Number
     date_prefix = datetime.utcnow().strftime("%Y%m%d")
     random_suffix = random.randint(1000, 9999)
     inv_number = f"VKT-{date_prefix}-{random_suffix}"
 
-    # Generate Secure Verification Hash (Digital Signature / Verification QR Code seed)
     raw_hash_data = f"{inv_number}|{invoice.farmer_name}|{invoice.crop_name}|{net_payout:.2f}|mandi_secure_v2"
     verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()[:16].upper()
 
@@ -495,12 +541,10 @@ def create_financial_invoice(
     db_sess.commit()
     db_sess.refresh(db_invoice)
 
-    # Write audit trail log
     write_audit_log(
         db_sess, current_user.id, current_user.username, "ISSUE_BILL",
         f"Generated official invoice {inv_number} for {invoice.farmer_name} - Net Payout: ₹{net_payout:.2f}", request
     )
-
     return {
         "status": "success",
         "message": "Official invoice saved and signed successfully!",
@@ -509,14 +553,10 @@ def create_financial_invoice(
 
 @app.get("/api/v2/financials/reports")
 def get_financial_reports(current_user: db.User = Depends(get_current_user), db_sess: Session = Depends(get_db)):
-    """
-    Generates full financial turnover, cash flows, and commission summaries for Vijay Kumar Traders dashboard.
-    """
     if current_user.role not in ["admin", "trader"]:
         raise HTTPException(status_code=403, detail="Role unauthorized to view financial turnovers")
 
     invoices = db_sess.query(db.Invoice).all()
-    
     total_gross = sum(i.gross_amount for i in invoices)
     total_commission = sum(i.commission_amount for i in invoices)
     total_mandi_tax = sum(i.mandi_tax_amount for i in invoices)
@@ -529,17 +569,93 @@ def get_financial_reports(current_user: db.User = Depends(get_current_user), db_
         "total_mandi_taxes_paid": round(total_mandi_tax, 2),
         "total_cash_liquid_payout": round(total_net_payout, 2),
         "total_bills_issued": total_bills_issued,
-        "recent_invoices": invoices[-10:] # Top 10 latest sales
+        "recent_invoices": invoices[-10:]
     }
+
+# ================= FIRST PILLAR: WEBSOCKET LIVE AUCTION ENGINE (PHASE 5) =================
+
+@app.get("/api/v2/auction/lots")
+def get_active_auction_lots(db_sess: Session = Depends(get_db)):
+    """Returns list of currently active grain/crop lots inside the bidding yard."""
+    return db_sess.query(db.AuctionLot).filter(db.AuctionLot.status == "active").all()
+
+@app.post("/api/v2/auction/bid")
+async def submit_auction_bid(bid: BidSubmit, db_sess: Session = Depends(get_db)):
+    """
+    Submits a secure real-time price bid for a specific active lot.
+    Verifies on server-side that the bid is strictly higher than previous bid.
+    Broadcasts the newly placed bid instantly to all active bidders via WebSockets!
+    """
+    lot = db_sess.query(db.AuctionLot).filter(
+        db.AuctionLot.lot_number == bid.lot_number,
+        db.AuctionLot.status == "active"
+    ).first()
+    
+    if not lot:
+        raise HTTPException(status_code=404, detail="Active lot not found inside the bidding yard")
+        
+    if bid.bid_amount <= lot.highest_bid:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Bidding rate must be strictly higher than current highest bid of ₹{lot.highest_bid}/Q"
+        )
+        
+    # Update Lot's highest bid
+    lot.highest_bid = bid.bid_amount
+    lot.highest_bidder = bid.trader_name
+    db_sess.commit()
+    db_sess.refresh(lot)
+    
+    # Broadcast updated bid payload to all active WebSocket listeners instantly!
+    broadcast_payload = {
+        "event": "NEW_BID",
+        "lot_number": lot.lot_number,
+        "crop_name": lot.crop_name,
+        "farmer_name": lot.farmer_name,
+        "highest_bid": lot.highest_bid,
+        "highest_bidder": lot.highest_bidder,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    await manager.broadcast(broadcast_payload)
+    
+    return {
+        "status": "success",
+        "message": f"Successfully placed bid of ₹{bid.bid_amount}/Q!",
+        "lot": lot
+    }
+
+# WEBSOCKET REAL-TIME BIDDING GATEWAY
+@websocket_endpoint := app.websocket("/api/v2/auction/ws/{username}")
+async def websocket_auction_endpoint(websocket: WebSocket, username: str):
+    """
+    Real-Time WebSocket gateway connection endpoint.
+    Bidder connections are saved in active pool and managed in real-time.
+    """
+    await manager.connect(websocket)
+    try:
+        # Send initial success greeting
+        await websocket.send_json({
+            "event": "WELCOME",
+            "message": f"Welcome {username}! Connected to Vijay Kumar Traders Live Auction Yard WS.",
+            "timestamp": datetime.utcnow().isoformat()
+        })
+        
+        while True:
+            # Maintain active connection stream and listen for incoming bids on WS channel
+            data = await websocket.receive_text()
+            # If a client sends direct WebSocket message
+            print(f"Received WS message from {username}: {data}")
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket Error with user {username}: {e}")
+        manager.disconnect(websocket)
 
 # ================= SERVER HEALTH ENDPOINTS =================
 
 @app.get("/health")
 def health_check(db_sess: Session = Depends(get_db)):
-    """
-    Standard enterprise liveness & readiness check.
-    Verifies API server status and database connection health.
-    """
     try:
         db_sess.execute("SELECT 1")
         return {

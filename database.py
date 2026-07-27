@@ -82,7 +82,7 @@ class AuditLog(Base):
     ip_address = Column(String, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-# 5. ENTERPRISE FINANCIAL INVOICES TABLE (NEW PHASE 4 FINANCIAL MODULE)
+# 5. ENTERPRISE FINANCIAL INVOICES TABLE
 class Invoice(Base):
     __tablename__ = "financial_invoices"
     
@@ -98,7 +98,22 @@ class Invoice(Base):
     mandi_tax_amount = Column(Float, default=0.0)
     transport_amount = Column(Float, default=0.0)
     net_payout = Column(Float, nullable=False)
-    verification_hash = Column(String, nullable=True) # Security digital signature
+    verification_hash = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# 6. ENTERPRISE LIVE AUCTION TABLE (NEW PHASE 5 LIVE AUCTION ENGINE)
+class AuctionLot(Base):
+    __tablename__ = "auction_lots"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    lot_number = Column(String, unique=True, index=True, nullable=False)
+    farmer_name = Column(String, default="Vijay Kumar")
+    crop_name = Column(String, nullable=False)
+    quantity = Column(Float, nullable=False) # In Quintals
+    starting_rate = Column(Float, nullable=False) # Per Quintal
+    highest_bid = Column(Float, nullable=False)
+    highest_bidder = Column(String, nullable=True) # Username of trader with highest bid
+    status = Column(String, default="active") # "active", "completed", "cancelled"
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Initialize Database tables
