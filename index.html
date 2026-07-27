@@ -175,52 +175,58 @@
         <div id="section-rates" class="space-y-4">
         <!-- 🌾 COMBINED WHEAT & RICE PRIMARY SECTION (मुख्य जिंस: गेहूं एवं चावल) 🌾 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Wheat Card -->
-            <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border-2 border-amber-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 text-amber-200/20">
+            <!-- Wheat Card (Highest vs Lowest in State) -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border-2 border-amber-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-amber-200/10">
                     <i data-lucide="wheat" class="w-24 h-24"></i>
                 </div>
-                <div class="space-y-2 relative z-10">
-                    <div class="flex items-center space-x-2">
+                <div class="space-y-3 relative z-10">
+                    <div class="flex items-center space-x-2 border-b border-amber-200/50 pb-2">
                         <span class="p-1.5 bg-amber-500/10 rounded-lg text-amber-700">
                             <i data-lucide="wheat" class="w-5 h-5"></i>
                         </span>
-                        <h4 class="font-extrabold text-amber-900 text-xs tracking-wide uppercase" data-translate="pinned_wheat_title">मुख्य अनाज: गेहूं भाव (Wheat Today)</h4>
+                        <h4 class="font-extrabold text-amber-900 text-xs tracking-wide uppercase" data-translate="pinned_wheat_title">गेहूं मूल्य सीमा (Wheat Price Spread - All Districts)</h4>
                     </div>
-                    <div class="flex items-baseline space-x-2">
-                        <span id="pinned-wheat-price" class="text-3xl font-black text-amber-800">₹ -</span>
-                        <span class="text-xs font-semibold text-amber-600 bg-amber-100/50 px-2 py-0.5 rounded-full" data-translate="per_quintal">प्रति क्विंटल</span>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="bg-white/80 p-3 rounded-xl border border-amber-100 shadow-inner">
+                            <span class="text-[10px] font-bold text-emerald-600 uppercase block tracking-wider">📈 सर्वोच्च भाव (Highest)</span>
+                            <span id="pinned-wheat-max" class="text-lg font-black text-emerald-800">₹ -</span>
+                            <span id="pinned-wheat-max-mandi" class="block text-[10px] text-slate-500 font-bold mt-1">-</span>
+                        </div>
+                        <div class="bg-white/80 p-3 rounded-xl border border-amber-100 shadow-inner">
+                            <span class="text-[10px] font-bold text-amber-600 uppercase block tracking-wider">📉 न्यूनतम भाव (Lowest)</span>
+                            <span id="pinned-wheat-min" class="text-lg font-black text-emerald-800">₹ -</span>
+                            <span id="pinned-wheat-min-mandi" class="block text-[10px] text-slate-500 font-bold mt-1">-</span>
+                        </div>
                     </div>
-                    <p class="text-xs text-amber-700/80 font-medium" id="pinned-wheat-desc">उत्तर प्रदेश की मंडियों का आज का औसत भाव</p>
                 </div>
-                <button onclick="quickAddStaple('Wheat')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-amber-700/10 relative z-10">
-                    <i data-lucide="calculator" class="w-4 h-4"></i>
-                    <span data-translate="btn_quick_calc">कैलकुलेटर</span>
-                </button>
             </div>
 
-            <!-- Rice Card -->
-            <div class="bg-gradient-to-br from-emerald-50 to-green-50/30 border-2 border-emerald-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 text-emerald-200/20">
+            <!-- Rice Card (Highest vs Lowest in State) -->
+            <div class="bg-gradient-to-br from-emerald-50 to-green-50/30 border-2 border-emerald-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-emerald-200/10">
                     <i data-lucide="sprout" class="w-24 h-24"></i>
                 </div>
-                <div class="space-y-2 relative z-10">
-                    <div class="flex items-center space-x-2">
+                <div class="space-y-3 relative z-10">
+                    <div class="flex items-center space-x-2 border-b border-emerald-200/50 pb-2">
                         <span class="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-700">
                             <i data-lucide="sprout" class="w-5 h-5"></i>
                         </span>
-                        <h4 class="font-extrabold text-emerald-900 text-sm tracking-wide uppercase" data-translate="pinned_rice_title">मुख्य अनाज: चावल भाव (Rice Today)</h4>
+                        <h4 class="font-extrabold text-emerald-900 text-sm tracking-wide uppercase" data-translate="pinned_rice_title">चावल मूल्य सीमा (Rice Price Spread - All Districts)</h4>
                     </div>
-                    <div class="flex items-baseline space-x-2">
-                        <span id="pinned-rice-price" class="text-3xl font-black text-emerald-800">₹ -</span>
-                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full" data-translate="per_quintal">प्रति क्विंटल</span>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="bg-white/80 p-3 rounded-xl border border-emerald-100 shadow-inner">
+                            <span class="text-[10px] font-bold text-emerald-600 uppercase block tracking-wider">📈 सर्वोच्च भाव (Highest)</span>
+                            <span id="pinned-rice-max" class="text-lg font-black text-emerald-800">₹ -</span>
+                            <span id="pinned-rice-max-mandi" class="block text-[10px] text-slate-500 font-bold mt-1">-</span>
+                        </div>
+                        <div class="bg-white/80 p-3 rounded-xl border border-emerald-100 shadow-inner">
+                            <span class="text-[10px] font-bold text-amber-600 uppercase block tracking-wider">📉 न्यूनतम भाव (Lowest)</span>
+                            <span id="pinned-rice-min" class="text-lg font-black text-emerald-800">₹ -</span>
+                            <span id="pinned-rice-min-mandi" class="block text-[10px] text-slate-500 font-bold mt-1">-</span>
+                        </div>
                     </div>
-                    <p class="text-xs text-emerald-700/80 font-medium" id="pinned-rice-desc">उत्तर प्रदेश की मंडियों का आज का औसत भाव</p>
                 </div>
-                <button onclick="quickAddStaple('Rice')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-emerald-700/10 relative z-10">
-                    <i data-lucide="calculator" class="w-4 h-4"></i>
-                    <span data-translate="btn_quick_calc">कैलकुलेटर</span>
-                </button>
             </div>
         </div>
 
@@ -1176,18 +1182,41 @@
 
         // ================= HIGHLIGHTED COMBINED WHEAT & RICE SECTION (STAPLES) =================
         function updatePinnedStaples() {
-            // Calculate dynamic state-wide average modal price for Wheat (गेहूं)
+            // 1. Calculate dynamic state-wide Min and Max for Wheat (गेहूं)
             const wheatRecords = latestData.filter(r => r.commodity === 'Wheat');
             if (wheatRecords.length > 0) {
-                const avgWheat = Math.round(wheatRecords.reduce((sum, r) => sum + r.modal_price, 0) / wheatRecords.length);
-                document.getElementById('pinned-wheat-price').innerText = `₹ ${avgWheat.toLocaleString('en-IN')}`;
+                // Sort ascending to find min and max
+                wheatRecords.sort((a, b) => a.modal_price - b.modal_price);
+                
+                const minRec = wheatRecords[0];
+                const maxRec = wheatRecords[wheatRecords.length - 1];
+                
+                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
+                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
+                
+                document.getElementById('pinned-wheat-min').innerText = `₹ ${minRec.modal_price}/Q`;
+                document.getElementById('pinned-wheat-min-mandi').innerText = minMandi;
+                
+                document.getElementById('pinned-wheat-max').innerText = `₹ ${maxRec.modal_price}/Q`;
+                document.getElementById('pinned-wheat-max-mandi').innerText = maxMandi;
             }
 
-            // Calculate dynamic state-wide average modal price for Rice (चावल)
+            // 2. Calculate dynamic state-wide Min and Max for Rice (चावल)
             const riceRecords = latestData.filter(r => r.commodity === 'Rice');
             if (riceRecords.length > 0) {
-                const avgRice = Math.round(riceRecords.reduce((sum, r) => sum + r.modal_price, 0) / riceRecords.length);
-                document.getElementById('pinned-rice-price').innerText = `₹ ${avgRice.toLocaleString('en-IN')}`;
+                riceRecords.sort((a, b) => a.modal_price - b.modal_price);
+                
+                const minRec = riceRecords[0];
+                const maxRec = riceRecords[riceRecords.length - 1];
+                
+                const minMandi = currentLang === 'hi' ? `${minRec.mandi_hi} (${minRec.district_hi})` : `${minRec.mandi} (${minRec.district})`;
+                const maxMandi = currentLang === 'hi' ? `${maxRec.mandi_hi} (${maxRec.district_hi})` : `${maxRec.mandi} (${maxRec.district})`;
+                
+                document.getElementById('pinned-rice-min').innerText = `₹ ${minRec.modal_price}/Q`;
+                document.getElementById('pinned-rice-min-mandi').innerText = minMandi;
+                
+                document.getElementById('pinned-rice-max').innerText = `₹ ${maxRec.modal_price}/Q`;
+                document.getElementById('pinned-rice-max-mandi').innerText = maxMandi;
             }
         }
 
