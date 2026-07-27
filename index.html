@@ -1121,10 +1121,11 @@
         }
 
         function switchTab(tabId) {
-            const sections = ['rates', 'trends', 'auction', 'ranking', 'calculator', 'weather', 'info'];
+            const sections = ['rates', 'trends', 'ranking', 'calculator', 'weather', 'info'];
             
             sections.forEach(sec => {
-                document.getElementById(`section-${sec}`).classList.add('hidden');
+                const secEl = document.getElementById(`section-${sec}`);
+                if (secEl) secEl.classList.add('hidden');
                 
                 const dBtn = document.getElementById(`tab-btn-${sec}`);
                 if (dBtn) {
