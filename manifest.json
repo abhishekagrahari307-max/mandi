@@ -1,0 +1,22 @@
+{
+  "name": "Uttar Pradesh Mandi Dashboard",
+  "short_name": "UP Mandi",
+  "description": "उत्तर प्रदेश लाइव मंडी भाव और डिजिटल गणना बिल रसीद कैलकुलेटर",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#065f46",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
