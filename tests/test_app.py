@@ -61,6 +61,23 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertLessEqual(len(response.json()["records"]), 2)
 
+    def test_auction_does_not_create_local_bids(self):
+        snapshot = self.client.get("/api/v2/auction/lots")
+        self.assertEqual(snapshot.status_code, 200)
+        self.assertIn("lots", snapshot.json())
+
+        bid = self.client.post("/api/v2/auction/bid", json={
+            "lot_number": "FAKE-LOT",
+            "bid_amount": 2500,
+            "trader_name": "Test Trader",
+        })
+        self.assertEqual(bid.status_code, 503)
+        self.assertIn("official e-NAM", bid.text)
+
+    def test_prediction_refuses_unverified_history(self):
+        response = self.client.get("/api/v2/prediction/Wheat")
+        self.assertEqual(response.status_code, 503)
+
 
 if __name__ == "__main__":
     unittest.main()

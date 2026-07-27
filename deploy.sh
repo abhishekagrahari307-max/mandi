@@ -70,5 +70,5 @@ echo "   🔗 आपका dashboard (1–2 मिनट में चालू)
 echo "      https://${USER}.github.io/${REPO_NAME}/"
 echo
 echo "   📱 फोन में खोलकर 'Add to Home Screen' करें"
-echo "   🔄 भाव दिन में 4 बार अपने आप update होंगे"
+echo "   🔄 भाव दिन में 6 बार अपने आप update होंगे"
 echo

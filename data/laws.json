@@ -1,0 +1,142 @@
+{
+  "title_hi": "उत्तर प्रदेश कृषि उत्पादन मण्डी अधिनियम एवं नियमावली",
+  "title_en": "Uttar Pradesh Agricultural Produce Market Act and Rules",
+  "last_reviewed": "2026-07-27",
+  "disclaimer_hi": "यह सुविधाजनक धारा-सूची है, कानूनी सलाह नहीं। किसी विवाद, शुल्क या अनुपालन के लिए नवीनतम राजपत्र, अधिनियम, नियमावली और संबंधित मंडी समिति के आदेश को ही अंतिम मानें।",
+  "disclaimer_en": "This is a navigation summary, not legal advice. The latest Gazette, Act, Rules and orders of the relevant Mandi Samiti prevail for compliance, fees and disputes.",
+  "official_sources": [
+    {
+      "name": "India Code — U.P. Krishi Utpadan Mandi Adhiniyam, 1964",
+      "url": "https://www.indiacode.nic.in/bitstream/123456789/15730/1/english25of1964.pdf"
+    },
+    {
+      "name": "India Code — U.P. Krishi Utpadan Mandi Niyamawali, 1965",
+      "url": "https://upload.indiacode.nic.in/showfile?actid=AC_UP_88_1449_00001_00001_1606284687214&filename=mandi_niyamwali_1965_english.pdf&type=rule"
+    },
+    {
+      "name": "UP Mandi Parishad — Act section index",
+      "url": "http://mandiprojects.in/NIPL/Niyamawali/Home.aspx"
+    },
+    {
+      "name": "UP e-Mandi — licence conditions",
+      "url": "https://emandi.up.gov.in/application/license_reg_points"
+    }
+  ],
+  "chapters": [
+    {
+      "chapter": "अध्याय I",
+      "title_hi": "प्रारम्भिक",
+      "title_en": "Preliminary",
+      "sections": [
+        {"number": "1", "title_hi": "संक्षिप्त नाम और विस्तार", "title_en": "Short title and extent"},
+        {"number": "2", "title_hi": "परिभाषाएँ", "title_en": "Definitions"},
+        {"number": "2-क", "title_hi": "कृषक/उत्पादक को विपणन स्वतंत्रता", "title_en": "Marketing freedom to agriculturist/producer"},
+        {"number": "3", "title_hi": "लोप किया गया", "title_en": "Omitted"},
+        {"number": "4", "title_hi": "अन्य विधि से असंगति", "title_en": "Repugnancy with other law"},
+        {"number": "4-क", "title_hi": "अनुसूची में संशोधन की शक्ति", "title_en": "Power to amend Schedule"}
+      ]
+    },
+    {
+      "chapter": "अध्याय II",
+      "title_hi": "मण्डी क्षेत्र तथा मण्डी स्थल",
+      "title_en": "Market areas and market yards",
+      "sections": [
+        {"number": "5", "title_hi": "क्रय-विक्रय विनियमन की घोषणा", "title_en": "Declaration of intention to regulate trade"},
+        {"number": "6", "title_hi": "मण्डी क्षेत्र की घोषणा", "title_en": "Declaration of market area"},
+        {"number": "7", "title_hi": "प्रधान मण्डी स्थल और उप-मण्डी स्थल", "title_en": "Principal and sub-market yards"},
+        {"number": "7-क", "title_hi": "वेयरहाउस, साइलो और शीतगृह को उप-मण्डी स्थल", "title_en": "Warehouse/silo/cold storage as sub-yard"},
+        {"number": "7-ख", "title_hi": "सीधा विपणन", "title_en": "Direct marketing"},
+        {"number": "7-ग", "title_hi": "विशिष्ट जिन्स मण्डी स्थल", "title_en": "Special commodity market yard"},
+        {"number": "7-घ", "title_hi": "निजी मण्डी स्थल", "title_en": "Private market yard"},
+        {"number": "8", "title_hi": "मण्डी क्षेत्र और कृषि उत्पादन सूची में परिवर्तन", "title_en": "Alteration of market area and produce list"},
+        {"number": "9", "title_hi": "मण्डी क्षेत्र घोषणा का प्रभाव", "title_en": "Effect of declaration"},
+        {"number": "10", "title_hi": "अनधिकृत व्यापारिक परिव्यय निषिद्ध", "title_en": "No unauthorised trade charges"},
+        {"number": "11", "title_hi": "मण्डी स्थल उपबन्धों का शेष क्षेत्र में विस्तार", "title_en": "Extension of market-yard provisions"}
+      ]
+    },
+    {
+      "chapter": "अध्याय III",
+      "title_hi": "मण्डी समिति",
+      "title_en": "Market Committee",
+      "sections": [
+        {"number": "12", "title_hi": "समिति की स्थापना और निगमन", "title_en": "Establishment and incorporation"},
+        {"number": "13–16", "title_hi": "समिति का संगठन, सदस्यता, निलम्बन, विघटन और कर्तव्य", "title_en": "Composition, membership, suspension, dissolution and duties"},
+        {"number": "17", "title_hi": "समिति के अधिकार", "title_en": "Powers of Committee"},
+        {"number": "18", "title_hi": "समिति की ओर से संविदाएँ", "title_en": "Contracts on behalf of Committee"},
+        {"number": "19", "title_hi": "मण्डी समिति निधि और उपयोग", "title_en": "Mandi Samiti Fund and its use"},
+        {"number": "19-क/19-ख", "title_hi": "दायित्वों की प्राथमिकता और मण्डी विकास निधि", "title_en": "Priority of liabilities and development fund"},
+        {"number": "20", "title_hi": "देय धन की वसूली", "title_en": "Recovery of sums due"},
+        {"number": "21", "title_hi": "अधिभार", "title_en": "Surcharge"}
+      ]
+    },
+    {
+      "chapter": "अध्याय IV",
+      "title_hi": "समिति के अधिकारी तथा सेवक",
+      "title_en": "Officers and employees",
+      "sections": [
+        {"number": "22", "title_hi": "सभापति और उप-सभापति के अधिकार", "title_en": "Powers of Chairperson and Vice-Chairperson"},
+        {"number": "23/23-क", "title_hi": "अधिकारी, सेवक और केन्द्रीय सेवा", "title_en": "Officers, employees and centralised service"},
+        {"number": "24", "title_hi": "सचिव के कृत्य, अधिकार और कर्तव्य", "title_en": "Functions, powers and duties of Secretary"},
+        {"number": "25/25-क", "title_hi": "अपील और सेवा शर्तें", "title_en": "Appeals and service conditions"},
+        {"number": "26", "title_hi": "सद्भावना में कार्य करने वाले व्यक्तियों का संरक्षण", "title_en": "Protection for action taken in good faith"}
+      ]
+    },
+    {
+      "chapter": "अध्याय V",
+      "title_hi": "परिषद और बाह्य नियंत्रण",
+      "title_en": "Board and external control",
+      "sections": [
+        {"number": "26-क से 26-भ", "title_hi": "परिषद की स्थापना, संगठन, शक्तियाँ, निधि, लेखा, ऋण और विनियम", "title_en": "Board establishment, organisation, powers, funds, accounts, loans and regulations"},
+        {"number": "27", "title_hi": "निदेशक के कर्तव्य और अधिकार", "title_en": "Duties and powers of Director"},
+        {"number": "28–30", "title_hi": "लोप किया गया", "title_en": "Omitted"},
+        {"number": "31", "title_hi": "समिति के संकल्प/आदेश पर राज्य सरकार का नियंत्रण", "title_en": "State control over Committee resolutions/orders"},
+        {"number": "32", "title_hi": "कार्यवाही मँगाने और आदेश देने की परिषद की शक्ति", "title_en": "Board power to call proceedings and issue orders"},
+        {"number": "33", "title_hi": "परिषद की शक्तियों का प्रत्यायोजन", "title_en": "Delegation of Board powers"},
+        {"number": "33-क/33-ख", "title_hi": "निदेशक और राज्य सरकार की पर्यवेक्षण शक्तियाँ", "title_en": "Supervisory powers of Director and State Government"},
+        {"number": "33-ग/33-घ", "title_hi": "निजी मण्डी लाइसेंस और नवीकरण", "title_en": "Private market licence and renewal"},
+        {"number": "33-ङ/33-च", "title_hi": "सीधा विपणन लाइसेंस, निलम्बन और रद्दकरण", "title_en": "Direct marketing licence, suspension and cancellation"}
+      ]
+    },
+    {
+      "chapter": "अध्याय VI",
+      "title_hi": "विविध, प्रवर्तन और दण्ड",
+      "title_en": "Miscellaneous, enforcement and penalties",
+      "sections": [
+        {"number": "34", "title_hi": "समिति के विरुद्ध वाद", "title_en": "Suits against Committee"},
+        {"number": "35", "title_hi": "देयों की भू-राजस्व की तरह वसूली", "title_en": "Recovery as arrears of land revenue"},
+        {"number": "36", "title_hi": "प्रवेश, तलाशी और अभिग्रहण", "title_en": "Entry, search and seizure"},
+        {"number": "37", "title_hi": "शास्ति", "title_en": "Penalties"},
+        {"number": "37-क", "title_hi": "अपराध का शमन", "title_en": "Compounding of offences"},
+        {"number": "38", "title_hi": "अपराधों पर विचार", "title_en": "Cognizance of offences"},
+        {"number": "39", "title_hi": "उपविधियाँ", "title_en": "Bye-laws"},
+        {"number": "40", "title_hi": "नियम बनाने की शक्ति", "title_en": "Power to make rules"}
+      ]
+    }
+  ],
+  "practical_rules": [
+    {
+      "title_hi": "लाइसेंस और अधिकृत व्यापार",
+      "title_en": "Licence and authorised trade",
+      "detail_hi": "अधिसूचित कृषि उपज के क्रय-विक्रय, भंडारण, तौल या प्रसंस्करण के लिए लागू लाइसेंस और संबंधित मण्डी उपविधियों का पालन करें।",
+      "detail_en": "Follow applicable licensing and the relevant market bye-laws for trade, storage, weighment or processing of notified produce."
+    },
+    {
+      "title_hi": "इलेक्ट्रॉनिक अभिलेख और प्रपत्र",
+      "title_en": "Electronic records and forms",
+      "detail_hi": "ई-मण्डी पर सौदे, प्रपत्र-6, प्रपत्र-9, स्टॉक रजिस्टर और गेटपास को समय पर दर्ज/सत्यापित करें। आवश्यक प्रपत्र लेन-देन के प्रकार पर निर्भर हैं।",
+      "detail_en": "Record and verify trades, Form 6, Form 9, stock registers and gate passes on time. Required forms depend on the transaction."
+    },
+    {
+      "title_hi": "सही तौल, गुणवत्ता और भुगतान",
+      "title_en": "Correct weighment, quality and payment",
+      "detail_hi": "मान्य तौल उपकरण, घोषित गुणवत्ता/ग्रेड, निष्पक्ष नीलामी और विक्रेता को समयबद्ध भुगतान सुनिश्चित करें।",
+      "detail_en": "Use valid weighing instruments, declare quality/grade, ensure fair auction and make timely payment to the seller."
+    },
+    {
+      "title_hi": "शुल्क और सेस",
+      "title_en": "Fees and cess",
+      "detail_hi": "दरें, छूट और देयता समय-समय पर अधिसूचना से बदल सकती हैं। पोर्टल किसी एक स्थिर दर को कानूनी अंतिम दर नहीं मानता; संबंधित मण्डी समिति से नवीनतम दर सत्यापित करें।",
+      "detail_en": "Rates, exemptions and liability can change by notification. Verify the latest applicable rate with the relevant Mandi Samiti."
+    }
+  ]
+}

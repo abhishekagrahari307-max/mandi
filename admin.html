@@ -103,7 +103,7 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
                     <div>
                         <span class="block text-xs font-bold text-slate-400 uppercase">ऑटो सिंक आवृति</span>
-                        <span class="text-lg font-extrabold text-white mt-1 block">4 बार दैनिक (Daily)</span>
+                        <span class="text-lg font-extrabold text-white mt-1 block">6 बार दैनिक (Daily)</span>
                     </div>
                     <div class="p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
                         <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-400"></i>
@@ -427,7 +427,7 @@
                 loadRates();
             })
             .catch(err => {
-                alert("स्क्रैपिंग पूर्ण हुई या समय सीमा समाप्त हो गई (सरकारी सर्वर एरर)। रीलोड करके डेटा देखें।");
+                alert("Official update असफल रही। कोई नया data save नहीं हुआ; पिछला verified snapshot सुरक्षित है।");
             })
             .finally(() => {
                 icon.classList.remove('animate-spin');
