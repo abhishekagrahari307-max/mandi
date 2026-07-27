@@ -1293,31 +1293,32 @@
 
             const host = window.location.origin;
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const timestamp = new Date().getTime();
 
-            // Production-grade router: directly fetch from data/latest.json if on GitHub Pages
+            // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
             const fetchLatest = isLocal
                 ? fetch(`${host}/api/v2/rates?limit=500`)
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();
                     })
-                    .catch(() => fetch('data/latest.json').then(res => res.json()))
+                    .catch(() => fetch(`data/latest.json?t=${timestamp}`).then(res => res.json()))
                     .catch(() => ({ records: [] }))
-                : fetch('data/latest.json')
+                : fetch(`data/latest.json?t=${timestamp}`)
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();
                     })
                     .catch(() => ({ records: [] }));
 
-            const fetchHistory = fetch('data/history.json')
+            const fetchHistory = fetch(`data/history.json?t=${timestamp}`)
                 .then(res => {
                     if (!res.ok) throw new Error();
                     return res.json();
                 })
                 .catch(() => ({}));
 
-            const fetchWeather = fetch('data/weather.json')
+            const fetchWeather = fetch(`data/weather.json?t=${timestamp}`)
                 .then(res => {
                     if (!res.ok) throw new Error();
                     return res.json();
