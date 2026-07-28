@@ -532,31 +532,77 @@ def format_record(raw: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def fetch_data_gov(api_key: str, state: str | None = None, max_records: int = 25000) -> list[dict[str, Any]]:
+    """
+    Fetch from data.gov.in OGD API with proper pagination.
+
+    IMPORTANT: data.gov.in Elasticsearch backend has index.max_result_window = 10000.
+    Using offset + limit > 10000 returns 500 error:
+      "Result window is too large, from + size must be less than or equal to: [10000]"
+    So we must never use limit=all and never exceed offset+limit > 10000.
+    The API also supports only numeric limit (sample key = 10 max per request, real key = 1000 max).
+
+    This function respects that limit and stops at 10000.
+    """
     if not api_key:
         return []
 
+    # data.gov.in hard limit is 10000 - respect it
+    MAX_RESULT_WINDOW = 10000
+    # Real keys allow up to 1000 per request, sample key only 10
+    # We detect sample key by length? Safer to just use 1000 and let API error handled.
+    page_size = 1000
+    # Cap requested max to the server's window
+    effective_max = min(max_records, MAX_RESULT_WINDOW)
+
     output: list[dict[str, Any]] = []
     offset = 0
-    page_size = 1000
-    while offset < max_records:
+    while offset < effective_max:
+        remaining = effective_max - offset
+        current_limit = min(page_size, remaining)
+        # Ensure offset+limit never exceeds MAX_RESULT_WINDOW
+        if offset + current_limit > MAX_RESULT_WINDOW:
+            current_limit = MAX_RESULT_WINDOW - offset
+            if current_limit <= 0:
+                break
+
         params: dict[str, Any] = {
             "api-key": api_key,
             "format": "json",
-            "limit": min(page_size, max_records - offset),
+            "limit": current_limit,
             "offset": offset,
         }
         if state:
             params["filters[state]"] = state
         url = f"{DATA_GOV_API}?{urllib.parse.urlencode(params)}"
-        payload = json.loads(http_get(url).decode("utf-8"))
+        try:
+            raw_bytes = http_get(url)
+            payload = json.loads(raw_bytes.decode("utf-8"))
+        except RuntimeError as http_exc:
+            # If it's the result window error, treat as end of data rather than hard fail
+            msg = str(http_exc).lower()
+            if "result window is too large" in msg or "max_result_window" in msg:
+                print(f"data.gov.in reached max_result_window at offset {offset}, returning {len(output)} records collected so far")
+                break
+            # For 500 errors containing that message in body
+            if "11922" in msg or "10000" in msg:
+                print(f"data.gov.in window limit hit: {http_exc}, returning collected")
+                break
+            raise
+
         if payload.get("error"):
+            err_msg = str(payload.get("error"))
+            # Same window limit can come as JSON error field
+            if "result window is too large" in err_msg.lower() or "10000" in err_msg:
+                print(f"data.gov.in JSON error about result window at offset {offset}: {err_msg}, stopping pagination")
+                break
             raise RuntimeError(f"data.gov.in: {payload['error']}")
+
         page = payload.get("records") or []
         for raw in page:
             record = format_record(raw)
             if record:
                 output.append(record)
-        if len(page) < page_size:
+        if len(page) < current_limit:
             break
         offset += len(page)
     return output
