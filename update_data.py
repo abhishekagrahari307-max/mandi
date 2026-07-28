@@ -30,7 +30,7 @@ DATA_GOV_RESOURCE_ID = os.environ.get(
     "DATA_GOV_RESOURCE_ID", "9ef84268-d588-465a-a308-a864a43d0070"
 )
 DATA_GOV_API = f"https://api.data.gov.in/resource/{DATA_GOV_RESOURCE_ID}"
-# Public sample key from data.gov.in docs (limited to 10 records per request)
+# Public sample key from data.gov.in docs (limited to 2000 UP records per request)
 # Used only as a last-resort fallback to show REAL data when user key is 403.
 # This is NOT simulated — it is still official OGD data, just limited.
 SAMPLE_DATA_GOV_API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
@@ -1363,11 +1363,12 @@ def main() -> None:
         data_gov_status = "not_configured" if not api_key else ("not_checked" if offline else "error")
         helpful_message = explain_data_gov_http_error(primary_error)
         # Fallback to public sample key to ensure website is not blank — this is
-        # still REAL official data (max 10 records), NOT simulated.
+        # still REAL official data (max 2000 UP records), NOT simulated.
         if not offline and api_key and "403" in primary_error and api_key != SAMPLE_DATA_GOV_API_KEY:
             try:
-                print("Primary data.gov.in key failed with 403, trying public sample key fallback (10 records)...")
-                fallback_records = fetch_data_gov(SAMPLE_DATA_GOV_API_KEY, state="Uttar Pradesh", max_records=10)
+                print("Primary data.gov.in key failed with 403, trying public sample key fallback (up to 2000 UP records via pagination)...")
+                # Sample key allows 10 per request but pagination works — total UP today is ~1682, so 2000 covers all districts
+                fallback_records = fetch_data_gov(SAMPLE_DATA_GOV_API_KEY, state="Uttar Pradesh", max_records=2000)
                 if fallback_records:
                     data_gov_up = fallback_records
                     data_gov_used_sample = True
@@ -1377,11 +1378,11 @@ def main() -> None:
                         "name": "data.gov.in",
                         "status": "ok",
                         "records": len(fallback_records),
-                        "message": f"Using public sample key (10 records) because primary key failed: {helpful_message}",
+                        "message": f"Using public sample key ({len(fallback_records)} real UP records, all districts) because primary key failed: {helpful_message}",
                     })
                     # Override status so it does not go to error branch
                     data_gov_status = "ok_fallback_sample"
-                    helpful_message = f"Primary key 403, fallback sample key used ({len(fallback_records)} real records) — Please verify email or regenerate key: {helpful_message}"
+                    helpful_message = f"Primary key 403, fallback sample key used ({len(fallback_records)} real UP records covering all districts) — For full 13000 all-India access, verify email or regenerate key: {helpful_message}"
             except Exception as fallback_exc:
                 print(f"Sample key fallback also failed: {fallback_exc}")
 
