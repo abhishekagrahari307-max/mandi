@@ -22,6 +22,7 @@
 - **🏢 मण्डी परिषद निर्देशिका:** UP Mandi Parishad से मंडल (division), जनपद, मण्डी, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।
 - **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
 - **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
+- **📊 Google Sheet / Excel ऑटो-सिंक:** एक लिंक अपनी शीट में लगाइए और भाव अपने आप अपडेट होते रहेंगे—कोई copy-paste नहीं। पूरी गाइड: [SETUP_SHEETS.md](SETUP_SHEETS.md)।
 - **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
@@ -34,6 +35,7 @@
 ├── manifest.json               # PWA कॉन्फ़िगरेशन (फ़ोन इंस्टॉल के लिए)
 ├── sw.js                       # सर्विस वर्कर (ऑफ़लाइन कैशिंग के लिए)
 ├── update_data.py              # Official multi-source data pipeline (no simulation)
+├── export_sheets.py            # JSON snapshots → Google Sheets/Excel के लिए CSV feeds
 ├── data/
 │   ├── latest.json             # 2-source gate पास UP verified prices
 │   ├── source_prices.json      # हर official feed के अलग single-source prices
@@ -42,7 +44,19 @@
 │   ├── auction.json            # Authorised e-NAM lot snapshot/status
 │   ├── laws.json               # Act/rules section index and official links
 │   ├── benchmarks.json         # State benchmark, Mandi Parishad directory, portals
-│   └── sources.json            # Portal health and refresh metadata
+│   ├── sources.json            # Portal health and refresh metadata
+│   └── sheets/                 # ऑटो-अपडेट CSV feeds (Google Sheets / Excel के लिए)
+│       ├── mandi_prices.csv    # सत्यापित मंडी भाव
+│       ├── source_prices.csv   # स्रोत-वार single-source भाव
+│       ├── state_prices.csv    # राज्य-वार सारांश
+│       ├── mandi_directory.csv # मंडी निर्देशिका + सचिव/CUG
+│       ├── price_history.csv   # भाव इतिहास (long format)
+│       ├── source_status.csv   # सरकारी पोर्टल की स्थिति
+│       ├── update_status.csv   # अंतिम अपडेट समय और गिनती
+│       └── index.json          # सभी feeds की सूची + तैयार formula
+├── scripts/
+│   └── google_apps_script.gs   # Google Sheets auto-sync script (7 tabs, timed trigger)
+├── SETUP_SHEETS.md             # शीट/Excel जोड़ने की पूरी गाइड
 ├── deploy.sh                   # GitHub Pages पर वन-क्लिक डिप्लॉय करने की स्क्रिप्ट
 ├── images/
 │   ├── icon-512.png            # 512px ऐप आइकन
@@ -100,6 +114,43 @@ bash deploy.sh
 4. GitHub Pages और Actions permissions चालू करेगी।
 
 यह script कभी Personal Access Token नहीं मांगती और credential को Git remote URL में store नहीं करती।
+
+---
+
+## 📊 Google Sheet / Excel में ऑटो-अपडेट भाव
+
+एक बार लिंक जोड़िए — भाव **दिन में 4 बार** (06:30, 12:30, 16:30, 20:30 IST) अपने आप अपडेट होते रहेंगे।
+
+**Google Sheets** — नई शीट के cell **A1** में यह चिपकाएँ:
+
+```
+=IMPORTDATA("https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_prices.csv")
+```
+
+**Excel** — `Data → From Web` में ऊपर वाला URL डालें → `Load` → फिर `Query Properties` में
+*"Refresh every 60 minutes"* और *"Refresh data when opening the file"* पर ✅ लगाएँ।
+
+उपलब्ध feeds: `mandi_prices`, `source_prices`, `state_prices`, `mandi_directory`,
+`price_history`, `source_status`, `update_status` — सूची `data/sheets/index.json` में।
+
+सातों तालिकाएँ अलग-अलग tab में और अपनी मर्ज़ी के समय पर चाहिए? `scripts/google_apps_script.gs`
+इस्तेमाल करें। पूरी step-by-step गाइड: **[SETUP_SHEETS.md](SETUP_SHEETS.md)**
+
+> ⚠️ **एक बार का ज़रूरी step:** `.github/workflows/update.yml` की `git add --` सूची में
+> `data/sheets` जोड़ें, वरना scheduled refresh नई CSVs commit नहीं करेगा और शीट में भाव
+> पुराने दिखते रहेंगे। विवरण [SETUP_SHEETS.md](SETUP_SHEETS.md) में।
+
+> ये CSVs `update_data.py` हर refresh पर खुद बनाता है (`export_sheets.py` के ज़रिए)।
+> हर cell सरकारी snapshot से आती है; कोई भाव बनाया नहीं जाता।
+> `=`, `+`, `-`, `@` से शुरू होने वाली हर value को apostrophe लगाकर निष्क्रिय किया जाता है ताकि
+> Excel/Sheets उसे formula की तरह न चलाएँ (CSV injection से बचाव)।
+
+FastAPI सर्वर चलाने पर वही तालिकाएँ live भी मिलती हैं:
+
+```
+GET /api/v2/sheets                    # सभी feeds + तैयार formula
+GET /api/v2/sheets/mandi_prices.csv   # कोई एक feed, CSV में
+```
 
 ---
 

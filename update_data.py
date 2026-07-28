@@ -22,6 +22,8 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+import export_sheets
+
 
 DATA_DIR = Path("data")
 IST = ZoneInfo("Asia/Kolkata")
@@ -1520,12 +1522,22 @@ def main() -> None:
     write_json_atomic(DATA_DIR / "auction.json", auction)
     write_json_atomic(DATA_DIR / "benchmarks.json", benchmarks)
     write_json_atomic(DATA_DIR / "sources.json", sources_payload)
+
+    # Regenerate the spreadsheet feeds from the snapshots just written, so a
+    # Google Sheet or Excel workbook pointed at data/sheets/*.csv refreshes on
+    # the same 4-times-daily cycle without any manual export.
+    sheet_counts = export_sheets.write_all(DATA_DIR)
+
     print(
         f"Updated dashboard: {len(up_records)} UP prices, {len(state_prices['states'])} states, "
         f"{len(directory['mandis'])} mandis, {len(parishad_rows)} Mandi Parishad directory rows, "
         f"{len(state_ticker)} state benchmark commodities, "
         f"{sum(feed['stored_record_count'] for feed in source_prices['feeds'])} source-labelled prices, "
         f"{len(auction['lots'])} official auction lots."
+    )
+    print(
+        "Spreadsheet feeds: "
+        + ", ".join(f"{name}={count}" for name, count in sheet_counts.items())
     )
 
 

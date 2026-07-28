@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, Request, WebSocket
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -22,6 +22,7 @@ from jose import JWTError, jwt
 import database as db
 import prediction as pred_engine
 import alerts as alert_engine
+import export_sheets as sheet_export
 
 logger = logging.getLogger(__name__)
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
@@ -518,6 +519,88 @@ def get_excel_sync_stream(db_sess: Session = Depends(get_db)):
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=UP_Mandi_Live_Sync.csv"}
     )
+
+
+# ================= AUTO-REFRESHING SPREADSHEET FEEDS =================
+# Google Sheets (=IMPORTDATA) and Excel (Data -> From Web) both poll a plain
+# CSV URL. These endpoints render the official snapshots on demand, so a
+# spreadsheet linked once keeps showing the latest published government prices.
+
+SHEET_IDS = tuple(spec["id"] for spec in sheet_export.SHEET_SPECS)
+
+
+@app.get("/api/v2/sheets")
+def list_spreadsheet_feeds(request: Request):
+    """List every spreadsheet feed with a ready-to-paste Sheets/Excel URL."""
+    try:
+        built = sheet_export.build_sheets()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No official snapshot is available to export yet",
+        )
+
+    base_url = str(request.base_url).rstrip("/")
+    sheets = []
+    for spec in sheet_export.SHEET_SPECS:
+        table = built.get(spec["id"], {"header": (), "rows": []})
+        csv_url = f"{base_url}/api/v2/sheets/{spec['id']}.csv"
+        sheets.append({
+            "id": spec["id"],
+            "title_en": spec["title_en"],
+            "title_hi": spec["title_hi"],
+            "row_count": len(table["rows"]),
+            "columns": list(table["header"]),
+            "csv_url": csv_url,
+            "static_path": f"/data/{sheet_export.SHEETS_DIRNAME}/{spec['file']}",
+            "google_sheets_formula": f'=IMPORTDATA("{csv_url}")',
+        })
+
+    return {
+        "update_frequency": "4 times daily",
+        "update_slots_ist": ["06:30", "12:30", "16:30", "20:30"],
+        "usage_google_sheets": (
+            "Paste google_sheets_formula into cell A1 of a Google Sheet. "
+            "IMPORTDATA re-fetches roughly every hour and on every file open."
+        ),
+        "usage_excel": (
+            "Excel: Data -> From Web -> paste csv_url -> Load, then Query "
+            "Properties -> Refresh every N minutes / Refresh data when opening."
+        ),
+        "policy": (
+            "Every cell is copied from an official government snapshot. "
+            "No simulated prices, arrivals or contacts are generated."
+        ),
+        "sheets": sheets,
+    }
+
+
+@app.get("/api/v2/sheets/{sheet_id}.csv")
+def get_spreadsheet_feed(sheet_id: str):
+    """Return one spreadsheet feed as CSV that Sheets and Excel can poll."""
+    if sheet_id not in SHEET_IDS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unknown sheet '{sheet_id}'. Available: {', '.join(SHEET_IDS)}",
+        )
+    try:
+        body = sheet_export.sheet_csv(sheet_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No official snapshot is available to export yet",
+        )
+
+    return Response(
+        content=body,
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'inline; filename="{sheet_id}.csv"',
+            # Spreadsheets poll these URLs; never let a proxy pin a stale copy.
+            "Cache-Control": "no-cache, max-age=0",
+        },
+    )
+
 
 @app.get("/api/v2/prediction/{crop}")
 def get_price_prediction(crop: str):

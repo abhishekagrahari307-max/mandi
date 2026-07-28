@@ -1,0 +1,10 @@
+Source,Status,Records,Message,URL,Last_Checked_At_IST
+data.gov.in,error,,HTTP Error 403: Forbidden,,2026-07-28T07:20:33.147107+05:30
+AGMARKNET portal,error,,HTTP Error 403: Forbidden,https://agmarknet.gov.in/home,2026-07-28T07:20:33.147107+05:30
+AGMARKNET,error,,HTTP Error 403: Forbidden,,2026-07-28T07:20:33.147107+05:30
+e-NAM trade feed,not_configured,0,,,2026-07-28T07:20:33.147107+05:30
+UP e-Mandi trade feed,not_configured,0,,,2026-07-28T07:20:33.147107+05:30
+UP e-Mandi contacts,unavailable,0,,,2026-07-28T07:20:33.147107+05:30
+UP Mandi Parishad directory,ok,9,,https://dashboard.mandiprojects.in/MandiDetails.aspx,2026-07-28T07:20:33.147107+05:30
+UP Krishi Vipran state benchmark,error,0,state ticker returned no parseable benchmark rates,https://www.upkrishivipran.in/Default.aspx,2026-07-28T07:20:33.147107+05:30
+e-NAM authorised auction feed,not_configured,0,,,2026-07-28T07:20:33.147107+05:30

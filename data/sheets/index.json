@@ -1,0 +1,175 @@
+{
+  "title_en": "Auto-updating spreadsheet feeds for the UP Mandi dashboard",
+  "title_hi": "यूपी मंडी डैशबोर्ड की स्वतः-अपडेट स्प्रेडशीट फीड",
+  "generated_at": "2026-07-28T07:20:33.147107+05:30",
+  "prices_updated_at": null,
+  "update_frequency": "4 times daily",
+  "update_slots_ist": [
+    "06:30",
+    "12:30",
+    "16:30",
+    "20:30"
+  ],
+  "base_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/",
+  "usage_google_sheets": "Paste the google_sheets_formula of any sheet into cell A1 of a Google Sheet. Sheets re-fetches IMPORTDATA roughly every hour and on every file open.",
+  "usage_excel": "Excel: Data -> From Web -> paste csv_url -> Load, then Query Properties -> Refresh every N minutes / Refresh data when opening.",
+  "policy": "Every cell is copied from an official government snapshot. No simulated prices, arrivals or contacts are generated.",
+  "sheets": [
+    {
+      "id": "mandi_prices",
+      "file": "mandi_prices.csv",
+      "title_en": "Cross-verified UP mandi prices",
+      "title_hi": "सत्यापित यूपी मंडी भाव",
+      "row_count": 0,
+      "columns": [
+        "Date",
+        "District",
+        "जिला",
+        "Mandi",
+        "Commodity",
+        "जिंस",
+        "Variety",
+        "Grade",
+        "Min_Price",
+        "Modal_Price",
+        "Max_Price",
+        "Unit",
+        "Verified_By",
+        "Source_Count",
+        "Updated_At_IST"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_prices.csv",
+      "relative_path": "data/sheets/mandi_prices.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_prices.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_prices.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "source_prices",
+      "file": "source_prices.csv",
+      "title_en": "Prices reported by each government feed (single-source)",
+      "title_hi": "हर सरकारी feed के अलग भाव (single-source)",
+      "row_count": 0,
+      "columns": [
+        "Feed",
+        "Feed_Status",
+        "Date",
+        "District",
+        "Mandi",
+        "Commodity",
+        "Variety",
+        "Grade",
+        "Min_Price",
+        "Modal_Price",
+        "Max_Price",
+        "Unit",
+        "Verification",
+        "Feed_Updated_At",
+        "Source_URL"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_prices.csv",
+      "relative_path": "data/sheets/source_prices.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_prices.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_prices.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "state_prices",
+      "file": "state_prices.csv",
+      "title_en": "State-wise price summary",
+      "title_hi": "राज्य-वार भाव सारांश",
+      "row_count": 0,
+      "columns": [
+        "State",
+        "Districts",
+        "Mandis",
+        "Records",
+        "Average_Modal_Price",
+        "Minimum_Price",
+        "Maximum_Price",
+        "Top_Commodity",
+        "Updated_At_IST"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/state_prices.csv",
+      "relative_path": "data/sheets/state_prices.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/state_prices.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/state_prices.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "mandi_directory",
+      "file": "mandi_directory.csv",
+      "title_en": "Mandi directory with secretary and CUG contact",
+      "title_hi": "मंडी निर्देशिका (सचिव एवं सी.यू.जी सम्पर्क)",
+      "row_count": 9,
+      "columns": [
+        "State",
+        "Division",
+        "District",
+        "जिला",
+        "Mandi",
+        "Grade",
+        "Secretary",
+        "CUG_Number",
+        "Commodities",
+        "Latest_Price_Date",
+        "Min_Modal_Price",
+        "Max_Modal_Price",
+        "Contacts",
+        "Map_URL",
+        "Source_URL"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_directory.csv",
+      "relative_path": "data/sheets/mandi_directory.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_directory.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/mandi_directory.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "price_history",
+      "file": "price_history.csv",
+      "title_en": "Verified price history (long format)",
+      "title_hi": "सत्यापित भाव इतिहास",
+      "row_count": 0,
+      "columns": [
+        "Commodity",
+        "Date",
+        "Average_Modal_Price"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/price_history.csv",
+      "relative_path": "data/sheets/price_history.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/price_history.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/price_history.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "source_status",
+      "file": "source_status.csv",
+      "title_en": "Government portal health for each refresh",
+      "title_hi": "हर सरकारी पोर्टल की स्थिति",
+      "row_count": 9,
+      "columns": [
+        "Source",
+        "Status",
+        "Records",
+        "Message",
+        "URL",
+        "Last_Checked_At_IST"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_status.csv",
+      "relative_path": "data/sheets/source_status.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_status.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/source_status.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    },
+    {
+      "id": "update_status",
+      "file": "update_status.csv",
+      "title_en": "Last update time and record counts",
+      "title_hi": "अंतिम अपडेट समय और गिनती",
+      "row_count": 14,
+      "columns": [
+        "Field",
+        "Value"
+      ],
+      "csv_url": "https://abhishekagrahari307-max.github.io/mandi/data/sheets/update_status.csv",
+      "relative_path": "data/sheets/update_status.csv",
+      "google_sheets_formula": "=IMPORTDATA(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/update_status.csv\")",
+      "excel_power_query": "let\n    Source = Csv.Document(Web.Contents(\"https://abhishekagrahari307-max.github.io/mandi/data/sheets/update_status.csv\"),\n        [Delimiter = \",\", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),\n    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])\nin\n    Promoted"
+    }
+  ]
+}

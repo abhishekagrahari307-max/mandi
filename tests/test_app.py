@@ -120,6 +120,37 @@ class AppSmokeTests(unittest.TestCase):
             for cell in row:
                 self.assertNotIn(cell[:1], ("=", "+", "@"))
 
+    def test_spreadsheet_feed_index_is_paste_ready(self):
+        response = self.client.get("/api/v2/sheets")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["sheets"])
+        for sheet in payload["sheets"]:
+            self.assertTrue(sheet["csv_url"].endswith(f"/api/v2/sheets/{sheet['id']}.csv"))
+            self.assertIn("IMPORTDATA", sheet["google_sheets_formula"])
+
+    def test_each_spreadsheet_feed_serves_parsable_csv(self):
+        import csv
+        import io
+
+        for sheet_id in mandi_app.SHEET_IDS:
+            response = self.client.get(f"/api/v2/sheets/{sheet_id}.csv")
+            self.assertEqual(response.status_code, 200, sheet_id)
+            self.assertIn("text/csv", response.headers["content-type"])
+            # Spreadsheets poll these URLs, so a stale cached copy is a bug.
+            self.assertIn("no-cache", response.headers["cache-control"])
+            rows = list(csv.reader(io.StringIO(response.text)))
+            self.assertTrue(rows, sheet_id)
+            width = len(rows[0])
+            for row in rows[1:]:
+                self.assertEqual(len(row), width, f"{sheet_id} row misaligned: {row}")
+                for cell in row:
+                    self.assertNotIn(cell[:1], ("=", "+", "@"))
+
+    def test_unknown_spreadsheet_feed_is_rejected(self):
+        response = self.client.get("/api/v2/sheets/not-a-sheet.csv")
+        self.assertEqual(response.status_code, 404)
+
     def test_alert_subscription_rejects_undeliverable_contacts(self):
         for payload in (
             {"contact_type": "carrier-pigeon", "contact_value": "9876543210"},
