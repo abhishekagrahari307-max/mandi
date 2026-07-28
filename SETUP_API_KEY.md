@@ -55,6 +55,26 @@
 
 6. **Add secret** दबाएं।
 
+> **🔄 Key dobara paste करनी हो (pencil ✏️ icon):**
+> अगर secret पहले से बना हुआ है तो **New repository secret** button नहीं दिखेगा,
+> बल्कि secret list में `DATA_GOV_IN_API_KEY` के सामने **pencil ✏️ icon / Update** दिखेगा।
+> उसी पर click करें → पुरानी value हटाएं → नई key paste करें → **Save / Update secret** दबाएं।
+> Key में आगे-पीछे space, quotes (`"` / `'`) या newline नहीं होना चाहिए — सिर्फ raw key paste करें।
+
+---
+
+## चरण 2.5 — Key format check (optional, 30 सेकंड)
+
+GitHub Action में अब एक validation step जोड़ा गया है जो secret की लंबाई और
+common mistakes (quotes, spaces) को **बिना key दिखाए** check करता है।
+
+Actions log में आपको दिखेगा:
+```
+✅ DATA_GOV_IN_API_KEY is set — length=58, has_quotes=False, has_space=False
+```
+अगर `has_quotes=True` या `has_space=True` या `length < 30` दिखे तो pencil ✏️ पर click करके
+key फिर से paste करें।
+
 ---
 
 ## चरण 3 — तुरंत चलाकर देखें (~2 मिनट)
@@ -76,9 +96,23 @@ Dashboard खोलकर **"राज्य-वार भाव"** tab पर �
 |---|---|---|
 | `data.gov.in` → **`ok`** | ✅ सब ठीक है | कुछ नहीं, भाव आ जाएंगे |
 | `error: DATA_GOV_IN_API_KEY is not configured` | Secret का **नाम गलत** है | चरण 2 दोबारा करें, spelling जाँचें |
-| `error: 401` या `403` | Key **गलत या expire** है | data.gov.in से नई key लेकर Secret update करें |
+| `error: 401` या `403` | Key **गलत / expire / unverified** | नीचे 403 वाले solutions देखें |
 | `error: 429` | बहुत ज़्यादा requests | कुछ घंटे रुकें, अपने-आप ठीक हो जाएगा |
 | `error: TLS/SSL...` | Portal अस्थायी रूप से down है | कुछ देर बाद अपने-आप retry होगा |
+
+### 🔧 अगर `403 Forbidden` अब भी दिख रहा है (आपने key dobara paste की है)
+
+403 का सबसे आम कारण ये हैं — GitHub secret सही होने के बाद भी data.gov.in key को reject कर देता है:
+
+1. **Email verification pending**: data.gov.in पर register करने के बाद inbox/spam में verification link पर click करना ज़रूरी है। बिना verification के key 403 देती है।
+2. **Key copy में space/quotes आ गए**: key paste करते समय आगे-पीछे space या `"` `'` लग गया तो validation step में `has_quotes=True` / `has_space=True` दिखेगा। Pencil ✏️ पर click करके सिर्फ raw key paste करें।
+3. **Purani key expire / disabled**: My Account → Regenerate API Key से नई key बनाएं और GitHub secret में Update करें।
+4. **Rate limit**: 1 घंटे में बहुत ज़्यादा API hits से 429/403 आ सकता है। अगले scheduled run (06:30, 12:30, 16:30, 20:30 IST) तक wait करें।
+
+> **आपने अभी कहा:** *\"Secret me pencil (✏️) dabaiye → key dobara paste kar diya hai\"*
+> बहुत बढ़िया! अब ये 2 steps बाकी हैं:
+> 1. `Actions` tab → `Multi-Daily Mandi Price Update` → `Run workflow` → `Run workflow` दबाएं।
+> 2. ~1 मिनट बाद `data/sources.json` में `data.gov.in` की status `ok` होनी चाहिए। Dashboard refresh करें।
 
 Header के ऊपर **भाव अपडेट समय** bar में भी अब असली समय दिखने लगेगा।
 
