@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-07-27T22:23:24.737850+05:30",
+  "last_checked_at": "2026-07-28T07:20:33.147107+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -11,7 +11,7 @@
     {
       "name": "data.gov.in",
       "status": "error",
-      "message": "DATA_GOV_IN_API_KEY is not configured"
+      "message": "HTTP Error 403: Forbidden"
     },
     {
       "name": "AGMARKNET portal",
