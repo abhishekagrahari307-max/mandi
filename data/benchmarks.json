@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-28T09:25:35.854397+05:30",
+  "updated_at": "2026-07-28T13:43:06.932808+05:30",
   "policy": "Every value below is copied from an official government portal. No simulated, random or interpolated figure is stored.",
   "state_benchmark": {
     "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
@@ -167,7 +167,7 @@
     "status": {
       "reachable": false,
       "url": "https://agmarknet.gov.in/home",
-      "error": "HTTP Error 403: Forbidden"
+      "error": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
     }
   },
   "official_portals": [
