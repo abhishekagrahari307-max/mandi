@@ -830,6 +830,18 @@ def serve_dashboard():
     with open("index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
+@app.get("/variety.html", response_class=HTMLResponse, include_in_schema=False)
+def serve_variety_page():
+    try:
+        with open("variety.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Variety Guide not found</h1><a href='/'>Back</a>", status_code=404)
+
+@app.get("/GOVT_LINKS.md", include_in_schema=False)
+def serve_gov_links():
+    return FileResponse("GOVT_LINKS.md", media_type="text/markdown")
+
 @app.get("/manifest.json", include_in_schema=False)
 def serve_manifest():
     return FileResponse("manifest.json", media_type="application/manifest+json")
