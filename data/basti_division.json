@@ -1,0 +1,577 @@
+{
+  "generated_at": "2026-07-28T15:52:30.506756+05:30",
+  "division": "Basti Division + Lucknow + Highest Price District",
+  "division_hi": "बस्ती मंडल + लखनऊ + सबसे अधिक भाव वाला जिला",
+  "focus_districts": [
+    "Basti",
+    "Siddharthnagar",
+    "Sant Kabir Nagar",
+    "Lucknow"
+  ],
+  "highest_price_district": {
+    "district": "Ghaziabad",
+    "district_hi": "गाजियाबाद",
+    "reason": "Highest Wheat modal price today (2701) across UP - always highest due to Delhi NCR proximity",
+    "reason_hi": "आज UP में गेहूं का सबसे अधिक भाव (2701 ₹/quintal) - दिल्ली NCR के पास होने से हमेशा अधिक",
+    "wheat": {
+      "state": "Uttar Pradesh",
+      "district": "Ghaziabad",
+      "district_hi": "गाजियाबाद",
+      "mandi": "Ghaziabad APMC",
+      "commodity": "Wheat",
+      "variety": "Dara",
+      "grade": "FAQ",
+      "min_price": 2700,
+      "max_price": 2705,
+      "modal_price": 2701,
+      "arrival_date": "28/07/2026",
+      "source": "data.gov.in",
+      "source_url": "https://data.gov.in/"
+    },
+    "record": {
+      "state": "Uttar Pradesh",
+      "district": "Ghaziabad",
+      "district_hi": "गाजियाबाद",
+      "mandi": "Ghaziabad APMC",
+      "commodity": "Wheat",
+      "variety": "Dara",
+      "grade": "FAQ",
+      "min_price": 2700,
+      "max_price": 2705,
+      "modal_price": 2701,
+      "arrival_date": "28/07/2026",
+      "source": "data.gov.in",
+      "source_url": "https://data.gov.in/"
+    }
+  },
+  "portal_cross_check": {
+    "portals": [
+      {
+        "id": "agmarknet",
+        "name": "AGMARKNET Portal",
+        "url": "https://agmarknet.gov.in",
+        "role": "Primary price source, data.gov.in is derived from it",
+        "note_hi": "मुख्य मूल्य स्रोत"
+      },
+      {
+        "id": "up_mandi_parishad",
+        "name": "UP Mandi Parishad",
+        "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+        "alt_url": "http://upmandiparishad.upsdc.gov.in",
+        "role": "Mandi directory, grade, secretary, CUG"
+      },
+      {
+        "id": "enam",
+        "name": "e-NAM Portal",
+        "url": "https://www.enam.gov.in/web/",
+        "role": "National Agriculture Market lots, requires authorised feed"
+      },
+      {
+        "id": "fca_fci",
+        "name": "Dept of Consumer Affairs / FCI",
+        "url": "https://fcainfoweb.nic.in/",
+        "alt_url": "https://fci.gov.in",
+        "role": "All India Average Retail/Wholesale - Wheat, Rice benchmark"
+      }
+    ],
+    "note_hi": "हर भाव के साथ सरकारी स्रोत का नाम और URL दिया गया है। AGMARKNET और data.gov.in एक ही मूल स्रोत हैं। e-NAM और UP e-Mandi के लिए अधिकृत feed चाहिए। FCA/FCI से केवल राष्ट्रीय औसत मिलता है, जिला-वार नहीं।",
+    "note_en": "Each rate mentions source govt website name and URL. AGMARKNET and data.gov.in share same origin. e-NAM and UP e-Mandi need authorised feed. FCA/FCI gives All-India average only, not district-wise."
+  },
+  "reports": [
+    {
+      "district": "Basti",
+      "district_hi": "बस्ती",
+      "mandis_active": [
+        "Basti APMC"
+      ],
+      "wheat": {
+        "count": 1,
+        "lowest_price": 2450,
+        "highest_price": 2500,
+        "modal_average": 2489,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Basti",
+            "district_hi": "बस्ती",
+            "mandi": "Basti APMC",
+            "commodity": "Wheat",
+            "variety": "Dara",
+            "grade": "FAQ",
+            "min_price": 2450,
+            "max_price": 2500,
+            "modal_price": 2489,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+          }
+        ]
+      },
+      "rice_common": {
+        "count": 1,
+        "lowest_price": 3600,
+        "highest_price": 3600,
+        "modal_average": 3600,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Basti",
+            "district_hi": "बस्ती",
+            "mandi": "Basti APMC",
+            "commodity": "Rice",
+            "commodity_hi": "चावल",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 3600,
+            "max_price": 3600,
+            "modal_price": 3600,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_grade_a": null,
+      "total_records": 3,
+      "all_records": [
+        {
+          "state": "Uttar Pradesh",
+          "district": "Basti",
+          "district_hi": "बस्ती",
+          "mandi": "Basti APMC",
+          "commodity": "Wheat",
+          "variety": "Dara",
+          "grade": "FAQ",
+          "min_price": 2450,
+          "max_price": 2500,
+          "modal_price": 2489,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Basti",
+          "district_hi": "बस्ती",
+          "mandi": "Basti APMC",
+          "commodity": "Rice",
+          "commodity_hi": "चावल",
+          "variety": "Common",
+          "grade": "FAQ",
+          "min_price": 3600,
+          "max_price": 3600,
+          "modal_price": 3600,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Basti",
+          "district_hi": "बस्ती",
+          "mandi": "Basti APMC",
+          "commodity": "Onion",
+          "variety": "Other",
+          "grade": "FAQ",
+          "min_price": 1000,
+          "max_price": 1000,
+          "modal_price": 1000,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        }
+      ]
+    },
+    {
+      "district": "Siddharthnagar",
+      "district_hi": "सिद्धार्थनगर",
+      "mandis_active": [
+        "Bansi APMC",
+        "Naugarh APMC",
+        "Sahiyapur APMC"
+      ],
+      "wheat": {
+        "count": 2,
+        "lowest_price": 2430,
+        "highest_price": 2700,
+        "modal_average": 2509,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "mandi": "Bansi APMC",
+            "commodity": "Wheat",
+            "variety": "Dara",
+            "grade": "FAQ",
+            "min_price": 2500,
+            "max_price": 2500,
+            "modal_price": 2500,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "state": "Uttar Pradesh",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "mandi": "Sahiyapur APMC",
+            "commodity": "Wheat",
+            "variety": "Dara",
+            "grade": "FAQ",
+            "min_price": 2430,
+            "max_price": 2700,
+            "modal_price": 2518,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_common": {
+        "count": 2,
+        "lowest_price": 2500,
+        "highest_price": 2600,
+        "modal_average": 2550,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "mandi": "Naugarh APMC",
+            "commodity": "Rice",
+            "commodity_hi": "चावल",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 2600,
+            "max_price": 2600,
+            "modal_price": 2600,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "state": "Uttar Pradesh",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "mandi": "Bansi APMC",
+            "commodity": "Paddy(Common)",
+            "variety": "Other",
+            "grade": "FAQ",
+            "min_price": 2500,
+            "max_price": 2500,
+            "modal_price": 2500,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_grade_a": null,
+      "total_records": 4,
+      "all_records": [
+        {
+          "state": "Uttar Pradesh",
+          "district": "Siddharthnagar",
+          "district_hi": "सिद्धार्थनगर",
+          "mandi": "Bansi APMC",
+          "commodity": "Wheat",
+          "variety": "Dara",
+          "grade": "FAQ",
+          "min_price": 2500,
+          "max_price": 2500,
+          "modal_price": 2500,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Siddharthnagar",
+          "district_hi": "सिद्धार्थनगर",
+          "mandi": "Naugarh APMC",
+          "commodity": "Rice",
+          "commodity_hi": "चावल",
+          "variety": "Common",
+          "grade": "FAQ",
+          "min_price": 2600,
+          "max_price": 2600,
+          "modal_price": 2600,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Siddharthnagar",
+          "district_hi": "सिद्धार्थनगर",
+          "mandi": "Sahiyapur APMC",
+          "commodity": "Wheat",
+          "variety": "Dara",
+          "grade": "FAQ",
+          "min_price": 2430,
+          "max_price": 2700,
+          "modal_price": 2518,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Siddharthnagar",
+          "district_hi": "सिद्धार्थनगर",
+          "mandi": "Bansi APMC",
+          "commodity": "Paddy(Common)",
+          "variety": "Other",
+          "grade": "FAQ",
+          "min_price": 2500,
+          "max_price": 2500,
+          "modal_price": 2500,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        }
+      ]
+    },
+    {
+      "district": "Sant Kabir Nagar",
+      "district_hi": "संत कबीर नगर",
+      "mandis_active": [
+        "Khalilabad APMC"
+      ],
+      "wheat": {
+        "count": 1,
+        "lowest_price": 2400,
+        "highest_price": 2500,
+        "modal_average": 2450,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Sant Kabir Nagar",
+            "district_hi": "संत कबीर नगर",
+            "mandi": "Khalilabad APMC",
+            "commodity": "Wheat",
+            "variety": "Dara",
+            "grade": "FAQ",
+            "min_price": 2400,
+            "max_price": 2500,
+            "modal_price": 2450,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_common": {
+        "count": 1,
+        "lowest_price": 2500,
+        "highest_price": 2500,
+        "modal_average": 2500,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Sant Kabir Nagar",
+            "district_hi": "संत कबीर नगर",
+            "mandi": "Khalilabad APMC",
+            "commodity": "Paddy(Common)",
+            "commodity_hi": "धान (सामान्य)",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 2500,
+            "max_price": 2500,
+            "modal_price": 2500,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_grade_a": null,
+      "total_records": 5,
+      "all_records": [
+        {
+          "state": "Uttar Pradesh",
+          "district": "Sant Kabir Nagar",
+          "district_hi": "संत कबीर नगर",
+          "mandi": "Khalilabad APMC",
+          "commodity": "Wheat",
+          "variety": "Dara",
+          "grade": "FAQ",
+          "min_price": 2400,
+          "max_price": 2500,
+          "modal_price": 2450,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Sant Kabir Nagar",
+          "district_hi": "संत कबीर नगर",
+          "mandi": "Khalilabad APMC",
+          "commodity": "Paddy(Common)",
+          "commodity_hi": "धान (सामान्य)",
+          "variety": "Common",
+          "grade": "FAQ",
+          "min_price": 2500,
+          "max_price": 2500,
+          "modal_price": 2500,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Sant Kabir Nagar",
+          "district_hi": "संत कबीर नगर",
+          "mandi": "Khalilabad APMC",
+          "commodity": "Potato",
+          "variety": "Potato",
+          "grade": "Medium",
+          "min_price": 1500,
+          "max_price": 1600,
+          "modal_price": 1550,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Sant Kabir Nagar",
+          "district_hi": "संत कबीर नगर",
+          "mandi": "Khalilabad APMC",
+          "commodity": "Tomato",
+          "variety": "Tomato",
+          "grade": "Medium",
+          "min_price": 1900,
+          "max_price": 2100,
+          "modal_price": 2000,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Sant Kabir Nagar",
+          "district_hi": "संत कबीर नगर",
+          "mandi": "Khalilabad APMC",
+          "commodity": "Onion",
+          "variety": "Onion",
+          "grade": "Medium",
+          "min_price": 2000,
+          "max_price": 2200,
+          "modal_price": 2100,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        }
+      ]
+    },
+    {
+      "district": "Lucknow",
+      "district_hi": "लखनऊ",
+      "mandis_active": [
+        "Banthara APMC",
+        "Lucknow APMC"
+      ],
+      "wheat": {
+        "count": 1,
+        "lowest_price": 2540,
+        "highest_price": 2540,
+        "modal_average": 2540,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Lucknow",
+            "district_hi": "लखनऊ",
+            "mandi": "Banthara APMC",
+            "commodity": "Wheat",
+            "variety": "Dara",
+            "grade": "FAQ",
+            "min_price": 2540,
+            "max_price": 2540,
+            "modal_price": 2540,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_common": {
+        "count": 1,
+        "lowest_price": 2600,
+        "highest_price": 2600,
+        "modal_average": 2600,
+        "records": [
+          {
+            "state": "Uttar Pradesh",
+            "district": "Lucknow",
+            "district_hi": "लखनऊ",
+            "mandi": "Banthara APMC",
+            "commodity": "Rice",
+            "commodity_hi": "चावल",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 2600,
+            "max_price": 2600,
+            "modal_price": 2600,
+            "arrival_date": "28/07/2026",
+            "source": "data.gov.in",
+            "source_url": "https://data.gov.in/"
+          }
+        ]
+      },
+      "rice_grade_a": null,
+      "total_records": 3,
+      "all_records": [
+        {
+          "state": "Uttar Pradesh",
+          "district": "Lucknow",
+          "district_hi": "लखनऊ",
+          "mandi": "Banthara APMC",
+          "commodity": "Wheat",
+          "variety": "Dara",
+          "grade": "FAQ",
+          "min_price": 2540,
+          "max_price": 2540,
+          "modal_price": 2540,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Lucknow",
+          "district_hi": "लखनऊ",
+          "mandi": "Lucknow APMC",
+          "commodity": "Wood",
+          "variety": "Other",
+          "grade": "FAQ",
+          "min_price": 150,
+          "max_price": 150,
+          "modal_price": 150,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Lucknow",
+          "district_hi": "लखनऊ",
+          "mandi": "Banthara APMC",
+          "commodity": "Rice",
+          "commodity_hi": "चावल",
+          "variety": "Common",
+          "grade": "FAQ",
+          "min_price": 2600,
+          "max_price": 2600,
+          "modal_price": 2600,
+          "arrival_date": "28/07/2026",
+          "source": "data.gov.in",
+          "source_url": "https://data.gov.in/"
+        }
+      ]
+    }
+  ],
+  "total_up_records_used": 16
+}

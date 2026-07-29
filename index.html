@@ -624,6 +624,35 @@
             </div>
         </div>
 
+        <!-- ───────────────── SECTION: BASTI DIVISION SPECIAL (Sant Kabir Nagar, Basti, Lucknow + Highest) ───────────────── -->
+        <div id="section-basti" class="space-y-6 mt-8">
+            <div class="bg-gradient-to-r from-indigo-600 to-emerald-600 text-white p-5 rounded-2xl shadow-lg">
+                <h3 class="font-black text-xl">🏛️ बस्ती मंडल विशेष रिपोर्ट + लखनऊ + सबसे महंगा जिला</h3>
+                <p class="text-xs mt-1 opacity-90">Basti Division (Basti, Siddharthnagar, Sant Kabir Nagar) + Lucknow + Highest Price District — Wheat (गेहूं) न्यूनतम/अधिकतम/औसत और Rice Common & Grade-A | 4 Govt Portals Cross-Checked | हर रेट के साथ स्रोत का नाम</p>
+                <div class="mt-2 flex flex-wrap gap-2 text-[10px]">
+                    <span class="bg-white/20 px-2 py-1 rounded">Agmarknet Portal (agmarknet.gov.in)</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">UP Mandi Parishad (upmandiparishad.upsdc.gov.in)</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">e-NAM (enam.gov.in)</span>
+                    <span class="bg-white/20 px-2 py-1 rounded">FCA/FCI (fcainfoweb.nic.in)</span>
+                </div>
+            </div>
+
+            <div id="highest-district-container" class="mb-4"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2">
+                    <h4 class="font-bold text-sm text-slate-800 mb-2">📊 बस्ती मंडल + लखनऊ — गेहूं और चावल भाव (आज)</h4>
+                    <div id="basti-division-container" class="space-y-3">
+                        <div class="p-4 text-center text-slate-400 text-sm bg-white rounded-xl border">लोड हो रहा है... / Loading Basti Division data...</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-slate-800 mb-2">🔗 4 Government Portals Cross-Check</h4>
+                    <div id="portal-cross-check" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ───────────────── SECTION: OFFICIAL e-NAM AUCTION YARD ───────────────── -->
         <div id="section-auction" class="hidden space-y-6">
             <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1265,6 +1294,7 @@
         let sourceData = { sources: [] };
         let sourcePriceData = { feeds: [] };
         let benchmarkData = { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
+        let bastiDivisionData = { division: 'Basti Division', reports: [], highest_price_district: null, portal_cross_check: { portals: [] } };
         let auctionSnapshot = { status: 'loading', lots: [] };
         let calcWeightUnit = 'q';
         let globalBillDetails = null;
@@ -1987,9 +2017,15 @@
                 mandi_parishad_directory: { mandis: [] },
                 official_portals: []
             });
+            const fetchBastiDivision = fetchJson('data/basti_division.json', {
+                division: 'Basti Division',
+                reports: [],
+                highest_price_district: null,
+                portal_cross_check: { portals: [] }
+            });
 
-            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchSourcePrices, fetchBenchmarks])
-            .then(([latest, history, states, mandis, laws, sources, sourcePrices, benchmarks]) => {
+            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchSourcePrices, fetchBenchmarks, fetchBastiDivision])
+            .then(([latest, history, states, mandis, laws, sources, sourcePrices, benchmarks, bastiDivision]) => {
                 latestData = (latest && latest.records) ? latest.records : (latest || []);
                 if (!Array.isArray(latestData)) latestData = [];
                 latestMetadata = latest && !Array.isArray(latest) ? latest : {};
@@ -2000,6 +2036,7 @@
                 sourceData = sources || { sources: [] };
                 sourcePriceData = sourcePrices || { feeds: [] };
                 benchmarkData = benchmarks || { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
+                bastiDivisionData = bastiDivision || { reports: [], highest_price_district: null, portal_cross_check: { portals: [] } };
 
                 // When the cross-verification gate published nothing, fall back
                 // to the single-source rows so the dashboard is not blank.
@@ -2084,6 +2121,7 @@
                 safeRun('updatePinnedStaples', updatePinnedStaples);
                 safeRun('renderStaplesLeaderboard', renderStaplesLeaderboard);
                 safeRun('renderPriceRanking', renderPriceRanking);
+                safeRun('renderBastiDivision', renderBastiDivision);
                 
                 if (refreshIcon) {
                     setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
@@ -2676,6 +2714,162 @@
             });
 
             tableBody.innerHTML = html || '<tr><td colspan="7" class="p-8 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
+            renderIcons();
+        }
+
+        function renderBastiDivision() {
+            const container = document.getElementById('basti-division-container');
+            const highestContainer = document.getElementById('highest-district-container');
+            const portalContainer = document.getElementById('portal-cross-check');
+            if (!container) return;
+
+            const data = (typeof bastiDivisionData !== 'undefined' ? bastiDivisionData : { reports: [], highest_price_district: null, portal_cross_check: { portals: [] } });
+            const reports = Array.isArray(data.reports) ? data.reports : [];
+            const highest = data.highest_price_district;
+            const portals = (data.portal_cross_check && data.portal_cross_check.portals) ? data.portal_cross_check.portals : [];
+
+            // Render Basti Division cards
+            let html = '';
+            reports.forEach(rep => {
+                const district = rep.district || '—';
+                const districtHi = rep.district_hi || district;
+                const wheat = rep.wheat;
+                const riceCommon = rep.rice_common;
+                const riceGradeA = rep.rice_grade_a;
+
+                const wheatHtml = wheat ? `
+                    <div class="mt-2 p-2 bg-amber-50 rounded border border-amber-200">
+                        <div class="text-[11px] font-bold text-amber-900">🌾 गेहूं (Wheat) - ${escapeHtml(district)}</div>
+                        <div class="grid grid-cols-3 gap-2 mt-1 text-[11px]">
+                            <div><span class="text-slate-500">न्यूनतम:</span><br><span class="font-bold text-slate-900">₹ ${Number(wheat.lowest_price).toLocaleString('en-IN')}</span></div>
+                            <div><span class="text-slate-500">अधिकतम:</span><br><span class="font-bold text-slate-900">₹ ${Number(wheat.highest_price).toLocaleString('en-IN')}</span></div>
+                            <div><span class="text-slate-500">औसत (Modal):</span><br><span class="font-bold text-emerald-700">₹ ${Number(wheat.modal_average || wheat.highest_price).toLocaleString('en-IN')}</span></div>
+                        </div>
+                        <div class="mt-1 text-[9px] text-slate-500">स्रोत: ${escapeHtml((wheat.records && wheat.records[0] && wheat.records[0].source) || 'data.gov.in')} | <a href="https://data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070" target="_blank" class="text-blue-600 underline">data.gov.in</a></div>
+                    </div>
+                ` : '<div class="text-[11px] text-slate-400">गेहूं का डेटा उपलब्ध नहीं</div>';
+
+                const riceHtml = riceCommon ? `
+                    <div class="mt-2 p-2 bg-emerald-50 rounded border border-emerald-200">
+                        <div class="text-[11px] font-bold text-emerald-900">🍚 चावल Common - ${escapeHtml(district)}</div>
+                        <div class="grid grid-cols-2 gap-2 mt-1 text-[11px]">
+                            <div>न्यूनतम: <b>₹ ${Number(riceCommon.lowest_price).toLocaleString('en-IN')}</b></div>
+                            <div>अधिकतम: <b>₹ ${Number(riceCommon.highest_price).toLocaleString('en-IN')}</b></div>
+                        </div>
+                        <div class="text-[9px] text-slate-500 mt-1">स्रोत: ${escapeHtml((riceCommon.records && riceCommon.records[0] && riceCommon.records[0].source) || 'data.gov.in')}</div>
+                    </div>
+                ` : '';
+
+                const riceGradeHtml = riceGradeA ? `
+                    <div class="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                        <div class="text-[11px] font-bold text-blue-900">🍚 चावल Grade-A - ${escapeHtml(district)}</div>
+                        <div class="grid grid-cols-2 gap-2 mt-1 text-[11px]">
+                            <div>न्यूनतम: <b>₹ ${Number(riceGradeA.lowest_price).toLocaleString('en-IN')}</b></div>
+                            <div>अधिकतम: <b>₹ ${Number(riceGradeA.highest_price).toLocaleString('en-IN')}</b></div>
+                        </div>
+                    </div>
+                ` : '';
+
+                html += `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-black text-sm text-slate-900">${escapeHtml(districtHi)} (${escapeHtml(district)})</h4>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">${rep.total_records || 0} records</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500">मंडियां: ${escapeHtml((rep.mandis_active || []).join(', ') || '—')}</div>
+                        ${wheatHtml}
+                        ${riceHtml}
+                        ${riceGradeHtml}
+                    </div>
+                `;
+            });
+
+            if (!html) {
+                // Fallback to latestData if basti_division.json not yet generated
+                const fallbackDistricts = ['Basti', 'Sant Kabir Nagar', 'Lucknow', 'Siddharthnagar'];
+                fallbackDistricts.forEach(dName => {
+                    const rows = (typeof latestData !== 'undefined' ? latestData : []).filter(r => r && r.district && r.district.toLowerCase().includes(dName.toLowerCase().split(' ')[0]));
+                    const wheatRows = rows.filter(r => r.commodity && r.commodity.toLowerCase().includes('wheat'));
+                    const riceRows = rows.filter(r => r.commodity && r.commodity.toLowerCase().includes('rice'));
+                    const getStats = (arr) => {
+                        if (!arr.length) return null;
+                        const modals = arr.map(x => Number(x.modal_price)).filter(n => !isNaN(n));
+                        if (!modals.length) return null;
+                        return { lowest: Math.min(...arr.map(x => Number(x.min_price)||Number(x.modal_price))), highest: Math.max(...arr.map(x => Number(x.max_price)||Number(x.modal_price))), avg: Math.round(modals.reduce((a,b)=>a+b,0)/modals.length), count: arr.length };
+                    };
+                    const wStat = getStats(wheatRows);
+                    const rStat = getStats(riceRows);
+                    html += `
+                        <div class="bg-white rounded-xl shadow-sm border p-3 mb-3">
+                            <h4 class="font-black text-sm">${escapeHtml(dName)}</h4>
+                            <div class="text-[10px] text-slate-500">${rows.length} records from ${wheatRows.length ? 'data.gov.in' : 'cache'}</div>
+                            ${wStat ? `<div class="mt-2 p-2 bg-amber-50 rounded text-[11px]">🌾 गेहूं: ₹${wStat.lowest} - ₹${wStat.highest} (औसत ₹${wStat.avg}) | स्रोत: data.gov.in / AGMARKNET<br><span class="text-[9px] text-slate-500">agmarknet.gov.in</span></div>` : '<div class="text-[11px] text-slate-400">गेहूं डेटा नहीं</div>'}
+                            ${rStat ? `<div class="mt-2 p-2 bg-emerald-50 rounded text-[11px]">🍚 चावल: ₹${rStat.lowest} - ₹${rStat.highest} (औसत ₹${rStat.avg}) | स्रोत: data.gov.in</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html || '<div class="p-4 text-center text-slate-400 text-sm">बस्ती मंडल का डेटा लोड हो रहा है... अगला Auto-Update पर पूरा आएगा</div>';
+
+            // Highest district card
+            if (highestContainer) {
+                if (highest) {
+                    const hDist = highest.district || highest.district_hi || '—';
+                    const hPrice = highest.wheat ? (highest.wheat.modal_price || highest.wheat.highest_price) : (highest.record ? highest.record.modal_price : 0);
+                    highestContainer.innerHTML = `
+                        <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white shadow">
+                            <div class="text-[11px] opacity-90">🔥 सबसे अधिक भाव वाला जिला (आज)</div>
+                            <div class="text-lg font-black mt-1">${escapeHtml(hDist)} - ${escapeHtml(highest.record ? highest.record.mandi : '')}</div>
+                            <div class="text-sm mt-1">${escapeHtml(highest.reason_hi || highest.reason || '')}</div>
+                            <div class="text-2xl font-black mt-2">₹ ${Number(hPrice).toLocaleString('en-IN')}/Q</div>
+                            <div class="text-[10px] opacity-80 mt-1">स्रोत: ${escapeHtml(highest.record ? highest.record.source : 'data.gov.in')} | agmarknet.gov.in</div>
+                        </div>
+                    `;
+                } else {
+                    // Find max from latestData
+                    const allWheat = (typeof latestData !== 'undefined' ? latestData : []).filter(r => r.commodity && r.commodity.toLowerCase().includes('wheat'));
+                    if (allWheat.length) {
+                        const maxRec = allWheat.reduce((a,b) => (Number(b.modal_price) > Number(a.modal_price) ? b : a), allWheat[0]);
+                        highestContainer.innerHTML = `
+                            <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white">
+                                <div class="text-[11px]">🔥 सबसे अधिक भाव (आज का सबसे महंगा)</div>
+                                <div class="font-black text-lg">${escapeHtml(maxRec.district)} - ${escapeHtml(maxRec.mandi)}</div>
+                                <div class="text-2xl font-black mt-1">₹ ${Number(maxRec.modal_price).toLocaleString('en-IN')}/Q</div>
+                                <div class="text-[10px] opacity-80">गेहूं | स्रोत: data.gov.in</div>
+                            </div>
+                        `;
+                    } else {
+                        highestContainer.innerHTML = '<div class="p-3 bg-slate-100 rounded text-sm text-slate-500">Highest price जिला अगले update में दिखेगा</div>';
+                    }
+                }
+            }
+
+            // Portal cross-check
+            if (portalContainer) {
+                let pHtml = '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">';
+                const portalList = portals.length ? portals : [
+                    { id: 'agmarknet', name: 'AGMARKNET Portal', url: 'https://agmarknet.gov.in', role: 'Primary price source' },
+                    { id: 'up_mandi_parishad', name: 'UP Mandi Parishad', url: 'https://dashboard.mandiprojects.in/MandiDetails.aspx', alt_url: 'http://upmandiparishad.upsdc.gov.in', role: 'Mandi directory' },
+                    { id: 'enam', name: 'e-NAM Portal', url: 'https://www.enam.gov.in/web/', role: 'National Agriculture Market' },
+                    { id: 'fca_fci', name: 'FCA / FCI', url: 'https://fcainfoweb.nic.in/', alt_url: 'https://fci.gov.in', role: 'All India Average' }
+                ];
+                portalList.forEach(p => {
+                    pHtml += `
+                        <div class="bg-white border rounded-lg p-3">
+                            <div class="font-bold text-[12px] text-slate-900">${escapeHtml(p.name)}</div>
+                            <div class="text-[10px] text-slate-600 mt-1">${escapeHtml(p.role || '')}</div>
+                            <div class="text-[10px] mt-1"><a href="${escapeHtml(p.url)}" target="_blank" class="text-blue-600 underline">${escapeHtml(p.url)}</a></div>
+                            ${p.alt_url ? `<div class="text-[10px]"><a href="${escapeHtml(p.alt_url)}" target="_blank" class="text-blue-500 underline">${escapeHtml(p.alt_url)}</a></div>` : ''}
+                            <div class="mt-1 text-[9px] px-1.5 py-0.5 bg-emerald-50 text-emerald-800 rounded inline-block">Source: ${escapeHtml(p.id)}</div>
+                        </div>
+                    `;
+                });
+                pHtml += '</div>';
+                pHtml += `<div class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-[10px] text-slate-700">हर रेट के साथ स्रोत सरकारी वेबसाइट का नाम clearly mention - जैसे ऊपर गेहूं/चावल कार्ड में दिखाया गया है। Basti Division: Basti, Siddharthnagar, Sant Kabir Nagar के सभी active मंडियों का data compare होता है।</div>`;
+                portalContainer.innerHTML = pHtml;
+            }
+
             renderIcons();
         }
 

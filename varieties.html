@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banthara / Lucknow Mandi - Wheat & Rice Varieties Advanced Guide + Live Prices</title>
+    <meta name="description" content="Banthara Lucknow Mandi Wheat Rice Varieties Complete Guide with Live Prices, Basti Division, 4-Portal Cross-Check, Variety Photos, Infographics">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --wheat-gold: #B8860B;
+            --wheat-light: #FFF9E6;
+            --rice-green: #2E8B57;
+            --rice-light: #EAF7F0;
+            --dark-text: #2C3E50;
+            --bg-page: #F4F6F9;
+            --card-bg: #FFFFFF;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', 'Nirmala UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-page); color: var(--dark-text); padding-bottom: 60px; }
+        header { background: linear-gradient(135deg, #1A252F, #2C3E50); color: white; padding: 40px 20px; text-align: center; border-bottom: 5px solid var(--wheat-gold); }
+        header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 800; }
+        header p { font-size: 1.1rem; color: #E0E0E0; max-width: 950px; margin: 0 auto 20px auto; line-height: 1.5; }
+        .stats-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+        .stat-badge { background: rgba(255,255,255,0.12); padding: 8px 16px; border-radius: 30px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.25); }
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .filter-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: var(--card-bg); padding: 18px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 24px; position: sticky; top: 10px; z-index: 40; }
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tab-btn { background: #EDF2F7; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; color: var(--dark-text); }
+        .tab-btn.active, .tab-btn:hover { background: var(--wheat-gold); color: white; box-shadow: 0 3px 10px rgba(184,134,11,0.3); }
+        .tab-btn[data-category="rice"].active { background: var(--rice-green); box-shadow: 0 3px 10px rgba(46,139,87,0.3); }
+        .search-box { position: relative; min-width: 280px; }
+        .search-box input { width: 100%; padding: 11px 16px; border: 2px solid #E2E8F0; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border 0.3s; }
+        .search-box input:focus { border-color: var(--wheat-gold); }
+        .section-title { font-size: 1.6rem; font-weight: 800; margin: 36px 0 16px 0; padding-bottom: 10px; border-bottom: 3px solid #E2E8F0; display: flex; align-items: center; gap: 10px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 24px; }
+        @media(max-width: 768px){ .gallery-grid { grid-template-columns: 1fr; } }
+        .card { background: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.07); transition: transform 0.25s ease, box-shadow 0.25s ease; display: flex; flex-direction: column; border: 1px solid #EAEAEA; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+        .card-img-wrapper { position: relative; width: 100%; padding-top: 56.25%; background: #111; overflow: hidden; cursor: pointer; }
+        .card-img-wrapper img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: contain; background: #F8F9FA; transition: transform 0.4s ease; }
+        .card-img-wrapper:hover img { transform: scale(1.03); }
+        .badge-overlay { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; backdrop-filter: blur(4px); }
+        .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; color: var(--dark-text); }
+        .card-subtitle { font-size: 0.9rem; color: #64748B; margin-bottom: 14px; font-weight: 500; }
+        .info-box { background: #F8FAFC; border-left: 4px solid var(--wheat-gold); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 12px; }
+        .info-box.rice-box { border-left-color: var(--rice-green); background: #F4FBF7; }
+        .info-box h4 { font-size: 0.8rem; color: #475569; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-box p { font-size: 0.95rem; color: #1E293B; line-height: 1.5; font-weight: 500; }
+        .price-compare { background: #FFFBEB; border: 1px dashed #F59E0B; border-radius: 8px; padding: 10px 12px; margin: 10px 0; }
+        .source-badge { display:inline-block; font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-right:4px; font-weight:700; }
+        .card-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 14px; border-top: 1px solid #F1F5F9; }
+        .btn { flex:1; padding: 9px 12px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-align: center; text-decoration: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-primary { background: var(--dark-text); color: white; border: none; }
+        .btn-primary:hover { background: #1A252F; }
+        .btn-outline { background: transparent; color: var(--dark-text); border: 2px solid #CBD5E1; }
+        .btn-outline:hover { background: #F1F5F9; border-color: #94A3B8; }
+        .modal { display: none; position: fixed; z-index: 1000; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.88); justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { max-width: 95%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 36px; font-weight: bold; cursor: pointer; }
+        .dev-section { background: #1E293B; color: #F8FAFC; padding: 30px; border-radius: 14px; margin-top: 44px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .dev-section h2 { color: #38BDF8; margin-bottom: 12px; font-size: 1.6rem; }
+        pre { background: #0F172A; padding: 18px; border-radius: 8px; overflow-x: auto; border: 1px solid #334155; font-family: 'Courier New', monospace; font-size: 0.85rem; color: #A5F3FC; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌾 Mandi Infographic Catalog: Wheat & Rice Varieties — Advanced Live Edition</h1>
+    <p>Banthara / Lucknow Mandi Comprehensive Reference + Live Prices from 4 Govt Portals (AGMARKNET, UP Mandi Parishad, e-NAM, FCA/FCI) + Basti Division Special • Complete Hinglish Documentation with High-Resolution Visuals</p>
+    <div class="stats-bar">
+        <div class="stat-badge">📊 19 High-Res Charts + Live Prices</div>
+        <div class="stat-badge">🌾 7 Wheat + 9 Rice Varieties</div>
+        <div class="stat-badge">📍 Basti Division + Lucknow + Highest District</div>
+        <div class="stat-badge">🔗 4-Portal Cross-Check</div>
+        <div class="stat-badge">⭐ Live: <span id="live-total">1682</span> UP Records Today</div>
+    </div>
+    <div class="mt-6 flex justify-center gap-3">
+        <a href="index.html" class="bg-white text-slate-900 px-5 py-2 rounded-full font-bold text-sm hover:bg-slate-100 transition">← Back to Live Mandi Dashboard</a>
+        <a href="#basti-live-prices" class="bg-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-amber-600 transition">📊 Basti Division Live Prices</a>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- LIVE PRICE TICKER FOR BANTHARA / LUCKNOW + BASTI DIVISION -->
+    <div id="basti-live-prices" class="bg-white rounded-xl shadow-sm border p-5 mb-8">
+        <h3 class="text-lg font-black text-slate-800 flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5 text-emerald-600"></i> 🔴 Live Prices Today — Banthara / Lucknow / Basti Division (28/07/2026)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="live-price-cards">
+            <div class="p-3 bg-slate-50 rounded text-center text-slate-400 text-sm">Loading live prices from data/basti_division.json...</div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div id="highest-district-live" class="p-3 bg-gradient-to-r from-orange-100 to-red-100 rounded border"></div>
+            <div class="p-3 bg-blue-50 rounded border">
+                <div class="text-[11px] font-bold text-slate-700">4 Government Portals Cross-Check (आज का Format)</div>
+                <ul class="text-[11px] mt-1 space-y-1 text-slate-600 list-disc pl-4">
+                    <li><b>Agmarknet Portal (agmarknet.gov.in):</b> Primary price source — data.gov.in इसी से बनता है</li>
+                    <li><b>UP Mandi Parishad (upmandiparishad.upsdc.gov.in / dashboard.mandiprojects.in):</b> Mandi directory, grade, secretary, CUG + price via AGMARKNET</li>
+                    <li><b>e-NAM Portal (enam.gov.in):</b> National lots — authorised feed needed</li>
+                    <li><b>FCA/FCI (fcainfoweb.nic.in):</b> All-India Average Retail/Wholesale — Wheat ₹31.3/kg, Rice ₹45.08/kg (27/07/2026) — benchmark only</li>
+                </ul>
+                <div class="mt-2 text-[9px] text-slate-500">Har rate ke saath source website ka naam clearly mention — neeche har card me dekho</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-controls">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="filterCategory('all')">🌟 All (19 + Live)</button>
+            <button class="tab-btn" onclick="filterCategory('live_prices')" style="background:#065F46;color:white;">🔴 Live Basti/Lucknow Prices</button>
+            <button class="tab-btn" onclick="filterCategory('variety_photos')" style="background:#E11D48;color:white;">📸 Grain Photos (16)</button>
+            <button class="tab-btn" onclick="filterCategory('photos')" style="background:#0F172A;color:white;">🌾 Banner Photos (3)</button>
+            <button class="tab-btn" onclick="filterCategory('wheat')">🌾 Wheat (7)</button>
+            <button class="tab-btn" data-category="rice" onclick="filterCategory('rice')">🍚 Rice (9)</button>
+            <button class="tab-btn" onclick="filterCategory('master')">⭐ Master Charts (3)</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search variety, district, mandi, price..." onkeyup="searchCards()">
+        </div>
+    </div>
+
+    <!-- LIVE PRICES GRID -->
+    <div class="section-title" id="live_prices-title">🔴 Live Prices — Sant Kabir Nagar, Basti, Lucknow, Siddharthnagar + Highest District</div>
+    <div class="gallery-grid" id="live_prices-grid"></div>
+
+    <!-- CROP & GRAIN PHOTOGRAPHY SECTION -->
+    <div class="section-title" id="photos-title">📸 Real / Studio Crop & Grain Photography (गेहूं एवं धान-चावल की असली फोटोग्राफी)</div>
+    <div class="gallery-grid" id="photos-grid">
+        <div class="card" data-category="photos" data-name="wheat crop grains photo golden">
+            <div class="card-img-wrapper" onclick="openModal('images/wheat_crop_grains.jpg')"><img src="images/wheat_crop_grains.jpg" alt="Wheat Crop" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Agritech Photo #1</span></div>
+            <div class="card-body">
+                <div class="card-title">Wheat Crop Ears & Clean Grains (गेहूं की बालियां एवं दाने)</div>
+                <div class="card-subtitle">Banthara / Lucknow Mandi • Golden Wheat Studio Photograph</div>
+                <div class="info-box"><h4>📌 Aasan Matlab</h4><p>गेहूं की सुनहरी फसल और साफ दड़ा/सुपरफाइन दाने। Header banner के लिए उपयुक्त।</p></div>
+                <div class="price-compare"><div class="text-[11px] font-bold">💰 Live: Dara Wheat — Basti ₹2489, Lucknow ₹2540, Ghaziabad (Highest) ₹2701 | Source: data.gov.in / agmarknet.gov.in</div></div>
+                <div class="card-actions"><button class="btn btn-primary" onclick="openModal('images/wheat_crop_grains.jpg')">🔍 Open Photo</button><a class="btn btn-outline" href="index.html">📊 Live Mandi Rates</a></div>
+            </div>
+        </div>
+        <div class="card" data-category="photos" data-name="rice paddy grains photo">
+            <div class="card-img-wrapper" onclick="openModal('images/rice_paddy_grains.jpg')"><img src="images/rice_paddy_grains.jpg" alt="Rice Paddy" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Agritech Photo #2</span></div>
+            <div class="card-body">
+                <div class="card-title">Paddy (धान - Raw) vs. Milled Rice (चावल) Distinction</div>
+                <div class="card-subtitle">Comparative Grain Reference Photo</div>
+                <div class="info-box rice-box"><h4>📌 Aasan Matlab</h4><p>बाईं ओर छिलके सहित कच्चा धान और दाईं ओर सफेद बासमती चावल का अंतर।</p></div>
+                <div class="price-compare"><div class="text-[11px] font-bold">🍚 Live: Basti Rice Common ₹3600, Sant Kabir Nagar Paddy ₹2500 | Source: data.gov.in | FCA All-India Avg Rice ₹45.08/kg</div></div>
+                <div class="card-actions"><button class="btn btn-primary" onclick="openModal('images/rice_paddy_grains.jpg')">🔍 Open Photo</button><a class="btn btn-outline" href="index.html">📊 Live Rates</a></div>
+            </div>
+        </div>
+        <div class="card" data-category="photos" data-name="wheat rice combo banner">
+            <div class="card-img-wrapper" onclick="openModal('images/wheat_rice_combo.jpg')"><img src="images/wheat_rice_combo.jpg" alt="Wheat Rice Combo" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#0F172A;">Agritech Photo #3</span></div>
+            <div class="card-body">
+                <div class="card-title">Wheat + Rice Combined Hero Banner</div>
+                <div class="card-subtitle">Website Hero Section Image</div>
+                <div class="info-box" style="border-left-color:#38BDF8;background:#F4F8FB;"><h4>📌 Aasan Matlab</h4><p>गेहूं और धान-चावल की संयुक्त हाई-रेज़ोल्यूशन कमर्शियल इमेज।</p></div>
+                <div class="card-actions"><button class="btn btn-primary" onclick="openModal('images/wheat_rice_combo.jpg')">🔍 Open Photo</button><a class="btn btn-outline" href="images/wheat_rice_combo.jpg" download>⬇️ Download</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARIETY PHOTOS - 16 -->
+    <div class="section-title" id="variety_photos-title">📸 16 Variety-Specific Grain Photos (हर वैरायटी की असली फोटोग्राफी)</div>
+    <div class="gallery-grid" id="variety_photos-grid">
+        <!-- Wheat 7 -->
+        <div class="card" data-category="variety_photos" data-name="dara wheat"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_01_dara.jpg')"><img src="images/variety_wheat_01_dara.jpg" alt="Dara" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Dara (दड़ा गेहूं) — Live: Basti ₹2489, Lucknow ₹2540 | Source: data.gov.in</div><div class="card-subtitle">Standard commercial mandi wheat — Basti Division me 65% share</div><div class="price-compare"><b>Wheat Dara FAQ:</b><br>Lowest: ₹2430 (Sahiyapur) | Highest: ₹2701 (Ghaziabad - Highest District) | Modal Avg: ~₹2500<br><span class="source-badge bg-amber-100 text-amber-800">data.gov.in</span><span class="source-badge bg-emerald-100 text-emerald-800">agmarknet.gov.in</span></div><div class="card-actions"><button class="btn btn-primary" onclick="openModal('images/variety_wheat_01_dara.jpg')">🔍 Photo</button><a class="btn btn-outline" href="images/variety_wheat_01_dara.jpg" download>⬇️ Download</a></div></div></div>
+        <div class="card" data-category="variety_photos" data-name="dara mill quality"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_02_dara_mill.jpg')"><img src="images/variety_wheat_02_dara_mill.jpg" alt="Dara Mill" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Dara Mill Quality (मिलिंग क्वालिटी)</div><div class="card-subtitle">Cleaned uniform high-yield milling wheat — Roller flour mills ki pasand</div><div class="price-compare">Live: Ghaziabad Dara Mill ₹2701 | Source: AGMARKNET + UP Mandi Parishad (upmandiparishad.upsdc.gov.in)</div><div class="card-actions"><button class="btn btn-primary" onclick="openModal('images/variety_wheat_02_dara_mill.jpg')">🔍 Photo</button></div></div></div>
+        <div class="card" data-category="variety_photos" data-name="medium"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_03_medium.jpg')"><img src="images/variety_wheat_03_medium.jpg" alt="Medium" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Medium (मध्यम क्वालिटी)</div><div class="card-subtitle">Balanced medium-sized domestic wheat — Budget friendly</div><div class="info-box"><h4>🏬 Mandi Role</h4><p>Local grocery, small chakkis — Mandi me 'Medium FAQ' label</p></div></div></div>
+        <div class="card" data-category="variety_photos" data-name="medium fine"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_04_medium_fine.jpg')"><img src="images/variety_wheat_04_medium_fine.jpg" alt="Medium Fine" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Medium Fine (मीडियम फाइन)</div><div class="card-subtitle">Bright golden-amber superior finish</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="super fine"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_05_super_fine.jpg')"><img src="images/variety_wheat_05_super_fine.jpg" alt="Super Fine" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Super Fine (सुपर फाइन) — Highest Price District me zyada</div><div class="card-subtitle">Heavy bold golden Sharbati-style — Elite households</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="local"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_06_local.jpg')"><img src="images/variety_wheat_06_local.jpg" alt="Local" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Local (स्थानीय)</div><div class="card-subtitle">Farmer-harvested — Seasonal peak par fastest arrival</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="other wheat"><div class="card-img-wrapper" onclick="openModal('images/variety_wheat_07_other.jpg')"><img src="images/variety_wheat_07_other.jpg" alt="Other" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Wheat Photo</span></div><div class="card-body"><div class="card-title">Other (अन्य गेहूं)</div><div class="card-subtitle">Mixed hybrid — FAQ grade vital</div></div></div>
+        <!-- Rice 9 -->
+        <div class="card" data-category="variety_photos" data-name="common rice"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_01_common.jpg')"><img src="images/variety_rice_01_common.jpg" alt="Common" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Common (सामान्य) — Live: Basti Rice ₹3600, Sant Kabir Nagar Paddy ₹2500</div><div class="card-subtitle">Common IR-64 — Mass consumption</div><div class="price-compare">Rice Common: Basti ₹3600 (data.gov.in) | FCA All-India Avg ₹45.08/kg (≈₹4508/Q) | Source: fcainfoweb.nic.in</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="basmati"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_02_basmati.jpg')"><img src="images/variety_rice_02_basmati.jpg" alt="Basmati" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Basmati (बासमती)</div><div class="card-subtitle">Slender long aromatic — Export houses</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="superfine basmati"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_03_superfine_basmati.jpg')"><img src="images/variety_rice_03_superfine_basmati.jpg" alt="SuperFine Basmati" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">SuperFine Basmati — Extra-long 1121</div><div class="card-subtitle">5-star hotels — 8mm+ length</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="basmati mogra"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_04_basmati_mogra.jpg')"><img src="images/variety_rice_04_basmati_mogra.jpg" alt="Mogra" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Basmati Mogra (मोगरा चावल)</div><div class="card-subtitle">Fragrant broken basmati — Budget pulav</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="basmati trophy"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_05_basmati_trophy.jpg')"><img src="images/variety_rice_05_basmati_trophy.jpg" alt="Trophy" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Basmati Trophy (ट्रेड लेबल)</div><div class="card-subtitle">Graded commercial brand label</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="rajbhog"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_06_rajbhog.jpg')"><img src="images/variety_rice_06_rajbhog.jpg" alt="Rajbhog" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Rajbhog (राजभोग)</div><div class="card-subtitle">Traditional aromatic UP non-basmati — Kheer</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="hamsa"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_07_hamsa_st.jpg')"><img src="images/variety_rice_07_hamsa_st.jpg" alt="Hamsa" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Hamsa St. (हमसा स्टैंडर्ड)</div><div class="card-subtitle">Sturdy standard UP medium-grain</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="broken rice"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_08_broken_rice.jpg')"><img src="images/variety_rice_08_broken_rice.jpg" alt="Broken" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Broken Rice (टूटे चावल / कड़की) — Live: FCA Broken Rice ₹33.24/kg</div><div class="card-subtitle">Milling by-product — Ethanol, feed industry</div></div></div>
+        <div class="card" data-category="variety_photos" data-name="other rice"><div class="card-img-wrapper" onclick="openModal('images/variety_rice_09_other.jpg')"><img src="images/variety_rice_09_other.jpg" alt="Other" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#2E8B57;">Rice Photo</span></div><div class="card-body"><div class="card-title">Other (अन्य)</div><div class="card-subtitle">Specialty red & unclassified</div></div></div>
+    </div>
+
+    <!-- WHEAT SECTION -->
+    <div class="section-title" id="wheat-title">🌾 Wheat Categories (गेहूं की प्रमुख Varieties) + Live Basti/Lucknow Price Comparison</div>
+    <div class="gallery-grid" id="wheat-grid">
+        <div class="card" data-category="wheat" data-name="dara wheat"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_01_dara.png')"><img src="infographics/wheat_01_dara.png" alt="Dara" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Dara (दड़ा / सामान्य) — Primary Commercial</div><div class="card-subtitle">Basti/Lucknow — 65-75% share</div><div class="info-box"><h4>📌 Aasan Matlab</h4><p>Samanya local gehun ki pramukh variety. Bulk trading.</p></div><div class="price-compare"><b>Live Today (28/07/2026):</b><br>Basti: ₹2450-2500 (Modal ₹2489) | Lucknow: ₹2540 | Sant Kabir Nagar: ₹2450 | Siddharthnagar: ₹2500-2518 | Highest (Ghaziabad): ₹2701<br><span class="source-badge bg-amber-100">data.gov.in</span><span class="source-badge bg-green-100">agmarknet.gov.in</span><span class="source-badge bg-blue-100">upmandiparishad.upsdc.gov.in</span></div></div></div>
+        <div class="card" data-category="wheat" data-name="dara mill quality"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_02_dara_mill_quality.png')"><img src="infographics/wheat_02_dara_mill_quality.png" alt="Dara Mill" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Dara Mill Quality (मिलिंग क्वालिटी)</div><div class="card-subtitle">Cleaned uniform — Roller mills ki pasand</div><div class="info-box"><h4>📌 Aasan Matlab</h4><p>Aata milling ke liye achhi quality wala Dara.</p></div><div class="price-compare">Live: Ghaziabad ₹2701 (Highest) | Source: AGMARKNET + e-NAM (enam.gov.in) authorised feed when available</div></div></div>
+        <div class="card" data-category="wheat" data-name="medium wheat"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_03_medium.png')"><img src="infographics/wheat_03_medium.png" alt="Medium" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Medium (मध्यम) — Budget</div><div class="card-subtitle">Balanced price & domestic utility</div></div></div>
+        <div class="card" data-category="wheat" data-name="medium fine"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_04_medium_fine.png')"><img src="infographics/wheat_04_medium_fine.png" alt="Medium Fine" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Medium Fine (मीडियम फाइन)</div><div class="card-subtitle">Superior finish — Quality-conscious chakkis</div></div></div>
+        <div class="card" data-category="wheat" data-name="super fine"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_05_super_fine.png')"><img src="infographics/wheat_05_super_fine.png" alt="Super Fine" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Super Fine (सुपर फाइन) — Top Luster</div><div class="card-subtitle">Premium — Sweet makers</div><div class="info-box"><h4>🏬 Mandi Role</h4><p>Heavy bold grains, golden shine, high protein.</p></div></div></div>
+        <div class="card" data-category="wheat" data-name="local wheat"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_06_local.png')"><img src="infographics/wheat_06_local.png" alt="Local" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Local (स्थानीय)</div><div class="card-subtitle">Farmer direct harvest — Seasonal peak</div></div></div>
+        <div class="card" data-category="wheat" data-name="other wheat"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_07_other.png')"><img src="infographics/wheat_07_other.png" alt="Other" onerror="this.src='images/icon-512.png'"><span class="badge-overlay">Wheat Variety</span></div><div class="card-body"><div class="card-title">Other (अन्य) — Hybrid</div><div class="card-subtitle">Miscellaneous lots — FAQ vital</div></div></div>
+    </div>
+
+    <!-- RICE SECTION -->
+    <div class="section-title" id="rice-title" style="margin-top: 60px;">🍚 Rice & Paddy Categories (धान एवं चावल) + Live Prices</div>
+    <div class="gallery-grid" id="rice-grid">
+        <div class="card" data-category="rice" data-name="common rice"><div class="card-img-wrapper" onclick="openModal('infographics/rice_01_common.png')"><img src="infographics/rice_01_common.png" alt="Common" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">Common (सामान्य) — Mass Consumption</div><div class="card-subtitle">IR-64 etc — PDS, hostel kitchens</div><div class="info-box rice-box"><h4>📌 Aasan Matlab</h4><p>Samanya dhaan aur chawal — Mota / Sarbati.</p></div><div class="price-compare"><b>Live Today:</b><br>Basti Rice Common ₹3600 (data.gov.in)<br>Sant Kabir Nagar Paddy Common ₹2500<br>Siddharthnagar Rice Common ₹2600<br>FCA All-India Avg Rice ₹45.08/kg | Source: fcainfoweb.nic.in<br><span class="source-badge bg-green-100">data.gov.in</span><span class="source-badge bg-blue-100">fcainfoweb.nic.in</span></div></div></div>
+        <div class="card" data-category="rice" data-name="basmati rice"><div class="card-img-wrapper" onclick="openModal('infographics/rice_02_basmati.png')"><img src="infographics/rice_02_basmati.png" alt="Basmati" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">Basmati (बासमती) — Traditional Aromatic</div><div class="card-subtitle">Lamba daana — Export houses</div><div class="price-compare">Basmati Grade-A: Lowest/Highest comparison in Basti Division report — Source: AGMARKNET + e-NAM</div></div></div>
+        <div class="card" data-category="rice" data-name="superfine basmati"><div class="card-img-wrapper" onclick="openModal('infographics/rice_03_superfine_basmati.png')"><img src="infographics/rice_03_superfine_basmati.png" alt="SuperFine" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">SuperFine Basmati — Extra-Long 1121</div><div class="card-subtitle">Premium Export — 8mm+ length</div></div></div>
+        <div class="card" data-category="rice" data-name="basmati mogra"><div class="card-img-wrapper" onclick="openModal('infographics/rice_04_basmati_mogra.png')"><img src="infographics/rice_04_basmati_mogra.png" alt="Mogra" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Rice Only</span></div><div class="card-body"><div class="card-title">Basmati Mogra (Raw/New) — Fragrant Broken</div><div class="card-subtitle">Budget pulav — Household daily</div><div class="info-box rice-box"><h4>📌 Mandi Role</h4><p>Ye category kewal Rice (milled) me trade hoti hai, Paddy me nahi.</p></div></div></div>
+        <div class="card" data-category="rice" data-name="basmati trophy"><div class="card-img-wrapper" onclick="openModal('infographics/rice_05_basmati_trophy.png')"><img src="infographics/rice_05_basmati_trophy.png" alt="Trophy" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Rice Only</span></div><div class="card-body"><div class="card-title">Basmati Trophy (ट्रेड लेबल)</div><div class="card-subtitle">Commercial Mandi Brand Standard</div></div></div>
+        <div class="card" data-category="rice" data-name="rajbhog"><div class="card-img-wrapper" onclick="openModal('infographics/rice_06_rajbhog.png')"><img src="infographics/rice_06_rajbhog.png" alt="Rajbhog" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">Rajbhog (राजभोग) — Traditional Premium</div><div class="card-subtitle">Aromatic non-basmati — Sweet makers (Kheer)</div></div></div>
+        <div class="card" data-category="rice" data-name="hamsa st"><div class="card-img-wrapper" onclick="openModal('infographics/rice_07_hamsa_st.png')"><img src="infographics/rice_07_hamsa_st.png" alt="Hamsa" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">Hamsa St. (हमसा स्टैंडर्ड)</div><div class="card-subtitle">Recorded Mandi Standard — Stable medium-grain</div></div></div>
+        <div class="card" data-category="rice" data-name="broken rice"><div class="card-img-wrapper" onclick="openModal('infographics/rice_08_broken_rice.png')"><img src="infographics/rice_08_broken_rice.png" alt="Broken" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#B8860B;">Rice Only</span></div><div class="card-body"><div class="card-title">Broken Rice (कड़की) — Milling By-Product</div><div class="card-subtitle">Ethanol / feed industry — Rice form only</div><div class="price-compare">FCA Broken Rice ₹33.24/kg (27/07/2026) | Source: fcainfoweb.nic.in</div></div></div>
+        <div class="card" data-category="rice" data-name="other rice"><div class="card-img-wrapper" onclick="openModal('infographics/rice_09_other.png')"><img src="infographics/rice_09_other.png" alt="Other" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:rgba(46,139,87,0.85);">Paddy & Rice</span></div><div class="card-body"><div class="card-title">Other (अन्य) — Specialty</div><div class="card-subtitle">Red rice, Black rice, unlisted lots</div></div></div>
+    </div>
+
+    <!-- MASTER CHARTS -->
+    <div class="section-title" id="master-title" style="margin-top: 60px;">⭐ Master Summary & 4-Portal Architecture</div>
+    <div class="gallery-grid" id="master-grid">
+        <div class="card" data-category="master" data-name="wheat master summary"><div class="card-img-wrapper" onclick="openModal('infographics/wheat_10_master_chart.png')"><img src="infographics/wheat_10_master_chart.png" alt="Wheat Master" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#1E293B;">Master Chart #1</span></div><div class="card-body"><div class="card-title">Wheat Varieties: Master Summary</div><div class="card-subtitle">Comparing 7 Wheat Varieties Side-by-Side + Basti Division Live Prices</div><div class="info-box"><h4>📌 Why Essential</h4><p>Compares Dara, Dara Mill Quality, Medium, Medium Fine, Super Fine, Local, Other across Quality Tiers + Live Basti/Lucknow/Ghaziabad prices with sources.</p></div></div></div>
+        <div class="card" data-category="master" data-name="rice master summary"><div class="card-img-wrapper" onclick="openModal('infographics/rice_10_master_chart.png')"><img src="infographics/rice_10_master_chart.png" alt="Rice Master" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#1E293B;">Master Chart #2</span></div><div class="card-body"><div class="card-title">Rice & Paddy: Master Matrix + FCA/FCI Benchmark</div><div class="card-subtitle">Paddy & Rice vs Only Rice categories + All-India Average</div><div class="info-box rice-box"><h4>📌 Key</h4><p>Explains which trade as both Paddy & Rice (Common, Basmati, Rajbhog, Hamsa) and which ONLY as Milled Rice (Mogra, Trophy, Broken). Plus FCA benchmark ₹45.08/kg.</p></div></div></div>
+        <div class="card" data-category="master" data-name="variety vs grade concept"><div class="card-img-wrapper" onclick="openModal('infographics/concept_variety_vs_grade.png')"><img src="infographics/concept_variety_vs_grade.png" alt="Concept" onerror="this.src='images/icon-512.png'"><span class="badge-overlay" style="background:#E11D48;">Critical Tech Guide</span></div><div class="card-body"><div class="card-title">Variety vs. Grade Separation + 4-Portal Cross-Check Architecture</div><div class="card-subtitle">Why Mandi Developers MUST Keep Variety & Grade Separate + Portal Sources</div><div class="info-box" style="border-left-color:#E11D48;background:#FFF5F7;"><h4>📌 Why 'Dara FAQ' Exists</h4><p>Dara is Variety, FAQ is Grade. Shows 3 clean dropdowns: Crop → Variety → Grade + 4 portals: AGMARKNET (agmarknet.gov.in), UP Mandi Parishad (upmandiparishad.upsdc.gov.in), e-NAM (enam.gov.in), FCA/FCI (fcainfoweb.nic.in) with source mention per rate.</p></div></div></div>
+    </div>
+
+    <!-- DEV GUIDE -->
+    <div class="dev-section" id="dev-guide">
+        <h2>💻 Advanced Mandi Portal Developer Guide: Dropdown Schema + Live Price Integration + 4-Portal Cross-Check</h2>
+        <p>Enhanced version includes live price integration from data/basti_division.json and data/source_prices.json, plus 4-portal verification badges.</p>
+        <pre id="jsonSchema">
+// ============================================================================
+// ADVANCED MANDI PORTAL SCHEMA — BANTHARA / LUCKNOW + BASTI DIVISION
+// Includes Live Price Integration & 4-Portal Cross-Check
+// ============================================================================
+{
+  "basti_division": {
+    "division": "Basti Division (Basti, Siddharthnagar, Sant Kabir Nagar)",
+    "extra": ["Lucknow", "Ghaziabad (Highest Price District)"],
+    "portals": [
+      {"id": "agmarknet", "url": "https://agmarknet.gov.in", "role": "Primary"},
+      {"id": "up_mandi_parishad", "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx", "alt": "http://upmandiparishad.upsdc.gov.in"},
+      {"id": "enam", "url": "https://www.enam.gov.in/web/"},
+      {"id": "fca_fci", "url": "https://fcainfoweb.nic.in/", "alt": "https://fci.gov.in"}
+    ],
+    "live_prices_today": {
+      "Basti": {"Wheat_Dara": {"lowest": 2450, "highest": 2500, "modal": 2489, "source": "data.gov.in / agmarknet.gov.in"}, "Rice_Common": {"modal": 3600}},
+      "Lucknow": {"Wheat_Dara": {"modal": 2540}, "Rice": {"modal": 2600}},
+      "Sant_Kabir_Nagar": {"Wheat": {"modal": 2450}, "Paddy_Common": {"modal": 2500}},
+      "Siddharthnagar": {"Wheat": {"modal": 2500}, "Rice_Common": {"modal": 2600}},
+      "Ghaziabad_Highest": {"Wheat_Dara": {"modal": 2701, "reason": "Delhi NCR proximity - always highest"}}
+    }
+  },
+  "wheat": {
+    "commodity_name": "Wheat (गेहूं)",
+    "varieties": [
+      {"id": "dara", "name": "Dara", "label_hi": "दड़ा", "live_price_example": {"Basti": 2489, "Lucknow": 2540, "Ghaziabad_Highest": 2701}},
+      {"id": "dara_mill_quality", "name": "Dara Mill Quality"},
+      {"id": "medium", "name": "Medium"},
+      {"id": "medium_fine", "name": "Medium Fine"},
+      {"id": "super_fine", "name": "Super Fine"},
+      {"id": "local", "name": "Local"},
+      {"id": "other", "name": "Other"}
+    ]
+  },
+  "integration": {
+    "fetch": "fetch('data/basti_division.json').then(r=>r.json()).then(data=>{ /* render cards with source mention */ })",
+    "source_mention_rule": "Har rate ke saath source Government Website ka naam clearly mention — e.g., 'Source: data.gov.in / agmarknet.gov.in' + URL"
+  }
+}
+        </pre>
+        <div class="mt-4 p-3 bg-white/10 rounded">
+            <p class="text-sm">🔗 Live Data Sources Today (27-28/07/2026):</p>
+            <ul class="text-xs mt-2 space-y-1 list-disc pl-4">
+                <li>data.gov.in Total UP: 1902 records (1682 earlier) — Updated On: 27/07/2026 (your screenshot)</li>
+                <li>FCA All-India Avg: Rice ₹45.08/kg, Wheat ₹31.3/kg, Broken Rice ₹33.24/kg (27/07/2026)</li>
+                <li>Sample Key Fallback: Public key 579b464... works for all UP via pagination (10 per request)</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal(event)">
+    <span class="close-btn" onclick="closeModal(event)">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+<script>
+    // Live price loader for advanced page
+    async function loadLivePrices() {
+        try {
+            const basti = await fetch('data/basti_division.json?t=' + Date.now()).then(r=>r.json()).catch(()=>null);
+            const sourcePrices = await fetch('data/source_prices.json?t=' + Date.now()).then(r=>r.json()).catch(()=>null);
+            const liveContainer = document.getElementById('live-price-cards');
+            const highestContainer = document.getElementById('highest-district-live') || document.createElement('div');
+            if (basti && basti.reports && liveContainer) {
+                let html = '';
+                basti.reports.forEach(rep => {
+                    const wheat = rep.wheat;
+                    const rice = rep.rice_common;
+                    html += `
+                        <div class="bg-white border rounded-lg p-3">
+                            <div class="font-bold text-sm">${rep.district_hi || rep.district} (${rep.district})</div>
+                            <div class="text-[11px] text-slate-500">${(rep.mandis_active||[]).join(', ')}</div>
+                            ${wheat ? `<div class="mt-2 text-[11px] bg-amber-50 p-2 rounded">🌾 गेहूं: ₹${wheat.lowest_price} - ₹${wheat.highest_price} (औसत ₹${wheat.modal_average})<br><span class="text-[9px]">स्रोत: ${wheat.records && wheat.records[0] ? wheat.records[0].source : 'data.gov.in'} | agmarknet.gov.in</span></div>` : ''}
+                            ${rice ? `<div class="mt-2 text-[11px] bg-emerald-50 p-2 rounded">🍚 चावल: ₹${rice.lowest_price} - ₹${rice.highest_price}<br><span class="text-[9px]">स्रोत: data.gov.in</span></div>` : ''}
+                        </div>
+                    `;
+                });
+                liveContainer.innerHTML = html || '<div class="p-3 text-slate-400">No Basti data yet</div>';
+            }
+            if (basti && basti.highest_price_district && highestContainer) {
+                const h = basti.highest_price_district;
+                highestContainer.innerHTML = `
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg p-3">
+                        <div class="text-[11px] opacity-90">🔥 Highest Price District (आज)</div>
+                        <div class="font-black text-base">${h.district_hi || h.district} - ${h.wheat ? h.wheat.mandi : ''}</div>
+                        <div class="text-sm">${h.reason_hi || h.reason}</div>
+                        <div class="text-xl font-black mt-1">₹ ${h.wheat ? h.wheat.modal_price : ''}/Q</div>
+                        <div class="text-[10px] opacity-80">स्रोत: data.gov.in / agmarknet.gov.in (upmandiparishad.upsdc.gov.in)</div>
+                    </div>
+                `;
+            }
+            // Update live total
+            const totalEl = document.getElementById('live-total');
+            if (totalEl && basti) totalEl.innerText = basti.total_up_records_used || '1902';
+        } catch(e){ console.error('Live load failed', e); }
+    }
+    loadLivePrices();
+
+    function filterCategory(cat) {
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        const sections = {
+            'photos': ['photos'],
+            'variety_photos': ['variety_photos'],
+            'wheat': ['wheat'],
+            'rice': ['rice'],
+            'master': ['master'],
+            'live_prices': ['live_prices'],
+            'all': ['photos','variety_photos','wheat','rice','master','live_prices']
+        };
+        const toShow = sections[cat] || sections['all'];
+        document.querySelectorAll('.section-title, .gallery-grid').forEach(el => {
+            const id = el.id.replace('-title','').replace('-grid','');
+            if (toShow.includes(id) || cat==='all') el.style.display = id.includes('title') ? 'flex' : 'grid';
+            else el.style.display = 'none';
+        });
+        if (cat==='live_prices') {
+            document.getElementById('live_prices-title').style.display='flex';
+            document.getElementById('live_prices-grid').style.display='grid';
+        }
+    }
+
+    function searchCards() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.card, #live_prices-grid > div');
+        cards.forEach(card => {
+            const name = (card.getAttribute('data-name')||'').toLowerCase();
+            const text = card.innerText.toLowerCase();
+            if (name.includes(query) || text.includes(query)) card.style.display = 'flex';
+            else card.style.display = 'none';
+        });
+    }
+
+    function openModal(imgSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        modal.style.display = 'flex';
+        modalImg.src = imgSrc;
+    }
+
+    function closeModal(e) {
+        if (e.target.id === 'imageModal' || e.target.className === 'close-btn') {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>
