@@ -377,8 +377,8 @@
                 </div>
             </section>
 
-            <!-- Search & Filters -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <!-- Search & Filters + Variety -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-150 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_search">फसल, मंडी या जिला खोजें</label>
                     <div class="relative flex items-center">
@@ -402,6 +402,27 @@
                         <option value="all" data-translate="opt_all_crops">सभी फसलें</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase" data-translate="filter_variety">किस्म चुनें (Variety)</label>
+                    <select id="filter-variety" onchange="applyFilters()" class="w-full py-2 px-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        <option value="all" data-translate="opt_all_varieties">सभी किस्में</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 🌾 VARIETY SECTION (किस्म-वार भाव) -->
+            <div id="variety-showcase" class="bg-white p-4 rounded-xl shadow-sm border border-amber-200">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-black text-sm text-amber-900 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-5 h-5 text-amber-600"></i>
+                        <span data-translate="variety_section_title">किस्म-वार भाव (Variety-wise Rates)</span>
+                    </h4>
+                    <span id="variety-count-badge" class="text-[10px] bg-amber-50 border border-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-full">0 varieties</span>
+                </div>
+                <div id="variety-chips" class="flex flex-wrap gap-2 min-h-[24px]">
+                    <span class="text-xs text-slate-400">किस्में लोड हो रही हैं...</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2" data-translate="variety_help">किसी किस्म पर क्लिक करें तो वही किस्म फिल्टर हो जाएगी। हर रिकॉर्ड में किस्म (Variety) और ग्रेड अलग कॉलम में दिखते हैं।</p>
             </div>
 
             <!-- ⚡ LIVE SORTING SELECTION BAR (सॉर्टिंग बार) ⚡ -->
@@ -1209,6 +1230,10 @@
                 filter_commodity: "फसल चुनें",
                 opt_all_districts: "सभी जिले",
                 opt_all_crops: "सभी फसलें",
+                filter_variety: "किस्म चुनें (Variety)",
+                opt_all_varieties: "सभी किस्में",
+                variety_section_title: "किस्म-वार भाव (Variety-wise Rates)",
+                variety_help: "किसी किस्म पर क्लिक करें तो वही किस्म फिल्टर हो जाएगी। हर रिकॉर्ड में किस्म और ग्रेड अलग कॉलम में दिखते हैं।",
                 rates_heading: "2-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)",
                 th_district: "जिला",
                 th_mandi: "मंडी नाम",
@@ -1309,6 +1334,10 @@
                 filter_commodity: "Select Crop",
                 opt_all_districts: "All Districts",
                 opt_all_crops: "All Crops",
+                filter_variety: "Select Variety",
+                opt_all_varieties: "All Varieties",
+                variety_section_title: "Variety-wise Rates (किस्म-वार भाव)",
+                variety_help: "Click a variety to filter. Variety and Grade are shown as separate columns in every record.",
                 rates_heading: "Two-source verified mandi prices (INR/Quintal)",
                 th_district: "District",
                 th_mandi: "Mandi Name",
@@ -1673,6 +1702,7 @@
             
             populateDropdowns();
             renderRatesTable();
+            renderVarietySection();
             renderStatePrices();
             renderStateBenchmark();
             renderOfficialPortals();
@@ -2199,6 +2229,7 @@
 
                 safeRun('populateDropdowns', populateDropdowns);
                 safeRun('renderRatesTable', renderRatesTable);
+                safeRun('renderVarietySection', renderVarietySection);
                 safeRun('renderStatePrices', renderStatePrices);
                 safeRun('renderStateBenchmark', renderStateBenchmark);
                 safeRun('renderOfficialPortals', renderOfficialPortals);
@@ -2229,6 +2260,7 @@
         function populateDropdowns() {
             const distSelect = document.getElementById('filter-district');
             const cropSelect = document.getElementById('filter-commodity');
+            const varietySelect = document.getElementById('filter-variety');
             const trendCropSelect = document.getElementById('trend-crop-select');
             const predictCropSelect = document.getElementById('predict-crop-select');
             const rankCropSelect = document.getElementById('rank-crop-select');
@@ -2239,6 +2271,7 @@
             // Defensive guards in case of DOM elements absence
             const currentDistValue = distSelect ? distSelect.value : 'all';
             const currentCropValue = cropSelect ? cropSelect.value : 'all';
+            const currentVarietyValue = varietySelect ? varietySelect.value : 'all';
             const currentTrendValue = trendCropSelect ? trendCropSelect.value : 'Wheat';
             const currentPredictValue = predictCropSelect ? predictCropSelect.value : 'Wheat';
             const currentRankValue = rankCropSelect ? rankCropSelect.value : 'Wheat';
@@ -2247,8 +2280,10 @@
             const districtKeys = new Set();
             const uniqueCrops = [];
             const cropKeys = new Set();
+            const uniqueVarieties = [];
+            const varietyKeys = new Set();
 
-            // Only rows that actually carry a district/commodity become filter
+            // Only rows that actually carry a district/commodity/variety become filter
             // options, and a missing Hindi label falls back to the English
             // spelling instead of becoming `undefined`.
             latestData.forEach(r => {
@@ -2262,6 +2297,11 @@
                 if (commodity && !cropKeys.has(commodity)) {
                     cropKeys.add(commodity);
                     uniqueCrops.push({ en: commodity, hi: r.commodity_hi || commodity });
+                }
+                const variety = r.variety || r.variety_hi;
+                if (variety && !varietyKeys.has(variety)) {
+                    varietyKeys.add(variety);
+                    uniqueVarieties.push({ en: variety, hi: r.variety_hi || variety });
                 }
             });
 
@@ -2280,6 +2320,7 @@
 
             buildOptions(distSelect, TRANSLATIONS[currentLang].opt_all_districts, uniqueDistricts);
             buildOptions(cropSelect, TRANSLATIONS[currentLang].opt_all_crops, uniqueCrops);
+            buildOptions(varietySelect, TRANSLATIONS[currentLang].opt_all_varieties, uniqueVarieties);
             buildOptions(subDist, currentLang === 'hi' ? 'सभी जिले' : 'All Districts', uniqueDistricts);
             buildOptions(subCrop, currentLang === 'hi' ? 'सभी फसलें' : 'All Crops', uniqueCrops);
 
@@ -2326,6 +2367,7 @@
 
             if (currentDistValue && distSelect) distSelect.value = currentDistValue;
             if (currentCropValue && cropSelect) cropSelect.value = currentCropValue;
+            if (currentVarietyValue && varietySelect) varietySelect.value = currentVarietyValue;
             if (currentTrendValue && trendCropSelect) trendCropSelect.value = currentTrendValue;
             if (currentPredictValue && predictCropSelect) predictCropSelect.value = currentPredictValue;
             if (currentRankValue && rankCropSelect) rankCropSelect.value = currentRankValue;
@@ -2437,10 +2479,48 @@
             body.innerHTML = html || `<tr><td colspan="6" class="py-4 text-center text-slate-400">${currentLang === 'hi' ? 'कोई सत्यापित भाव उपलब्ध नहीं है।' : 'No verified rates are available.'}</td></tr>`;
         }
 
+        function renderVarietySection() {
+            const container = document.getElementById('variety-chips');
+            const badge = document.getElementById('variety-count-badge');
+            if (!container) return;
+            const all = Array.isArray(latestData) ? latestData : [];
+            const varietyMap = new Map();
+            all.forEach(r => {
+                if (!r || !r.variety) return;
+                const key = r.variety;
+                const existing = varietyMap.get(key) || { count:0, hi: r.variety_hi || key, en: r.variety, min: Infinity, max: 0 };
+                existing.count += 1;
+                const modal = Number(r.modal_price)||0;
+                if (modal < existing.min) existing.min = modal;
+                if (modal > existing.max) existing.max = modal;
+                varietyMap.set(key, existing);
+            });
+            const varieties = Array.from(varietyMap.values()).sort((a,b)=> b.count - a.count);
+            if (badge) {
+                badge.innerText = `${varieties.length} ${currentLang==='hi'?'किस्में':'varieties'} • ${all.length} records`;
+            }
+            if (!varieties.length) {
+                container.innerHTML = `<span class="text-xs text-slate-400">${currentLang==='hi'?'कोई किस्म उपलब्ध नहीं':'No varieties available'}</span>`;
+                return;
+            }
+            container.innerHTML = varieties.map(v => {
+                const label = currentLang==='hi' ? (v.hi || v.en) : v.en;
+                const isActive = document.getElementById('filter-variety')?.value === v.en;
+                const activeClass = isActive ? 'bg-amber-500 text-white border-amber-600' : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100';
+                return `<button onclick="document.getElementById('filter-variety').value='${escapeHtml(v.en)}'; applyFilters(); renderVarietySection();" class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${activeClass} transition flex items-center gap-1">
+                    <span>${escapeHtml(label)}</span>
+                    <span class="text-[9px] opacity-70">(${v.count})</span>
+                    <span class="text-[9px]">₹${v.min===Infinity?'-':v.min}–${v.max}</span>
+                </button>`;
+            }).join('');
+            renderIcons();
+        }
+
         function getFilteredRecords() {
             const searchVal = (document.getElementById('rate-search')?.value || '').toLowerCase().trim();
             const distVal = document.getElementById('filter-district')?.value || 'all';
             const cropVal = document.getElementById('filter-commodity')?.value || 'all';
+            const varietyVal = document.getElementById('filter-variety')?.value || 'all';
 
             return (Array.isArray(latestData) ? latestData : []).filter(r => {
                 if (!r) return false;
@@ -2453,8 +2533,9 @@
 
                 const matchesDistrict = (distVal === 'all' || r.district === distVal);
                 const matchesCrop = (cropVal === 'all' || r.commodity === cropVal);
+                const matchesVariety = (varietyVal === 'all' || r.variety === varietyVal);
 
-                return matchesSearch && matchesDistrict && matchesCrop;
+                return matchesSearch && matchesDistrict && matchesCrop && matchesVariety;
             });
         }
 
@@ -2474,7 +2555,8 @@
             const searchVal = (document.getElementById('rate-search')?.value || '').trim();
             const distVal = document.getElementById('filter-district')?.value || 'all';
             const cropVal = document.getElementById('filter-commodity')?.value || 'all';
-            const filtersActive = Boolean(searchVal) || distVal !== 'all' || cropVal !== 'all';
+            const varietyValExplain = document.getElementById('filter-variety')?.value || 'all';
+            const filtersActive = Boolean(searchVal) || distVal !== 'all' || cropVal !== 'all' || varietyValExplain !== 'all';
             if (helpEl) helpEl.classList.add('hidden');
 
             // Case 1: data exists, the filters simply matched nothing.
@@ -2606,8 +2688,8 @@
                         <td class="py-3 px-4 font-medium text-slate-500 text-xs">${distName}</td>
                         <td class="py-3 px-4 font-bold text-slate-900">${mandiName}<div class="mt-0.5">${verifyBadge}</div></td>
                         <td class="py-3 px-4 text-emerald-700 font-semibold">${cropName}</td>
-                        <td class="py-3 px-4 text-slate-600 text-xs">${varietyName}</td>
-                        <td class="py-3 px-4 text-slate-500 text-xs">${gradeName}</td>
+                        <td class="py-3 px-4 text-slate-600 text-xs"><span class="inline-block px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-full font-bold text-[10px]">${varietyName}</span></td>
+                        <td class="py-3 px-4 text-slate-500 text-xs"><span class="inline-block px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-full text-[10px]">${gradeName}</span></td>
                         <td class="py-3 px-4 text-right font-medium text-slate-700 text-xs">${arrivalsText}</td>
                         <td class="py-3 px-4 text-right text-slate-600">₹${Number(r.min_price) || 0}</td>
                         <td class="py-3 px-4 text-right font-black text-slate-800 text-base">₹${Number(r.modal_price) || 0}</td>
@@ -2675,6 +2757,7 @@
 
         function applyFilters() {
             renderRatesTable();
+            try { renderVarietySection(); } catch(e) {}
         }
 
         // ================= LIVE ALL DISTRICT PRICE RANKING =================
