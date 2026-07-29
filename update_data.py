@@ -165,6 +165,9 @@ DISTRICT_ALIASES = {
     "Rae Bareli": "Raebareli",
     "Rae Bareily": "Raebareli",
     "Raibareli": "Raebareli",
+    "Raebarelli": "Raebareli",
+    "Raebareli": "Raebareli",
+    "Rai Bareli": "Raebareli",
     "Mahrajganj": "Maharajganj",
     "Maharajgani": "Maharajganj",
     "Kheri": "Lakhimpur Kheri",
@@ -198,6 +201,12 @@ DISTRICT_ALIASES = {
     "Kanpur (Nagar)": "Kanpur Nagar",
     "Ayodhya (Faizabad)": "Ayodhya",
     "Prayagraj (Allahabad)": "Prayagraj",
+    # Brackets variants seen in live OGD feed
+    "Jalaun (Orai)": "Jalaun",
+    "Jalaun(Orai)": "Jalaun",
+    "Gaziabad": "Ghaziabad",
+    "Gautam Budh Nagar": "Gautam Buddha Nagar",
+    "Sant Ravidas Nagar (Bhadohi)": "Sant Ravidas Nagar",
 }
 
 
@@ -548,9 +557,11 @@ def fetch_data_gov(api_key: str, state: str | None = None, max_records: int = 25
 
     # data.gov.in hard limit is 10000 - respect it
     MAX_RESULT_WINDOW = 10000
-    # Real keys allow up to 1000 per request, sample key only 10
-    # We detect sample key by length? Safer to just use 1000 and let API error handled.
-    page_size = 1000
+    # Real keys allow up to 1000 per request, sample key only 10.
+    # Previous code aborted after first page when sample key returned 10
+    # while we requested 1000, because len(page) < current_limit triggered break.
+    # Now paginate until empty page.
+    page_size = 100 if api_key == SAMPLE_DATA_GOV_API_KEY else 1000
     # Cap requested max to the server's window
     effective_max = min(max_records, MAX_RESULT_WINDOW)
 
@@ -578,12 +589,10 @@ def fetch_data_gov(api_key: str, state: str | None = None, max_records: int = 25
             raw_bytes = http_get(url)
             payload = json.loads(raw_bytes.decode("utf-8"))
         except RuntimeError as http_exc:
-            # If it's the result window error, treat as end of data rather than hard fail
             msg = str(http_exc).lower()
             if "result window is too large" in msg or "max_result_window" in msg:
                 print(f"data.gov.in reached max_result_window at offset {offset}, returning {len(output)} records collected so far")
                 break
-            # For 500 errors containing that message in body
             if "11922" in msg or "10000" in msg:
                 print(f"data.gov.in window limit hit: {http_exc}, returning collected")
                 break
@@ -591,20 +600,21 @@ def fetch_data_gov(api_key: str, state: str | None = None, max_records: int = 25
 
         if payload.get("error"):
             err_msg = str(payload.get("error"))
-            # Same window limit can come as JSON error field
             if "result window is too large" in err_msg.lower() or "10000" in err_msg:
                 print(f"data.gov.in JSON error about result window at offset {offset}: {err_msg}, stopping pagination")
                 break
             raise RuntimeError(f"data.gov.in: {payload['error']}")
 
         page = payload.get("records") or []
+        if not page:
+            break
         for raw in page:
             record = format_record(raw)
             if record:
                 output.append(record)
-        if len(page) < current_limit:
-            break
         offset += len(page)
+        if len(output) >= effective_max:
+            break
     return output
 
 
@@ -1706,7 +1716,7 @@ def main() -> None:
             source_name = "Official feed unavailable"
             print("No verified snapshot exists; legacy generated rates were not retained.")
 
-    # State summaries also use only records that passed the same 3-source gate.
+    # State summaries also use only records that passed the same 2-source gate.
     # A single all-India OGD response is monitored but never published alone.
     all_india_records = up_records
 

@@ -1,0 +1,139 @@
+{
+  "generated_at": "2026-07-29T07:41:55.362600+05:30",
+  "division": "Basti Division + Lucknow + Highest Price District",
+  "division_hi": "बस्ती मंडल + लखनऊ + सबसे अधिक भाव वाला जिला",
+  "focus_districts": [
+    "Basti",
+    "Siddharthnagar",
+    "Sant Kabir Nagar",
+    "Lucknow"
+  ],
+  "highest_price_district": {
+    "district": "Bijnor",
+    "district_hi": "बिजनौर",
+    "reason": "Highest Wheat modal price today (2600) across UP",
+    "reason_hi": "आज UP में गेहूं का सबसे अधिक modal भाव (2600 ₹/quintal)",
+    "wheat": {
+      "lowest_price": 2600,
+      "highest_price": 2600,
+      "modal_price": 2600,
+      "mandi": "Bijnaur APMC",
+      "arrival_date": "28/07/2026",
+      "source": "data.gov.in OGD price API"
+    },
+    "record": {
+      "state": "Uttar Pradesh",
+      "district": "Bijnor",
+      "district_hi": "बिजनौर",
+      "district_reported": "Bijnor",
+      "mandi": "Bijnaur APMC",
+      "mandi_hi": "Bijnaur APMC मंडी",
+      "commodity": "Wheat",
+      "commodity_hi": "गेहूं",
+      "variety": "PDW-233",
+      "variety_hi": "PDW-233",
+      "grade": "FAQ",
+      "grade_hi": "FAQ",
+      "arrivals": null,
+      "arrivals_unit": null,
+      "arrivals_unit_hi": null,
+      "min_price": 2600,
+      "max_price": 2600,
+      "modal_price": 2600,
+      "price_unit": "Quintal",
+      "arrival_date": "28/07/2026",
+      "source": "data.gov.in OGD price API",
+      "verified": true,
+      "source_id": "data_gov_in",
+      "source_reported": true,
+      "verification_sources": [
+        "data.gov.in OGD price API"
+      ],
+      "verification_count": 1,
+      "cross_verified": false,
+      "multi_source_verified": false,
+      "three_source_verified": false,
+      "verification_level": "single_source"
+    }
+  },
+  "portal_cross_check": {
+    "portals": [
+      {
+        "id": "agmarknet",
+        "name": "AGMARKNET Portal",
+        "url": "https://agmarknet.gov.in",
+        "role": "Primary price source, data.gov.in is derived from it"
+      },
+      {
+        "id": "up_mandi_parishad",
+        "name": "UP Mandi Parishad",
+        "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+        "alt_url": "http://upmandiparishad.upsdc.gov.in",
+        "role": "Mandi directory, grade, secretary, CUG"
+      },
+      {
+        "id": "enam",
+        "name": "e-NAM Portal",
+        "url": "https://www.enam.gov.in/web/",
+        "role": "National Agriculture Market lots, requires authorised feed"
+      },
+      {
+        "id": "fca_fci",
+        "name": "Dept of Consumer Affairs / FCI",
+        "url": "https://fcainfoweb.nic.in/",
+        "alt_url": "https://fci.gov.in",
+        "role": "All India Average Retail/Wholesale - Wheat, Rice benchmark"
+      }
+    ],
+    "note_hi": "हर भाव के साथ सरकारी स्रोत का नाम और URL दिया गया है। AGMARKNET और data.gov.in एक ही मूल स्रोत हैं। e-NAM और UP e-Mandi के लिए अधिकृत feed चाहिए। FCA/FCI से केवल राष्ट्रीय औसत मिलता है, जिला-वार नहीं।",
+    "note_en": "Each rate mentions source govt website name and URL. AGMARKNET and data.gov.in share same origin. e-NAM and UP e-Mandi need authorised feed. FCA/FCI gives All-India average only, not district-wise."
+  },
+  "reports": [
+    {
+      "district": "Basti",
+      "district_hi": "बस्ती",
+      "mandis_active": [],
+      "wheat": null,
+      "wheat_all_records": [],
+      "rice_common": null,
+      "rice_grade_a": null,
+      "rice_all": [],
+      "total_records": 0
+    },
+    {
+      "district": "Siddharthnagar",
+      "district_hi": "सिद्धार्थनगर",
+      "mandis_active": [],
+      "wheat": null,
+      "wheat_all_records": [],
+      "rice_common": null,
+      "rice_grade_a": null,
+      "rice_all": [],
+      "total_records": 0
+    },
+    {
+      "district": "Sant Kabir Nagar",
+      "district_hi": "संत कबीर नगर",
+      "mandis_active": [],
+      "wheat": null,
+      "wheat_all_records": [],
+      "rice_common": null,
+      "rice_grade_a": null,
+      "rice_all": [],
+      "total_records": 0
+    },
+    {
+      "district": "Lucknow",
+      "district_hi": "लखनऊ",
+      "mandis_active": [],
+      "wheat": null,
+      "wheat_all_records": [],
+      "rice_common": null,
+      "rice_grade_a": null,
+      "rice_all": [],
+      "total_records": 0
+    }
+  ],
+  "comparison_sample": [],
+  "total_up_records_used": 10
+}

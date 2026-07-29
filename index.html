@@ -370,7 +370,7 @@
                     </div>
                 </div>
                 <div class="px-4 py-3 bg-amber-50 border-b border-amber-100 text-[11px] text-amber-900">
-                    <b>ध्यान दें:</b> ये single-source reported भाव हैं। नीचे की सत्यापित मुख्य तालिका में केवल 3 सरकारी feeds का exact match आता है।
+                    <b>ध्यान दें:</b> ये single-source reported भाव हैं। नीचे की सत्यापित मुख्य तालिका में केवल 2+ सरकारी feeds का exact match आता है।
                 </div>
                 <div id="source-price-feeds" class="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4">
                     <div class="col-span-full text-center text-sm text-slate-400 py-6">Source prices loading...</div>
@@ -427,7 +427,7 @@
                 <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50">
                     <h3 class="font-bold text-slate-800 flex items-center space-x-2">
                         <i data-lucide="table-properties" class="w-4 h-4 text-emerald-600"></i>
-                        <span data-translate="rates_heading">3-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)</span>
+                        <span data-translate="rates_heading">2-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)</span>
                     </h3>
                     <div class="flex items-center space-x-2">
                         <span id="records-count" class="text-xs bg-slate-200 font-bold px-2 py-1 rounded text-slate-700 mr-2">0 records</span>
@@ -1127,7 +1127,7 @@
                 filter_commodity: "फसल चुनें",
                 opt_all_districts: "सभी जिले",
                 opt_all_crops: "सभी फसलें",
-                rates_heading: "3-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)",
+                rates_heading: "2-स्रोत सत्यापित मंडी भाव (रु/क्विंटल)",
                 th_district: "जिला",
                 th_mandi: "मंडी नाम",
                 th_crop: "फसल (जिंस)",
@@ -1227,7 +1227,7 @@
                 filter_commodity: "Select Crop",
                 opt_all_districts: "All Districts",
                 opt_all_crops: "All Crops",
-                rates_heading: "Three-source verified mandi prices (INR/Quintal)",
+                rates_heading: "Two-source verified mandi prices (INR/Quintal)",
                 th_district: "District",
                 th_mandi: "Mandi Name",
                 th_crop: "Crop / Commodity",
@@ -1634,7 +1634,7 @@
         }
 
         function switchTab(tabId) {
-            const sections = ['rates', 'trends', 'ranking', 'auction', 'calculator', 'weather', 'info'];
+            const sections = ['rates', 'trends', 'ranking', 'auction', 'calculator', 'weather', 'info', 'basti'];
             
             sections.forEach(sec => {
                 const secEl = document.getElementById(`section-${sec}`);
@@ -1657,6 +1657,12 @@
                 return;
             }
             targetSection.classList.remove('hidden');
+            // Basti Division special report is part of the rates view; show it only there
+            const bastiSection = document.getElementById('section-basti');
+            if (bastiSection) {
+                if (tabId === 'rates') bastiSection.classList.remove('hidden');
+                else bastiSection.classList.add('hidden');
+            }
             
             const dBtnActive = document.getElementById(`tab-btn-${tabId}`);
             if (dBtnActive) {
@@ -2374,7 +2380,7 @@
         //   1. filters/search exclude every row,
         //   2. the government feeds are not configured/reachable at all,
         //   3. feeds responded but fewer than the required number agreed, so
-        //      the three-source publication gate held every price back.
+        //      the two-source publication gate held every price back.
         function explainWhyNoPrices() {
             const titleEl = document.getElementById('rates-empty-title');
             const reasonEl = document.getElementById('rates-empty-reason');

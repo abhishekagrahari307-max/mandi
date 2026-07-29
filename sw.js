@@ -1,4 +1,4 @@
-const CACHE_NAME = 'up-mandi-v12';
+const CACHE_NAME = 'up-mandi-v13';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const STATIC_ASSETS = [
   './data/laws.json',
   './data/benchmarks.json',
   './data/sources.json',
+  './data/basti_division.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/lucide@latest',
   'https://cdn.jsdelivr.net/npm/chart.js',

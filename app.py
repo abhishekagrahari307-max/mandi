@@ -275,38 +275,64 @@ def seed_database():
                 "will be created in development mode."
             )
             
-        # Seed initial mandi rates
+        # Seed initial mandi rates - verified first, single-source fallback next
         records_count = session.query(db.MandiRecord).count()
         if records_count == 0:
+            seed_records: list[dict] = []
             latest_file = "data/latest.json"
+            source_file = "data/source_prices.json"
             if os.path.exists(latest_file):
-                with open(latest_file, "r", encoding="utf-8") as f:
-                    latest_data = json.load(f)
-                    records = latest_data.get("records", []) if latest_data.get("verified") else []
-                    if not records:
-                        logger.warning("Skipping rate seed: no verified official snapshot is available")
-                    for r in records:
-                        m_record = db.MandiRecord(
-                            district=r.get("district"),
-                            district_hi=r.get("district_hi"),
-                            mandi=r.get("mandi"),
-                            mandi_hi=r.get("mandi_hi"),
-                            commodity=r.get("commodity"),
-                            commodity_hi=r.get("commodity_hi"),
-                            variety=r.get("variety", "FAQ"),
-                            variety_hi=r.get("variety_hi", "सामान्य (FAQ)"),
-                            grade=r.get("grade", "FAQ"),
-                            grade_hi=r.get("grade_hi", "FAQ"),
-                            arrivals=r.get("arrivals"),
-                            arrivals_unit=r.get("arrivals_unit"),
-                            arrivals_unit_hi=r.get("arrivals_unit_hi"),
-                            min_price=r.get("min_price"),
-                            max_price=r.get("max_price"),
-                            modal_price=r.get("modal_price"),
-                            price_unit=r.get("price_unit", "Quintal"),
-                            arrival_date=r.get("arrival_date")
-                        )
-                        session.add(m_record)
+                try:
+                    with open(latest_file, "r", encoding="utf-8") as f:
+                        latest_data = json.load(f)
+                        if latest_data.get("verified"):
+                            seed_records = latest_data.get("records", []) or []
+                except (OSError, ValueError):
+                    seed_records = []
+            if not seed_records and os.path.exists(source_file):
+                try:
+                    with open(source_file, "r", encoding="utf-8") as f:
+                        src = json.load(f)
+                        feeds = src.get("feeds", []) if isinstance(src, dict) else []
+                        seen = set()
+                        for feed in feeds:
+                            if feed.get("status") not in ("live", "cached"):
+                                continue
+                            for r in feed.get("records", [])[:1000]:
+                                key = (r.get("district"), r.get("mandi"), r.get("commodity"), r.get("arrival_date"), r.get("modal_price"))
+                                if key in seen:
+                                    continue
+                                seen.add(key)
+                                seed_records.append(r)
+                        if seed_records:
+                            logger.info(f"Seeding DB from single-source fallback: {len(seed_records)} records")
+                except (OSError, ValueError) as e:
+                    logger.warning(f"Could not seed from source_prices: {e}")
+            if not seed_records:
+                logger.warning("Skipping rate seed: no verified official snapshot is available")
+            for r in seed_records:
+                m_record = db.MandiRecord(
+                    district=r.get("district"),
+                    district_hi=r.get("district_hi"),
+                    mandi=r.get("mandi"),
+                    mandi_hi=r.get("mandi_hi"),
+                    commodity=r.get("commodity"),
+                    commodity_hi=r.get("commodity_hi"),
+                    variety=r.get("variety", "FAQ"),
+                    variety_hi=r.get("variety_hi", "सामान्य (FAQ)"),
+                    grade=r.get("grade", "FAQ"),
+                    grade_hi=r.get("grade_hi", "FAQ"),
+                    arrivals=r.get("arrivals"),
+                    arrivals_unit=r.get("arrivals_unit"),
+                    arrivals_unit_hi=r.get("arrivals_unit_hi"),
+                    min_price=r.get("min_price"),
+                    max_price=r.get("max_price"),
+                    modal_price=r.get("modal_price"),
+                    price_unit=r.get("price_unit", "Quintal"),
+                    arrival_date=r.get("arrival_date")
+                )
+                session.add(m_record)
+            if seed_records:
                 session.commit()
 
     except Exception as e:
