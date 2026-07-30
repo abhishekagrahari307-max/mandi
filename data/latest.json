@@ -1,13 +1,11 @@
 {
   "updated_at": null,
-  "last_checked_at": "2026-07-30T17:54:18.253632+05:30",
+  "last_checked_at": "2026-07-30T21:51:13.755785+05:30",
   "source": "Official feed unavailable",
   "verified": false,
   "is_live": false,
-  "connected_price_sources": [
-    "data.gov.in (sample)"
-  ],
-  "connected_price_source_count": 1,
+  "connected_price_sources": [],
+  "connected_price_source_count": 0,
   "minimum_price_source_matches": 2,
   "cross_verified_record_count": 0,
   "multi_source_verified_record_count": 0,

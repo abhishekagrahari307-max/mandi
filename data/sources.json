@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-07-30T17:54:18.253632+05:30",
+  "last_checked_at": "2026-07-30T21:51:13.755785+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -10,9 +10,8 @@
   "sources": [
     {
       "name": "data.gov.in",
-      "status": "ok",
-      "records": 10,
-      "message": "Using public sample key (10 real UP records, all districts) because primary key failed: HTTP Error 403: Forbidden — { \"error\": \"Key not authorised\" } — Possible reasons: key invalid / not verified / expired / email verification pending. Troubleshoot: 1) data.gov.in → My Account → verify email (click verification link). 2) Copy key again without spaces. 3) In GitHub repo → Settings → Secrets and variables → Actions → pencil icon on DATA_GOV_IN_API_KEY → paste → Save. 4) Actions tab → Multi-Daily Mandi Price Update → Run workflow."
+      "status": "error",
+      "message": "HTTP Error 403: Forbidden — { \"error\": \"Key not authorised\" } — Possible reasons: key invalid / not verified / expired / email verification pending. Troubleshoot: 1) data.gov.in → My Account → verify email (click verification link). 2) Copy key again without spaces. 3) In GitHub repo → Settings → Secrets and variables → Actions → pencil icon on DATA_GOV_IN_API_KEY → paste → Save. 4) Actions tab → Multi-Daily Mandi Price Update → Run workflow."
     },
     {
       "name": "AGMARKNET portal",
@@ -34,12 +33,6 @@
       "name": "UP e-Mandi trade feed",
       "status": "not_configured",
       "records": 0
-    },
-    {
-      "name": "2-source verification gate",
-      "status": "insufficient_sources",
-      "records": 0,
-      "message": "0 of 10 market/commodity/date/price groups matched across 2+ feeds (1 feeds connected)"
     },
     {
       "name": "UP e-Mandi contacts",
