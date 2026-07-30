@@ -288,7 +288,15 @@
                             <i data-lucide="send" class="w-4 h-4"></i>
                             <span>पूछें</span>
                         </button>
+                        <button type="button" onclick="startMandiAIVoiceQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-xl shadow-sm transition flex items-center justify-center gap-2" title="Bolkar poochhein">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
+                            <span>बोलें</span>
+                        </button>
                     </div>
+                    <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-600 select-none">
+                        <input id="mandi-ai-speak-toggle" type="checkbox" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                        AI jawab bolkar sunaye (Hindi voice output)
+                    </label>
                 </div>
                 <div class="space-y-3 text-xs">
                     <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
@@ -307,6 +315,89 @@
                     </details>
                     <p class="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3">Security: OpenRouter API key sirf backend ke <b>OPENROUTER_API_KEY</b> environment variable me rakhein; HTML/JavaScript me kabhi nahi।</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- OpenRouter Smart Agri-Tech Tools -->
+        <section id="smart-agri-tools" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-indigo-50 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-black text-slate-900 text-lg">🏆 Smart Agri-Tech AI Tools</h3>
+                    <p class="text-xs text-slate-600 mt-1">Crop disease scanner, receipt OCR, trend advice, weather risk, transport profit aur govt scheme advisor — sab backend OpenRouter se secure chalenge.</p>
+                </div>
+                <span class="text-[10px] font-black bg-white border border-emerald-200 text-emerald-800 px-3 py-1 rounded-full">API key frontend me nahi</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+                <details class="border border-emerald-200 bg-emerald-50/40 rounded-xl p-4" open>
+                    <summary class="font-black text-emerald-950 cursor-pointer">🍃 Crop Disease & Leaf Photo Scanner</summary>
+                    <p class="text-[11px] text-slate-600 mt-2">Patti/fasal ki photo upload karke rog/keeda aur safe IPM guidance Hindi me paayen.</p>
+                    <input id="crop-photo-input" type="file" accept="image/*" class="mt-3 w-full text-xs file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-emerald-600 file:text-white file:font-bold">
+                    <textarea id="crop-photo-note" rows="2" placeholder="Optional: fasal ka naam, gaon, lakshan..." class="mt-2 w-full px-3 py-2 border border-emerald-100 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                    <button type="button" onclick="runVisionAITool('crop_disease')" class="mt-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-black">Photo Analyze करें</button>
+                    <div id="crop-disease-result" class="mt-3 hidden bg-white border border-emerald-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                </details>
+
+                <details class="border border-blue-200 bg-blue-50/40 rounded-xl p-4">
+                    <summary class="font-black text-blue-950 cursor-pointer">📄 Mandi Parcha / Receipt OCR + Local Khata</summary>
+                    <p class="text-[11px] text-slate-600 mt-2">Receipt photo se fasal, quintal, rate aur total extract karke local ledger me save karein.</p>
+                    <input id="receipt-photo-input" type="file" accept="image/*" class="mt-3 w-full text-xs file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-bold">
+                    <button type="button" onclick="runVisionAITool('receipt_ocr')" class="mt-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-black">Receipt पढ़ें</button>
+                    <button type="button" onclick="renderReceiptLedger(true)" class="mt-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-black">Saved Khata दिखाएँ</button>
+                    <div id="receipt-ocr-result" class="mt-3 hidden bg-white border border-blue-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                    <div id="receipt-ledger-list" class="mt-3 space-y-2 text-xs"></div>
+                </details>
+
+                <details class="border border-amber-200 bg-amber-50/40 rounded-xl p-4">
+                    <summary class="font-black text-amber-950 cursor-pointer">📈 Price Trend Predictor & Best Time to Sell</summary>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                        <input id="trend-ai-crop" type="text" placeholder="Fasal: Wheat / गेहूं" class="px-3 py-2 border border-amber-100 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <input id="trend-ai-location" type="text" placeholder="Mandi/District optional" class="px-3 py-2 border border-amber-100 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <button type="button" onclick="runTextAITool('trend_advisor')" class="mt-2 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg text-xs font-black">Sell/Hold Advice लें</button>
+                    <div id="trend-advisor-result" class="mt-3 hidden bg-white border border-amber-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                </details>
+
+                <details class="border border-purple-200 bg-purple-50/40 rounded-xl p-4">
+                    <summary class="font-black text-purple-950 cursor-pointer">🚚 Smart Transport Distance Profit Calculator</summary>
+                    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+                        <input id="transport-source-mandi" placeholder="Source mandi" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-dest-mandi" placeholder="Destination mandi" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-source-price" type="number" placeholder="Buy ₹/Q" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-dest-price" type="number" placeholder="Sell ₹/Q" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-distance" type="number" placeholder="Distance KM" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-qty" type="number" placeholder="Quantity Q" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-cost-km" type="number" placeholder="₹ per KM" class="px-3 py-2 border border-purple-100 rounded-lg">
+                        <input id="transport-total-cost" type="number" placeholder="Total transport ₹ optional" class="px-3 py-2 border border-purple-100 rounded-lg">
+                    </div>
+                    <button type="button" onclick="runTextAITool('transport_profit')" class="mt-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-black">Net Profit Calculate करें</button>
+                    <div id="transport-profit-result" class="mt-3 hidden bg-white border border-purple-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                </details>
+
+                <details class="border border-sky-200 bg-sky-50/40 rounded-xl p-4">
+                    <summary class="font-black text-sky-950 cursor-pointer">🌦️ Weather + Mandi Risk Warning</summary>
+                    <p class="text-[11px] text-slate-600 mt-2">Open-Meteo weather + mandi context se rain/storage/transport risk warning.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-xs">
+                        <input id="weather-location" value="Lucknow" placeholder="Location" class="px-3 py-2 border border-sky-100 rounded-lg">
+                        <input id="weather-lat" type="number" step="any" value="26.8467" placeholder="Latitude" class="px-3 py-2 border border-sky-100 rounded-lg">
+                        <input id="weather-lon" type="number" step="any" value="80.9462" placeholder="Longitude" class="px-3 py-2 border border-sky-100 rounded-lg">
+                    </div>
+                    <input id="weather-crop" placeholder="Crop optional" class="mt-2 w-full px-3 py-2 border border-sky-100 rounded-lg text-xs">
+                    <button type="button" onclick="useCurrentLocationForWeather()" class="mt-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-black">Current Location</button>
+                    <button type="button" onclick="runTextAITool('weather_risk')" class="mt-2 bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg text-xs font-black">Risk Warning लें</button>
+                    <div id="weather-risk-result" class="mt-3 hidden bg-white border border-sky-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                </details>
+
+                <details class="border border-indigo-200 bg-indigo-50/40 rounded-xl p-4">
+                    <summary class="font-black text-indigo-950 cursor-pointer">🏛️ Govt Scheme & Subsidy Advisor</summary>
+                    <textarea id="scheme-question" rows="3" placeholder="उदा. Mere paas 2 acre zameen hai, PM-KISAN/KCC/Fasal Bima me kya milega?" class="mt-3 w-full px-3 py-2 border border-indigo-100 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                        <input id="scheme-location" placeholder="District/State" class="px-3 py-2 border border-indigo-100 rounded-lg text-xs">
+                        <input id="scheme-crop" placeholder="Crop optional" class="px-3 py-2 border border-indigo-100 rounded-lg text-xs">
+                    </div>
+                    <button type="button" onclick="runTextAITool('scheme_advisor')" class="mt-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-black">Yojana Advice लें</button>
+                    <div id="scheme-advisor-result" class="mt-3 hidden bg-white border border-indigo-100 rounded-lg p-3 text-xs whitespace-pre-wrap"></div>
+                </details>
             </div>
         </section>
 
@@ -1400,6 +1491,7 @@
             renderIcons();
             loadLanguage(currentLang);
             initializeMandiAIControls();
+            renderReceiptLedger(false);
             fetchDashboardData();
             
             if ('serviceWorker' in navigator) {
@@ -2378,7 +2470,9 @@
                 if (!response.ok) {
                     throw new Error(data.detail || data.error || `HTTP ${response.status}`);
                 }
-                appendMandiAIMessage('ai', data.answer || data.reply || 'AI se jawab nahi mila.');
+                const answerText = data.answer || data.reply || 'AI se jawab nahi mila.';
+                appendMandiAIMessage('ai', answerText);
+                speakMandiAIAnswer(answerText);
                 updateMandiAIStatus(data.model ? `Model: ${data.model}` : 'AI ready', 'ok');
             } catch (error) {
                 console.error('Mandi AI failed:', error);
@@ -2394,6 +2488,219 @@
                     button.classList.remove('opacity-60', 'cursor-not-allowed');
                 }
             }
+        }
+
+        function speakMandiAIAnswer(text, force = false) {
+            const shouldSpeak = force || document.getElementById('mandi-ai-speak-toggle')?.checked;
+            if (!shouldSpeak || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(String(text || '').slice(0, 900));
+            utterance.lang = 'hi-IN';
+            utterance.rate = 0.92;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startMandiAIVoiceQuestion() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Aapka browser voice input support nahi karta. Chrome/Edge try karein.');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            updateMandiAIStatus('Mic sun raha hai...', 'loading');
+            recognition.onresult = event => {
+                const spoken = event.results[0][0].transcript.replace(/\.$/, '');
+                const input = document.getElementById('mandi-ai-question');
+                if (input) input.value = spoken;
+                sendMandiAIQuestion();
+            };
+            recognition.onerror = () => updateMandiAIStatus('Voice input error', 'error');
+            recognition.onend = () => updateMandiAIStatus();
+            recognition.start();
+        }
+
+        function getSmartToolEndpoint() {
+            const base = getMandiAIBackendBase();
+            if (!base) return '';
+            return `${base}/api/v2/ai-tools`;
+        }
+
+        function setToolResult(id, text, isError = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('hidden');
+            el.className = `mt-3 ${isError ? 'bg-red-50 border border-red-200 text-red-800' : 'bg-white border border-slate-100 text-slate-700'} rounded-lg p-3 text-xs whitespace-pre-wrap`;
+            el.innerText = text;
+        }
+
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    reject(new Error('Pehle photo select karein'));
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    reject(new Error('Sirf image file upload karein'));
+                    return;
+                }
+                if (file.size > 4 * 1024 * 1024) {
+                    reject(new Error('Image 4MB se chhoti honi chahiye'));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Image read nahi ho payi'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function postSmartAITool(payload) {
+            const endpoint = getSmartToolEndpoint();
+            if (!endpoint) {
+                throw new Error('AI Backend URL required. Pehle AI card me Backend URL save karein.');
+            }
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.detail || data.error || `HTTP ${response.status}`);
+            return data;
+        }
+
+        async function runVisionAITool(action) {
+            const isReceipt = action === 'receipt_ocr';
+            const input = document.getElementById(isReceipt ? 'receipt-photo-input' : 'crop-photo-input');
+            const resultId = isReceipt ? 'receipt-ocr-result' : 'crop-disease-result';
+            try {
+                setToolResult(resultId, 'AI photo analyze kar raha hai...');
+                const imageData = await fileToDataUrl(input?.files?.[0]);
+                const data = await postSmartAITool({
+                    action,
+                    imageData,
+                    question: isReceipt ? '' : (document.getElementById('crop-photo-note')?.value || ''),
+                    mandiData: buildMandiAIClientData('')
+                });
+                setToolResult(resultId, data.answer || 'AI se jawab nahi mila.');
+                if (isReceipt) saveReceiptLedgerEntry(data.answer || '');
+            } catch (error) {
+                setToolResult(resultId, `Error: ${error.message}`, true);
+            }
+        }
+
+        function payloadForTextTool(action) {
+            if (action === 'trend_advisor') {
+                const crop = document.getElementById('trend-ai-crop')?.value || document.getElementById('trend-crop-select')?.value || '';
+                return {
+                    action,
+                    crop,
+                    location: document.getElementById('trend-ai-location')?.value || '',
+                    question: `${crop} ke trend ke hisab se bechna sahi hai ya rukna?`,
+                    mandiData: buildMandiAIClientData(crop),
+                    historyData: historicalData
+                };
+            }
+            if (action === 'transport_profit') {
+                return {
+                    action,
+                    sourceMandi: document.getElementById('transport-source-mandi')?.value || '',
+                    destinationMandi: document.getElementById('transport-dest-mandi')?.value || '',
+                    sourcePrice: Number(document.getElementById('transport-source-price')?.value || 0),
+                    destinationPrice: Number(document.getElementById('transport-dest-price')?.value || 0),
+                    distanceKm: Number(document.getElementById('transport-distance')?.value || 0),
+                    quantityQuintal: Number(document.getElementById('transport-qty')?.value || 0),
+                    transportCostPerKm: Number(document.getElementById('transport-cost-km')?.value || 0),
+                    totalTransportCost: Number(document.getElementById('transport-total-cost')?.value || 0),
+                    question: 'Net transport profit calculate karke best mandi batao.'
+                };
+            }
+            if (action === 'weather_risk') {
+                const crop = document.getElementById('weather-crop')?.value || '';
+                return {
+                    action,
+                    crop,
+                    location: document.getElementById('weather-location')?.value || '',
+                    latitude: Number(document.getElementById('weather-lat')?.value || 0),
+                    longitude: Number(document.getElementById('weather-lon')?.value || 0),
+                    question: 'Agle 3 din weather ke hisab se mandi/storage risk batao.',
+                    mandiData: buildMandiAIClientData(crop)
+                };
+            }
+            if (action === 'scheme_advisor') {
+                return {
+                    action,
+                    question: document.getElementById('scheme-question')?.value || '',
+                    location: document.getElementById('scheme-location')?.value || '',
+                    crop: document.getElementById('scheme-crop')?.value || ''
+                };
+            }
+            return { action };
+        }
+
+        function resultIdForTextTool(action) {
+            return {
+                trend_advisor: 'trend-advisor-result',
+                transport_profit: 'transport-profit-result',
+                weather_risk: 'weather-risk-result',
+                scheme_advisor: 'scheme-advisor-result'
+            }[action];
+        }
+
+        async function runTextAITool(action) {
+            const resultId = resultIdForTextTool(action);
+            try {
+                setToolResult(resultId, 'AI calculation/analysis kar raha hai...');
+                const data = await postSmartAITool(payloadForTextTool(action));
+                let answer = data.answer || 'AI se jawab nahi mila.';
+                if (data.calculation) {
+                    answer = `Calculation: Net ₹${Number(data.calculation.net_gain_per_quintal || 0).toLocaleString('en-IN')}/Q, Total ₹${Number(data.calculation.total_net_gain || 0).toLocaleString('en-IN')}\n\n${answer}`;
+                }
+                setToolResult(resultId, answer);
+            } catch (error) {
+                setToolResult(resultId, `Error: ${error.message}`, true);
+            }
+        }
+
+        function useCurrentLocationForWeather() {
+            if (!navigator.geolocation) {
+                alert('Location support nahi hai. Latitude/Longitude manually bharein.');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = document.getElementById('weather-lat');
+                const lon = document.getElementById('weather-lon');
+                if (lat) lat.value = pos.coords.latitude.toFixed(5);
+                if (lon) lon.value = pos.coords.longitude.toFixed(5);
+                const loc = document.getElementById('weather-location');
+                if (loc && !loc.value) loc.value = 'Current location';
+            }, () => alert('Location permission nahi mili.'));
+        }
+
+        function saveReceiptLedgerEntry(answerText) {
+            const entries = JSON.parse(localStorage.getItem('mandiReceiptLedger') || '[]');
+            entries.unshift({ saved_at: new Date().toISOString(), answer: answerText });
+            localStorage.setItem('mandiReceiptLedger', JSON.stringify(entries.slice(0, 25)));
+            renderReceiptLedger(false);
+        }
+
+        function renderReceiptLedger(showIfEmpty = false) {
+            const container = document.getElementById('receipt-ledger-list');
+            if (!container) return;
+            const entries = JSON.parse(localStorage.getItem('mandiReceiptLedger') || '[]');
+            if (!entries.length) {
+                container.innerHTML = showIfEmpty ? '<div class="bg-amber-50 border border-amber-100 rounded-lg p-2 text-amber-800">Abhi koi saved receipt entry nahi hai.</div>' : '';
+                return;
+            }
+            container.innerHTML = entries.slice(0, 5).map(entry => `
+                <div class="bg-white border border-slate-200 rounded-lg p-2">
+                    <p class="text-[9px] text-slate-400 font-bold">${new Date(entry.saved_at).toLocaleString('en-IN')}</p>
+                    <p class="mt-1 whitespace-pre-wrap line-clamp-4">${escapeHtml(entry.answer)}</p>
+                </div>
+            `).join('');
         }
 
         function populateDropdowns() {

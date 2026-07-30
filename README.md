@@ -23,6 +23,7 @@
 - **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
 - **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
 - **🤖 OpenRouter AI Mandi Sahayak:** किसान/व्यापारी Hindi/Hinglish में सवाल पूछ सकते हैं; backend official mandi JSON को OpenRouter model के context में भेजता है और API key कभी frontend में expose नहीं होती।
+- **🏆 Smart Agri-Tech AI Tools:** OpenRouter Vision/Text models से crop disease photo scanner, mandi receipt OCR/local khata, sell/hold trend advisor, Hindi voice question+answer, transport profit calculator, Open-Meteo weather risk warning और govt scheme advisor।
 - **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
@@ -92,6 +93,7 @@ Backend में `/api/v2/mandi-ai` endpoint जोड़ा गया है�
    ```bash
    OPENROUTER_API_KEY=sk-or-...
    OPENROUTER_MODEL=deepseek/deepseek-r1:free
+   OPENROUTER_VISION_MODEL=google/gemini-2.0-flash-exp:free
    ```
 3. Frontend में key न डालें। GitHub Pages पर static frontend चलाते समय `index.html` में `MANDI_AI_DEFAULT_BACKEND_URL` को Render/Vercel/Docker backend URL पर set करें (या AI card के **Backend URL** field में browser-side override भरें), जैसे `https://your-mandi-api.onrender.com`।
 4. Backend CORS में अपने frontend origin को add करें:

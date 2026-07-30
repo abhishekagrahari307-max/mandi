@@ -132,6 +132,34 @@ class MandiAIRequest(BaseModel):
     mandiData: Any | None = None
 
 
+class SmartAIToolRequest(BaseModel):
+    """Payload for advanced OpenRouter agri-tech tools.
+
+    Images are accepted as browser-created data URLs and are forwarded directly
+    to OpenRouter; they are never stored on disk by this application.
+    """
+    action: str = Field(
+        ...,
+        pattern=r"^(crop_disease|receipt_ocr|trend_advisor|transport_profit|weather_risk|scheme_advisor)$",
+    )
+    question: str | None = Field(default=None, max_length=1200)
+    crop: str | None = Field(default=None, max_length=100)
+    location: str | None = Field(default=None, max_length=120)
+    imageData: str | None = Field(default=None, max_length=8_000_000)
+    mandiData: Any | None = None
+    historyData: Any | None = None
+    sourceMandi: str | None = Field(default=None, max_length=120)
+    destinationMandi: str | None = Field(default=None, max_length=120)
+    sourcePrice: float | None = Field(default=None, ge=0)
+    destinationPrice: float | None = Field(default=None, ge=0)
+    distanceKm: float | None = Field(default=None, ge=0)
+    quantityQuintal: float | None = Field(default=None, ge=0)
+    transportCostPerKm: float | None = Field(default=None, ge=0)
+    totalTransportCost: float | None = Field(default=None, ge=0)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+
+
 # Only providers the alert engine can actually deliver to. A subscription with
 # any other channel could never receive a message, so it is rejected instead of
 # being stored as a silently dead row.
@@ -537,6 +565,112 @@ def _openrouter_headers(api_key: str) -> dict[str, str]:
     return headers
 
 
+def _configured_openrouter_model(vision: bool = False) -> str:
+    if vision:
+        return (
+            os.environ.get("OPENROUTER_VISION_MODEL", "").strip()
+            or os.environ.get("OPENROUTER_MODEL", "").strip()
+            or "google/gemini-2.0-flash-exp:free"
+        )
+    return os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip() or OPENROUTER_DEFAULT_MODEL
+
+
+def _parse_positive_int_env(name: str, default: int, low: int, high: int) -> int:
+    try:
+        return max(low, min(high, int(os.environ.get(name, str(default)).strip())))
+    except ValueError:
+        return default
+
+
+def _call_openrouter_chat(
+    messages: list[dict[str, Any]],
+    *,
+    model: str | None = None,
+    vision: bool = False,
+    temperature: float = 0.2,
+    max_tokens: int | None = None,
+) -> tuple[str, str]:
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OPENROUTER_API_KEY is not configured on the backend server",
+        )
+
+    selected_model = model or _configured_openrouter_model(vision=vision)
+    resolved_max_tokens = max_tokens or _parse_positive_int_env("OPENROUTER_MAX_TOKENS", 700, 100, 1800)
+    timeout_seconds = _parse_positive_int_env("OPENROUTER_TIMEOUT_SECONDS", 45, 5, 120)
+    request_body = {
+        "model": selected_model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": resolved_max_tokens,
+    }
+    request = urllib.request.Request(
+        OPENROUTER_API_URL,
+        data=json.dumps(request_body).encode("utf-8"),
+        headers=_openrouter_headers(api_key),
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            response_payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")[:800]
+        logger.warning("OpenRouter returned HTTP %s: %s", exc.code, error_body)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"OpenRouter AI server returned HTTP {exc.code}",
+        ) from exc
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        logger.warning("OpenRouter request failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server connect nahi ho saka",
+        ) from exc
+
+    answer = ""
+    choices = response_payload.get("choices") if isinstance(response_payload, dict) else None
+    if isinstance(choices, list) and choices:
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        if isinstance(message, dict):
+            answer = str(message.get("content") or "").strip()
+    if not answer:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server ne khaali jawab diya",
+        )
+    return answer, selected_model
+
+
+def _fetch_open_meteo_forecast(latitude: float, longitude: float) -> dict[str, Any]:
+    params = (
+        f"latitude={latitude:.5f}&longitude={longitude:.5f}"
+        "&forecast_days=3"
+        "&current=temperature_2m,precipitation,rain,wind_speed_10m"
+        "&daily=weather_code,precipitation_sum,rain_sum,wind_speed_10m_max"
+        "&timezone=Asia%2FKolkata"
+    )
+    url = f"https://api.open-meteo.com/v1/forecast?{params}"
+    try:
+        with urllib.request.urlopen(url, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        logger.warning("Open-Meteo request failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Weather API connect nahi ho saka",
+        ) from exc
+
+
+def _safe_image_data_url(image_data: str | None) -> str:
+    value = (image_data or "").strip()
+    if not value.startswith("data:image/") or ";base64," not in value[:80]:
+        raise HTTPException(status_code=422, detail="A valid base64 image data URL is required")
+    return value
+
+
 # ================= REST API ENDPOINTS =================
 
 @app.post("/api/v2/auth/login", response_model=Token)
@@ -618,69 +752,10 @@ def ask_mandi_ai(payload: MandiAIRequest):
             "data_status": "no_official_records",
         }
 
-    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-    if not api_key:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OPENROUTER_API_KEY is not configured on the backend server",
-        )
-
-    model = os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip() or OPENROUTER_DEFAULT_MODEL
-    max_tokens_raw = os.environ.get("OPENROUTER_MAX_TOKENS", "700").strip()
-    timeout_raw = os.environ.get("OPENROUTER_TIMEOUT_SECONDS", "45").strip()
-    try:
-        max_tokens = max(100, min(1500, int(max_tokens_raw)))
-    except ValueError:
-        max_tokens = 700
-    try:
-        timeout_seconds = max(5, min(120, int(timeout_raw)))
-    except ValueError:
-        timeout_seconds = 45
-
-    request_body = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": _build_openrouter_system_prompt(question, payload.mandiData)},
-            {"role": "user", "content": question},
-        ],
-        "temperature": 0.2,
-        "max_tokens": max_tokens,
-    }
-    request = urllib.request.Request(
-        OPENROUTER_API_URL,
-        data=json.dumps(request_body).encode("utf-8"),
-        headers=_openrouter_headers(api_key),
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            response_payload = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")[:800]
-        logger.warning("OpenRouter returned HTTP %s: %s", exc.code, error_body)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"OpenRouter AI server returned HTTP {exc.code}",
-        ) from exc
-    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
-        logger.warning("OpenRouter request failed: %s", exc)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="OpenRouter AI server connect nahi ho saka",
-        ) from exc
-
-    answer = ""
-    choices = response_payload.get("choices") if isinstance(response_payload, dict) else None
-    if isinstance(choices, list) and choices:
-        message = choices[0].get("message") if isinstance(choices[0], dict) else None
-        if isinstance(message, dict):
-            answer = str(message.get("content") or "").strip()
-    if not answer:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="OpenRouter AI server ne khaali jawab diya",
-        )
+    answer, model = _call_openrouter_chat([
+        {"role": "system", "content": _build_openrouter_system_prompt(question, payload.mandiData)},
+        {"role": "user", "content": question},
+    ])
 
     return {
         "answer": answer,
@@ -699,6 +774,142 @@ def chat_alias(payload: MandiAIRequest):
         "model": result.get("model") if isinstance(result, dict) else None,
         "data_status": result.get("data_status") if isinstance(result, dict) else None,
     }
+
+
+@app.post("/api/v2/ai-tools")
+@app.post("/api/ai-tools")
+def run_smart_ai_tool(payload: SmartAIToolRequest):
+    """Advanced OpenRouter tools: vision, trends, transport, weather and schemes."""
+    action = payload.action
+    base_question = (payload.question or "").strip()
+    crop = (payload.crop or "").strip()
+    location = (payload.location or "").strip()
+
+    if action == "crop_disease":
+        image_url = _safe_image_data_url(payload.imageData)
+        prompt = (
+            "Is crop/leaf photo ko dhyan se analyze kijiye. Hindi me batayein: "
+            "1) sambhavit fasal aur rog/keeda, 2) lakshan, 3) turant organic/IPM upay, "
+            "4) pesticide ya fungicide ke liye safe generic guidance aur dose ko label/local krishi adhikari se verify karne ki warning, "
+            "5) kab expert ya KVK se milna chahiye. Agar image clear nahi hai to clear photo maangien. "
+            "Kabhi bhi banned/unsafe chemical ka exact prescription na dein."
+        )
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap Hindi bolne wale krishi rog pehchan sahayak hain. Safety-first, practical aur non-alarming answer dein."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt + (f"\nUser context: {base_question}" if base_question else "")},
+                {"type": "image_url", "image_url": {"url": image_url}},
+            ]},
+        ], vision=True, max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "receipt_ocr":
+        image_url = _safe_image_data_url(payload.imageData)
+        prompt = (
+            "Is mandi parcha/receipt image se OCR karke Hindi me summary dein. "
+            "Fasal, mandi, date, weight/quintal, rate, amount, fees, trader/farmer name agar dikh rahe hon to nikalein. "
+            "Pehle 'JSON:' ke baad ek valid JSON object dein with keys: crop, mandi, date, quantity_quintal, rate_per_quintal, total_amount, fees, party_name, confidence. "
+            "Phir 'Summary:' ke baad simple Hindi explanation. Agar field clear nahi hai to null rakhein; guess na karein."
+        )
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap OCR aur mandi khata assistant hain. Sirf image me dikh rahe data ko extract karein; uncertain values ko null rakhein."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": image_url}},
+            ]},
+        ], vision=True, max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "trend_advisor":
+        context = {
+            "crop": crop,
+            "question": base_question,
+            "mandi_context": _collect_ai_mandi_context(payload.mandiData),
+            "history": payload.historyData if payload.historyData is not None else _read_json_file("data/history.json", {}),
+            "rules": [
+                "Use only provided mandi/history data. Do not promise guaranteed future prices.",
+                "Give a cautious sell/hold/watch suggestion in Hindi with reasons and risk disclaimer.",
+                "If data is insufficient, say that trend advice is not reliable yet.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap mandi price trend analyst hain. Farmers ko simple Hindi me cautious, data-based advice dein."},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ], max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "transport_profit":
+        source_price = float(payload.sourcePrice or 0)
+        destination_price = float(payload.destinationPrice or 0)
+        quantity = float(payload.quantityQuintal or 0)
+        distance = float(payload.distanceKm or 0)
+        cost_per_km = float(payload.transportCostPerKm or 0)
+        total_transport = float(payload.totalTransportCost or 0)
+        if total_transport <= 0 and distance > 0 and cost_per_km > 0:
+            total_transport = distance * cost_per_km
+        transport_per_q = (total_transport / quantity) if quantity > 0 else 0
+        net_gain_per_q = destination_price - source_price - transport_per_q
+        total_net_gain = net_gain_per_q * quantity if quantity > 0 else 0
+        calc_context = {
+            "source_mandi": payload.sourceMandi,
+            "destination_mandi": payload.destinationMandi,
+            "source_price_per_q": source_price,
+            "destination_price_per_q": destination_price,
+            "distance_km": distance,
+            "quantity_quintal": quantity,
+            "transport_cost_per_km": cost_per_km,
+            "total_transport_cost": total_transport,
+            "transport_cost_per_quintal": round(transport_per_q, 2),
+            "net_gain_per_quintal": round(net_gain_per_q, 2),
+            "total_net_gain": round(total_net_gain, 2),
+            "question": base_question,
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap mandi transport profit calculator hain. Calculation ko verify karke simple Hindi me final recommendation dein."},
+            {"role": "user", "content": json.dumps(calc_context, ensure_ascii=False)},
+        ], max_tokens=700)
+        return {"answer": answer, "model": model, "action": action, "calculation": calc_context}
+
+    if action == "weather_risk":
+        if payload.latitude is None or payload.longitude is None:
+            raise HTTPException(status_code=422, detail="latitude and longitude are required for weather risk")
+        weather = _fetch_open_meteo_forecast(payload.latitude, payload.longitude)
+        context = {
+            "location": location,
+            "crop": crop,
+            "weather_forecast": weather,
+            "mandi_context": _collect_ai_mandi_context(payload.mandiData),
+            "question": base_question,
+            "rules": [
+                "Explain rain/wind/heat risk in Hindi for harvest, storage and mandi transport.",
+                "Do not invent mandi price drops; only say risk may affect quality/arrival if weather suggests it.",
+                "Give practical steps like tarpaulin, drying, storage, transport timing.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap weather + mandi risk warning assistant hain."},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ], max_tokens=850)
+        return {"answer": answer, "model": model, "action": action, "weather": weather}
+
+    if action == "scheme_advisor":
+        prompt = {
+            "farmer_question": base_question,
+            "location": location,
+            "crop": crop,
+            "instructions": [
+                "Hindi me PM-KISAN, PM Fasal Bima Yojana, KCC, state agriculture subsidy, soil health card etc. ke liye eligibility-style guidance dein.",
+                "Official portal/department se final verification aur documents check karne ko bolen.",
+                "Personal/legal/financial guarantee na dein; step-by-step apply checklist dein.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap sarkari yojana sahayak hain. Clear Hindi guidance, documents list aur official verification disclaimer dein."},
+            {"role": "user", "content": json.dumps(prompt, ensure_ascii=False)},
+        ], max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    raise HTTPException(status_code=422, detail="Unsupported AI tool action")
 
 
 @app.post("/api/v2/rates")
