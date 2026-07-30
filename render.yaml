@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: up-mandi-ai-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:////app/runtime/mandi_v2.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@example.com
+      - key: CORS_ORIGINS
+        value: https://abhishekagrahari307-max.github.io,http://localhost:8000,http://127.0.0.1:8000
+      - key: DATA_GOV_IN_API_KEY
+        sync: false
+      - key: DATA_GOV_RESOURCE_ID
+        value: 9ef84268-d588-465a-a308-a864a43d0070
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: deepseek/deepseek-r1:free
+      - key: OPENROUTER_VISION_MODEL
+        value: google/gemini-2.0-flash-exp:free
+      - key: OPENROUTER_SITE_URL
+        value: https://abhishekagrahari307-max.github.io/mandi/
+      - key: OPENROUTER_APP_NAME
+        value: UP Mandi Dashboard
+      - key: OPENROUTER_TIMEOUT_SECONDS
+        value: "45"
+      - key: OPENROUTER_MAX_TOKENS
+        value: "700"
+      - key: ENAM_TRADE_FEED_URL
+        sync: false
+      - key: ENAM_TRADE_API_KEY
+        sync: false
+      - key: UP_EMANDI_TRADE_FEED_URL
+        sync: false
+      - key: UP_EMANDI_TRADE_API_KEY
+        sync: false
+      - key: ENAM_AUCTION_FEED_URL
+        sync: false
+      - key: ENAM_AUCTION_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: WHATSAPP_API_URL
+        sync: false
+      - key: WHATSAPP_API_KEY
+        sync: false

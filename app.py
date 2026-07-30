@@ -1,12 +1,14 @@
 import os
 import json
 import urllib.request
+import urllib.error
 import re
 import csv
 import io
 import hashlib
 import logging
 import secrets
+from typing import Any
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, Request, WebSocket
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -60,7 +62,8 @@ elif IS_PRODUCTION:
 cors_origins = [
     origin.strip()
     for origin in os.environ.get(
-        "CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000"
+        "CORS_ORIGINS",
+        "http://localhost:8000,http://127.0.0.1:8000,https://abhishekagrahari307-max.github.io"
     ).split(",")
     if origin.strip()
 ]
@@ -113,6 +116,49 @@ class RateCreate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class MandiAIRequest(BaseModel):
+    """Chat request for the OpenRouter-powered mandi assistant.
+
+    `userQuestion` is used by the public dashboard. `message` is accepted too
+    so clients can call the endpoint with a more generic chat payload. Optional
+    client-side mandiData is used only as a fallback when the server does not
+    have a fresh local snapshot; the backend never requires API keys in the
+    browser.
+    """
+    userQuestion: str | None = Field(default=None, max_length=600)
+    message: str | None = Field(default=None, max_length=600)
+    mandiData: Any | None = None
+
+
+class SmartAIToolRequest(BaseModel):
+    """Payload for advanced OpenRouter agri-tech tools.
+
+    Images are accepted as browser-created data URLs and are forwarded directly
+    to OpenRouter; they are never stored on disk by this application.
+    """
+    action: str = Field(
+        ...,
+        pattern=r"^(crop_disease|receipt_ocr|trend_advisor|transport_profit|weather_risk|scheme_advisor)$",
+    )
+    question: str | None = Field(default=None, max_length=1200)
+    crop: str | None = Field(default=None, max_length=100)
+    location: str | None = Field(default=None, max_length=120)
+    imageData: str | None = Field(default=None, max_length=8_000_000)
+    mandiData: Any | None = None
+    historyData: Any | None = None
+    sourceMandi: str | None = Field(default=None, max_length=120)
+    destinationMandi: str | None = Field(default=None, max_length=120)
+    sourcePrice: float | None = Field(default=None, ge=0)
+    destinationPrice: float | None = Field(default=None, ge=0)
+    distanceKm: float | None = Field(default=None, ge=0)
+    quantityQuintal: float | None = Field(default=None, ge=0)
+    transportCostPerKm: float | None = Field(default=None, ge=0)
+    totalTransportCost: float | None = Field(default=None, ge=0)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+
 
 # Only providers the alert engine can actually deliver to. A subscription with
 # any other channel could never receive a message, so it is rejected instead of
@@ -314,6 +360,317 @@ def seed_database():
     finally:
         session.close()
 
+# ================= OPENROUTER AI MANDI ASSISTANT HELPERS =================
+
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_DEFAULT_MODEL = "deepseek/deepseek-r1:free"
+MAX_AI_CONTEXT_RECORDS = 120
+
+
+def _read_json_file(path: str, fallback: Any) -> Any:
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return fallback
+
+
+def _records_from_client_snapshot(mandi_data: Any) -> list[dict[str, Any]]:
+    """Accept a minimal client snapshot without trusting browser secrets.
+
+    The static GitHub Pages build can send the already-visible JSON records to a
+    separately hosted backend. This fallback keeps that mode useful, while the
+    server-local data files remain the preferred source when available.
+    """
+    if isinstance(mandi_data, dict):
+        records = mandi_data.get("records")
+        if isinstance(records, list):
+            return [item for item in records if isinstance(item, dict)]
+        feeds = mandi_data.get("feeds")
+        if isinstance(feeds, list):
+            output: list[dict[str, Any]] = []
+            for feed in feeds:
+                if not isinstance(feed, dict):
+                    continue
+                for record in feed.get("records", []) if isinstance(feed.get("records"), list) else []:
+                    if isinstance(record, dict):
+                        output.append({
+                            **record,
+                            "source": record.get("source") or feed.get("name") or feed.get("id"),
+                            "verification_level": "single_source",
+                        })
+            return output
+    if isinstance(mandi_data, list):
+        return [item for item in mandi_data if isinstance(item, dict)]
+    return []
+
+
+def _collect_ai_mandi_context(mandi_data: Any = None) -> dict[str, Any]:
+    latest = _read_json_file("data/latest.json", {})
+    source_prices = _read_json_file("data/source_prices.json", {})
+    sources = _read_json_file("data/sources.json", {})
+
+    verified_records = latest.get("records", []) if isinstance(latest, dict) else []
+    if not isinstance(verified_records, list):
+        verified_records = []
+    verified_records = [record for record in verified_records if isinstance(record, dict)]
+
+    single_source_records: list[dict[str, Any]] = []
+    feeds = source_prices.get("feeds", []) if isinstance(source_prices, dict) else []
+    if isinstance(feeds, list):
+        for feed in feeds:
+            if not isinstance(feed, dict):
+                continue
+            if feed.get("status") not in {"live", "cached"}:
+                continue
+            feed_records = feed.get("records", [])
+            if not isinstance(feed_records, list):
+                continue
+            for record in feed_records:
+                if not isinstance(record, dict):
+                    continue
+                single_source_records.append({
+                    **record,
+                    "source": record.get("source") or feed.get("name") or feed.get("id"),
+                    "source_id": record.get("source_id") or feed.get("id"),
+                    "verification_level": "single_source",
+                })
+
+    # GitHub Pages mode: let the page send the same public data it already
+    # displays, but only if the deployed backend's own data files are empty.
+    if not verified_records and not single_source_records:
+        single_source_records = _records_from_client_snapshot(mandi_data)
+
+    metadata = {
+        "updated_at": latest.get("updated_at") if isinstance(latest, dict) else None,
+        "last_checked_at": (
+            latest.get("last_checked_at") if isinstance(latest, dict) else None
+        ) or (sources.get("last_checked_at") if isinstance(sources, dict) else None),
+        "is_live": latest.get("is_live") if isinstance(latest, dict) else None,
+        "verified": latest.get("verified") if isinstance(latest, dict) else None,
+        "minimum_price_source_matches": (
+            latest.get("minimum_price_source_matches") if isinstance(latest, dict) else None
+        ) or (sources.get("minimum_price_source_matches") if isinstance(sources, dict) else None),
+    }
+    return {
+        "metadata": metadata,
+        "verified_records": verified_records,
+        "single_source_records": single_source_records,
+    }
+
+
+def _question_tokens(question: str) -> set[str]:
+    cleaned = question.lower()
+    tokens = set(re.findall(r"[a-zA-Z\u0900-\u097F0-9]+", cleaned))
+    synonyms = {
+        "गेहूं": ["wheat"], "गेहूँ": ["wheat"], "गेंहू": ["wheat"],
+        "धान": ["paddy", "rice"], "चावल": ["rice", "paddy"],
+        "आलू": ["potato"], "अलू": ["potato"],
+        "मसूर": ["lentil", "masur"], "मसूरदाल": ["lentil", "masur"],
+        "दाल": ["lentil", "gram"],
+        "मक्का": ["maize"], "मोक्का": ["maize"], "mokka": ["maize"], "makka": ["maize"],
+        "सबसे": ["highest", "lowest"], "सस्ता": ["lowest", "min"], "महंगा": ["highest", "max"],
+        "मॉडल": ["modal"], "मोडल": ["modal"], "भाव": ["price"], "रेट": ["price"],
+    }
+    for token in list(tokens):
+        for mapped in synonyms.get(token, []):
+            tokens.add(mapped)
+    return {token for token in tokens if len(token) > 1}
+
+
+def _record_search_text(record: dict[str, Any]) -> str:
+    fields = (
+        "district", "district_hi", "district_reported", "mandi", "mandi_hi",
+        "commodity", "commodity_hi", "variety", "variety_hi", "grade", "grade_hi",
+        "arrival_date", "source", "source_id",
+    )
+    return " ".join(str(record.get(field, "")) for field in fields).lower()
+
+
+def _rank_ai_records(records: list[dict[str, Any]], question: str) -> list[dict[str, Any]]:
+    tokens = _question_tokens(question)
+
+    def score(record: dict[str, Any]) -> tuple[int, float]:
+        text = _record_search_text(record)
+        token_score = sum(1 for token in tokens if token in text)
+        try:
+            price = float(record.get("modal_price") or 0)
+        except (TypeError, ValueError):
+            price = 0.0
+        return (token_score, price)
+
+    scored = [(score(record), record) for record in records]
+    relevant = [record for (record_score, _), record in scored if record_score > 0]
+    if relevant:
+        return sorted(relevant, key=lambda record: score(record), reverse=True)[:MAX_AI_CONTEXT_RECORDS]
+    return records[:MAX_AI_CONTEXT_RECORDS]
+
+
+def _compact_ai_record(record: dict[str, Any], verified: bool) -> dict[str, Any]:
+    return {
+        "district": record.get("district"),
+        "district_hi": record.get("district_hi"),
+        "mandi": record.get("mandi"),
+        "mandi_hi": record.get("mandi_hi"),
+        "commodity": record.get("commodity"),
+        "commodity_hi": record.get("commodity_hi"),
+        "variety": record.get("variety"),
+        "grade": record.get("grade"),
+        "arrival_date": record.get("arrival_date"),
+        "min_price": record.get("min_price"),
+        "modal_price": record.get("modal_price"),
+        "max_price": record.get("max_price"),
+        "arrivals": record.get("arrivals"),
+        "arrivals_unit": record.get("arrivals_unit"),
+        "source": record.get("source"),
+        "verification": "multi_source_verified" if verified else "single_source_not_cross_verified",
+    }
+
+
+def _build_openrouter_system_prompt(question: str, mandi_data: Any = None) -> str:
+    context = _collect_ai_mandi_context(mandi_data)
+    verified = _rank_ai_records(context["verified_records"], question)
+    single_source = _rank_ai_records(context["single_source_records"], question)
+
+    compact_context = {
+        "metadata": context["metadata"],
+        "verified_records": [_compact_ai_record(record, True) for record in verified],
+        "single_source_records": [_compact_ai_record(record, False) for record in single_source],
+        "rules": [
+            "Use only the records in this JSON context. Do not invent a price, mandi, date, arrival or source.",
+            "Prefer verified_records. Use single_source_records only when no verified match exists and clearly say it is not cross-verified.",
+            "All prices are INR per quintal unless the record says otherwise.",
+            "If the crop/mandi/district is missing from the context, say: Abhi official feed me ye bhav uplabdh nahi hai.",
+            "Answer in simple Hindi/Hinglish and include mandi, district, commodity, modal/min/max price, date and source/verification where available.",
+        ],
+    }
+    return (
+        "Aap Uttar Pradesh Mandi ke official AI Sahayak hain. "
+        "Niche verified/cross-checked aur single-source official mandi bhav JSON context diya gaya hai.\n"
+        f"{json.dumps(compact_context, ensure_ascii=False)}"
+    )
+
+
+def _openrouter_headers(api_key: str) -> dict[str, str]:
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    site_url = os.environ.get("OPENROUTER_SITE_URL", "").strip()
+    app_name = os.environ.get("OPENROUTER_APP_NAME", "UP Mandi Dashboard").strip()
+    if site_url:
+        headers["HTTP-Referer"] = site_url
+    if app_name:
+        headers["X-Title"] = app_name
+    return headers
+
+
+def _configured_openrouter_model(vision: bool = False) -> str:
+    if vision:
+        return (
+            os.environ.get("OPENROUTER_VISION_MODEL", "").strip()
+            or os.environ.get("OPENROUTER_MODEL", "").strip()
+            or "google/gemini-2.0-flash-exp:free"
+        )
+    return os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip() or OPENROUTER_DEFAULT_MODEL
+
+
+def _parse_positive_int_env(name: str, default: int, low: int, high: int) -> int:
+    try:
+        return max(low, min(high, int(os.environ.get(name, str(default)).strip())))
+    except ValueError:
+        return default
+
+
+def _call_openrouter_chat(
+    messages: list[dict[str, Any]],
+    *,
+    model: str | None = None,
+    vision: bool = False,
+    temperature: float = 0.2,
+    max_tokens: int | None = None,
+) -> tuple[str, str]:
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OPENROUTER_API_KEY is not configured on the backend server",
+        )
+
+    selected_model = model or _configured_openrouter_model(vision=vision)
+    resolved_max_tokens = max_tokens or _parse_positive_int_env("OPENROUTER_MAX_TOKENS", 700, 100, 1800)
+    timeout_seconds = _parse_positive_int_env("OPENROUTER_TIMEOUT_SECONDS", 45, 5, 120)
+    request_body = {
+        "model": selected_model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": resolved_max_tokens,
+    }
+    request = urllib.request.Request(
+        OPENROUTER_API_URL,
+        data=json.dumps(request_body).encode("utf-8"),
+        headers=_openrouter_headers(api_key),
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            response_payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")[:800]
+        logger.warning("OpenRouter returned HTTP %s: %s", exc.code, error_body)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"OpenRouter AI server returned HTTP {exc.code}",
+        ) from exc
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        logger.warning("OpenRouter request failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server connect nahi ho saka",
+        ) from exc
+
+    answer = ""
+    choices = response_payload.get("choices") if isinstance(response_payload, dict) else None
+    if isinstance(choices, list) and choices:
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        if isinstance(message, dict):
+            answer = str(message.get("content") or "").strip()
+    if not answer:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server ne khaali jawab diya",
+        )
+    return answer, selected_model
+
+
+def _fetch_open_meteo_forecast(latitude: float, longitude: float) -> dict[str, Any]:
+    params = (
+        f"latitude={latitude:.5f}&longitude={longitude:.5f}"
+        "&forecast_days=3"
+        "&current=temperature_2m,precipitation,rain,wind_speed_10m"
+        "&daily=weather_code,precipitation_sum,rain_sum,wind_speed_10m_max"
+        "&timezone=Asia%2FKolkata"
+    )
+    url = f"https://api.open-meteo.com/v1/forecast?{params}"
+    try:
+        with urllib.request.urlopen(url, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        logger.warning("Open-Meteo request failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Weather API connect nahi ho saka",
+        ) from exc
+
+
+def _safe_image_data_url(image_data: str | None) -> str:
+    value = (image_data or "").strip()
+    if not value.startswith("data:image/") or ";base64," not in value[:80]:
+        raise HTTPException(status_code=422, detail="A valid base64 image data URL is required")
+    return value
+
+
 # ================= REST API ENDPOINTS =================
 
 @app.post("/api/v2/auth/login", response_model=Token)
@@ -373,6 +730,187 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "active_mandis": active_mandis,
         "avg_modal_price": round(avg_val, 2)
     }
+
+
+@app.post("/api/v2/mandi-ai")
+@app.post("/api/mandi-ai")
+def ask_mandi_ai(payload: MandiAIRequest):
+    """Answer Hindi mandi questions using OpenRouter with official price data.
+
+    The OpenRouter API key is read only from the server environment. It is never
+    accepted from, or returned to, the browser.
+    """
+    question = (payload.userQuestion or payload.message or "").strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="userQuestion is required")
+
+    context = _collect_ai_mandi_context(payload.mandiData)
+    if not context["verified_records"] and not context["single_source_records"]:
+        return {
+            "answer": "अभी official feed me koi mandi bhav uplabdh nahi hai. DATA_GOV_IN_API_KEY और official feeds configure होने के बाद मैं live bhav बता पाऊँगा।",
+            "model": None,
+            "data_status": "no_official_records",
+        }
+
+    answer, model = _call_openrouter_chat([
+        {"role": "system", "content": _build_openrouter_system_prompt(question, payload.mandiData)},
+        {"role": "user", "content": question},
+    ])
+
+    return {
+        "answer": answer,
+        "model": model,
+        "data_status": "verified_and_source_records_available",
+    }
+
+
+@app.post("/api/chat")
+def chat_alias(payload: MandiAIRequest):
+    """Compatibility endpoint for simple OpenAI-style website chat demos."""
+    result = ask_mandi_ai(payload)
+    return {
+        "reply": result.get("answer") if isinstance(result, dict) else "",
+        "answer": result.get("answer") if isinstance(result, dict) else "",
+        "model": result.get("model") if isinstance(result, dict) else None,
+        "data_status": result.get("data_status") if isinstance(result, dict) else None,
+    }
+
+
+@app.post("/api/v2/ai-tools")
+@app.post("/api/ai-tools")
+def run_smart_ai_tool(payload: SmartAIToolRequest):
+    """Advanced OpenRouter tools: vision, trends, transport, weather and schemes."""
+    action = payload.action
+    base_question = (payload.question or "").strip()
+    crop = (payload.crop or "").strip()
+    location = (payload.location or "").strip()
+
+    if action == "crop_disease":
+        image_url = _safe_image_data_url(payload.imageData)
+        prompt = (
+            "Is crop/leaf photo ko dhyan se analyze kijiye. Hindi me batayein: "
+            "1) sambhavit fasal aur rog/keeda, 2) lakshan, 3) turant organic/IPM upay, "
+            "4) pesticide ya fungicide ke liye safe generic guidance aur dose ko label/local krishi adhikari se verify karne ki warning, "
+            "5) kab expert ya KVK se milna chahiye. Agar image clear nahi hai to clear photo maangien. "
+            "Kabhi bhi banned/unsafe chemical ka exact prescription na dein."
+        )
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap Hindi bolne wale krishi rog pehchan sahayak hain. Safety-first, practical aur non-alarming answer dein."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt + (f"\nUser context: {base_question}" if base_question else "")},
+                {"type": "image_url", "image_url": {"url": image_url}},
+            ]},
+        ], vision=True, max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "receipt_ocr":
+        image_url = _safe_image_data_url(payload.imageData)
+        prompt = (
+            "Is mandi parcha/receipt image se OCR karke Hindi me summary dein. "
+            "Fasal, mandi, date, weight/quintal, rate, amount, fees, trader/farmer name agar dikh rahe hon to nikalein. "
+            "Pehle 'JSON:' ke baad ek valid JSON object dein with keys: crop, mandi, date, quantity_quintal, rate_per_quintal, total_amount, fees, party_name, confidence. "
+            "Phir 'Summary:' ke baad simple Hindi explanation. Agar field clear nahi hai to null rakhein; guess na karein."
+        )
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap OCR aur mandi khata assistant hain. Sirf image me dikh rahe data ko extract karein; uncertain values ko null rakhein."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": image_url}},
+            ]},
+        ], vision=True, max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "trend_advisor":
+        context = {
+            "crop": crop,
+            "question": base_question,
+            "mandi_context": _collect_ai_mandi_context(payload.mandiData),
+            "history": payload.historyData if payload.historyData is not None else _read_json_file("data/history.json", {}),
+            "rules": [
+                "Use only provided mandi/history data. Do not promise guaranteed future prices.",
+                "Give a cautious sell/hold/watch suggestion in Hindi with reasons and risk disclaimer.",
+                "If data is insufficient, say that trend advice is not reliable yet.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap mandi price trend analyst hain. Farmers ko simple Hindi me cautious, data-based advice dein."},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ], max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    if action == "transport_profit":
+        source_price = float(payload.sourcePrice or 0)
+        destination_price = float(payload.destinationPrice or 0)
+        quantity = float(payload.quantityQuintal or 0)
+        distance = float(payload.distanceKm or 0)
+        cost_per_km = float(payload.transportCostPerKm or 0)
+        total_transport = float(payload.totalTransportCost or 0)
+        if total_transport <= 0 and distance > 0 and cost_per_km > 0:
+            total_transport = distance * cost_per_km
+        transport_per_q = (total_transport / quantity) if quantity > 0 else 0
+        net_gain_per_q = destination_price - source_price - transport_per_q
+        total_net_gain = net_gain_per_q * quantity if quantity > 0 else 0
+        calc_context = {
+            "source_mandi": payload.sourceMandi,
+            "destination_mandi": payload.destinationMandi,
+            "source_price_per_q": source_price,
+            "destination_price_per_q": destination_price,
+            "distance_km": distance,
+            "quantity_quintal": quantity,
+            "transport_cost_per_km": cost_per_km,
+            "total_transport_cost": total_transport,
+            "transport_cost_per_quintal": round(transport_per_q, 2),
+            "net_gain_per_quintal": round(net_gain_per_q, 2),
+            "total_net_gain": round(total_net_gain, 2),
+            "question": base_question,
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap mandi transport profit calculator hain. Calculation ko verify karke simple Hindi me final recommendation dein."},
+            {"role": "user", "content": json.dumps(calc_context, ensure_ascii=False)},
+        ], max_tokens=700)
+        return {"answer": answer, "model": model, "action": action, "calculation": calc_context}
+
+    if action == "weather_risk":
+        if payload.latitude is None or payload.longitude is None:
+            raise HTTPException(status_code=422, detail="latitude and longitude are required for weather risk")
+        weather = _fetch_open_meteo_forecast(payload.latitude, payload.longitude)
+        context = {
+            "location": location,
+            "crop": crop,
+            "weather_forecast": weather,
+            "mandi_context": _collect_ai_mandi_context(payload.mandiData),
+            "question": base_question,
+            "rules": [
+                "Explain rain/wind/heat risk in Hindi for harvest, storage and mandi transport.",
+                "Do not invent mandi price drops; only say risk may affect quality/arrival if weather suggests it.",
+                "Give practical steps like tarpaulin, drying, storage, transport timing.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap weather + mandi risk warning assistant hain."},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ], max_tokens=850)
+        return {"answer": answer, "model": model, "action": action, "weather": weather}
+
+    if action == "scheme_advisor":
+        prompt = {
+            "farmer_question": base_question,
+            "location": location,
+            "crop": crop,
+            "instructions": [
+                "Hindi me PM-KISAN, PM Fasal Bima Yojana, KCC, state agriculture subsidy, soil health card etc. ke liye eligibility-style guidance dein.",
+                "Official portal/department se final verification aur documents check karne ko bolen.",
+                "Personal/legal/financial guarantee na dein; step-by-step apply checklist dein.",
+            ],
+        }
+        answer, model = _call_openrouter_chat([
+            {"role": "system", "content": "Aap sarkari yojana sahayak hain. Clear Hindi guidance, documents list aur official verification disclaimer dein."},
+            {"role": "user", "content": json.dumps(prompt, ensure_ascii=False)},
+        ], max_tokens=900)
+        return {"answer": answer, "model": model, "action": action}
+
+    raise HTTPException(status_code=422, detail="Unsupported AI tool action")
+
 
 @app.post("/api/v2/rates")
 def create_rate(current_user: db.User = Depends(get_current_user)):
