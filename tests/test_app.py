@@ -61,6 +61,18 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertLessEqual(len(response.json()["records"]), 2)
 
+    def test_mandi_ai_requires_server_side_openrouter_key(self):
+        previous_key = os.environ.pop("OPENROUTER_API_KEY", None)
+        try:
+            response = self.client.post("/api/v2/mandi-ai", json={
+                "userQuestion": "Aligarh me Masur Dal ka bhav kya hai?",
+            })
+        finally:
+            if previous_key is not None:
+                os.environ["OPENROUTER_API_KEY"] = previous_key
+        self.assertEqual(response.status_code, 503)
+        self.assertIn("OPENROUTER_API_KEY", response.text)
+
     def test_auction_does_not_create_local_bids(self):
         snapshot = self.client.get("/api/v2/auction/lots")
         self.assertEqual(snapshot.status_code, 200)

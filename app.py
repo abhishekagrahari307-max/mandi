@@ -1,12 +1,14 @@
 import os
 import json
 import urllib.request
+import urllib.error
 import re
 import csv
 import io
 import hashlib
 import logging
 import secrets
+from typing import Any
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, Request, WebSocket
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -60,7 +62,8 @@ elif IS_PRODUCTION:
 cors_origins = [
     origin.strip()
     for origin in os.environ.get(
-        "CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000"
+        "CORS_ORIGINS",
+        "http://localhost:8000,http://127.0.0.1:8000,https://abhishekagrahari307-max.github.io"
     ).split(",")
     if origin.strip()
 ]
@@ -113,6 +116,21 @@ class RateCreate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class MandiAIRequest(BaseModel):
+    """Chat request for the OpenRouter-powered mandi assistant.
+
+    `userQuestion` is used by the public dashboard. `message` is accepted too
+    so clients can call the endpoint with a more generic chat payload. Optional
+    client-side mandiData is used only as a fallback when the server does not
+    have a fresh local snapshot; the backend never requires API keys in the
+    browser.
+    """
+    userQuestion: str | None = Field(default=None, max_length=600)
+    message: str | None = Field(default=None, max_length=600)
+    mandiData: Any | None = None
+
 
 # Only providers the alert engine can actually deliver to. A subscription with
 # any other channel could never receive a message, so it is rejected instead of
@@ -314,6 +332,211 @@ def seed_database():
     finally:
         session.close()
 
+# ================= OPENROUTER AI MANDI ASSISTANT HELPERS =================
+
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_DEFAULT_MODEL = "deepseek/deepseek-r1:free"
+MAX_AI_CONTEXT_RECORDS = 120
+
+
+def _read_json_file(path: str, fallback: Any) -> Any:
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return fallback
+
+
+def _records_from_client_snapshot(mandi_data: Any) -> list[dict[str, Any]]:
+    """Accept a minimal client snapshot without trusting browser secrets.
+
+    The static GitHub Pages build can send the already-visible JSON records to a
+    separately hosted backend. This fallback keeps that mode useful, while the
+    server-local data files remain the preferred source when available.
+    """
+    if isinstance(mandi_data, dict):
+        records = mandi_data.get("records")
+        if isinstance(records, list):
+            return [item for item in records if isinstance(item, dict)]
+        feeds = mandi_data.get("feeds")
+        if isinstance(feeds, list):
+            output: list[dict[str, Any]] = []
+            for feed in feeds:
+                if not isinstance(feed, dict):
+                    continue
+                for record in feed.get("records", []) if isinstance(feed.get("records"), list) else []:
+                    if isinstance(record, dict):
+                        output.append({
+                            **record,
+                            "source": record.get("source") or feed.get("name") or feed.get("id"),
+                            "verification_level": "single_source",
+                        })
+            return output
+    if isinstance(mandi_data, list):
+        return [item for item in mandi_data if isinstance(item, dict)]
+    return []
+
+
+def _collect_ai_mandi_context(mandi_data: Any = None) -> dict[str, Any]:
+    latest = _read_json_file("data/latest.json", {})
+    source_prices = _read_json_file("data/source_prices.json", {})
+    sources = _read_json_file("data/sources.json", {})
+
+    verified_records = latest.get("records", []) if isinstance(latest, dict) else []
+    if not isinstance(verified_records, list):
+        verified_records = []
+    verified_records = [record for record in verified_records if isinstance(record, dict)]
+
+    single_source_records: list[dict[str, Any]] = []
+    feeds = source_prices.get("feeds", []) if isinstance(source_prices, dict) else []
+    if isinstance(feeds, list):
+        for feed in feeds:
+            if not isinstance(feed, dict):
+                continue
+            if feed.get("status") not in {"live", "cached"}:
+                continue
+            feed_records = feed.get("records", [])
+            if not isinstance(feed_records, list):
+                continue
+            for record in feed_records:
+                if not isinstance(record, dict):
+                    continue
+                single_source_records.append({
+                    **record,
+                    "source": record.get("source") or feed.get("name") or feed.get("id"),
+                    "source_id": record.get("source_id") or feed.get("id"),
+                    "verification_level": "single_source",
+                })
+
+    # GitHub Pages mode: let the page send the same public data it already
+    # displays, but only if the deployed backend's own data files are empty.
+    if not verified_records and not single_source_records:
+        single_source_records = _records_from_client_snapshot(mandi_data)
+
+    metadata = {
+        "updated_at": latest.get("updated_at") if isinstance(latest, dict) else None,
+        "last_checked_at": (
+            latest.get("last_checked_at") if isinstance(latest, dict) else None
+        ) or (sources.get("last_checked_at") if isinstance(sources, dict) else None),
+        "is_live": latest.get("is_live") if isinstance(latest, dict) else None,
+        "verified": latest.get("verified") if isinstance(latest, dict) else None,
+        "minimum_price_source_matches": (
+            latest.get("minimum_price_source_matches") if isinstance(latest, dict) else None
+        ) or (sources.get("minimum_price_source_matches") if isinstance(sources, dict) else None),
+    }
+    return {
+        "metadata": metadata,
+        "verified_records": verified_records,
+        "single_source_records": single_source_records,
+    }
+
+
+def _question_tokens(question: str) -> set[str]:
+    cleaned = question.lower()
+    tokens = set(re.findall(r"[a-zA-Z\u0900-\u097F0-9]+", cleaned))
+    synonyms = {
+        "गेहूं": ["wheat"], "गेहूँ": ["wheat"], "गेंहू": ["wheat"],
+        "धान": ["paddy", "rice"], "चावल": ["rice", "paddy"],
+        "आलू": ["potato"], "अलू": ["potato"],
+        "मसूर": ["lentil", "masur"], "मसूरदाल": ["lentil", "masur"],
+        "दाल": ["lentil", "gram"],
+        "मक्का": ["maize"], "मोक्का": ["maize"], "mokka": ["maize"], "makka": ["maize"],
+        "सबसे": ["highest", "lowest"], "सस्ता": ["lowest", "min"], "महंगा": ["highest", "max"],
+        "मॉडल": ["modal"], "मोडल": ["modal"], "भाव": ["price"], "रेट": ["price"],
+    }
+    for token in list(tokens):
+        for mapped in synonyms.get(token, []):
+            tokens.add(mapped)
+    return {token for token in tokens if len(token) > 1}
+
+
+def _record_search_text(record: dict[str, Any]) -> str:
+    fields = (
+        "district", "district_hi", "district_reported", "mandi", "mandi_hi",
+        "commodity", "commodity_hi", "variety", "variety_hi", "grade", "grade_hi",
+        "arrival_date", "source", "source_id",
+    )
+    return " ".join(str(record.get(field, "")) for field in fields).lower()
+
+
+def _rank_ai_records(records: list[dict[str, Any]], question: str) -> list[dict[str, Any]]:
+    tokens = _question_tokens(question)
+
+    def score(record: dict[str, Any]) -> tuple[int, float]:
+        text = _record_search_text(record)
+        token_score = sum(1 for token in tokens if token in text)
+        try:
+            price = float(record.get("modal_price") or 0)
+        except (TypeError, ValueError):
+            price = 0.0
+        return (token_score, price)
+
+    scored = [(score(record), record) for record in records]
+    relevant = [record for (record_score, _), record in scored if record_score > 0]
+    if relevant:
+        return sorted(relevant, key=lambda record: score(record), reverse=True)[:MAX_AI_CONTEXT_RECORDS]
+    return records[:MAX_AI_CONTEXT_RECORDS]
+
+
+def _compact_ai_record(record: dict[str, Any], verified: bool) -> dict[str, Any]:
+    return {
+        "district": record.get("district"),
+        "district_hi": record.get("district_hi"),
+        "mandi": record.get("mandi"),
+        "mandi_hi": record.get("mandi_hi"),
+        "commodity": record.get("commodity"),
+        "commodity_hi": record.get("commodity_hi"),
+        "variety": record.get("variety"),
+        "grade": record.get("grade"),
+        "arrival_date": record.get("arrival_date"),
+        "min_price": record.get("min_price"),
+        "modal_price": record.get("modal_price"),
+        "max_price": record.get("max_price"),
+        "arrivals": record.get("arrivals"),
+        "arrivals_unit": record.get("arrivals_unit"),
+        "source": record.get("source"),
+        "verification": "multi_source_verified" if verified else "single_source_not_cross_verified",
+    }
+
+
+def _build_openrouter_system_prompt(question: str, mandi_data: Any = None) -> str:
+    context = _collect_ai_mandi_context(mandi_data)
+    verified = _rank_ai_records(context["verified_records"], question)
+    single_source = _rank_ai_records(context["single_source_records"], question)
+
+    compact_context = {
+        "metadata": context["metadata"],
+        "verified_records": [_compact_ai_record(record, True) for record in verified],
+        "single_source_records": [_compact_ai_record(record, False) for record in single_source],
+        "rules": [
+            "Use only the records in this JSON context. Do not invent a price, mandi, date, arrival or source.",
+            "Prefer verified_records. Use single_source_records only when no verified match exists and clearly say it is not cross-verified.",
+            "All prices are INR per quintal unless the record says otherwise.",
+            "If the crop/mandi/district is missing from the context, say: Abhi official feed me ye bhav uplabdh nahi hai.",
+            "Answer in simple Hindi/Hinglish and include mandi, district, commodity, modal/min/max price, date and source/verification where available.",
+        ],
+    }
+    return (
+        "Aap Uttar Pradesh Mandi ke official AI Sahayak hain. "
+        "Niche verified/cross-checked aur single-source official mandi bhav JSON context diya gaya hai.\n"
+        f"{json.dumps(compact_context, ensure_ascii=False)}"
+    )
+
+
+def _openrouter_headers(api_key: str) -> dict[str, str]:
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    site_url = os.environ.get("OPENROUTER_SITE_URL", "").strip()
+    app_name = os.environ.get("OPENROUTER_APP_NAME", "UP Mandi Dashboard").strip()
+    if site_url:
+        headers["HTTP-Referer"] = site_url
+    if app_name:
+        headers["X-Title"] = app_name
+    return headers
+
+
 # ================= REST API ENDPOINTS =================
 
 @app.post("/api/v2/auth/login", response_model=Token)
@@ -373,6 +596,110 @@ def get_metrics(db_sess: Session = Depends(get_db)):
         "active_mandis": active_mandis,
         "avg_modal_price": round(avg_val, 2)
     }
+
+
+@app.post("/api/v2/mandi-ai")
+@app.post("/api/mandi-ai")
+def ask_mandi_ai(payload: MandiAIRequest):
+    """Answer Hindi mandi questions using OpenRouter with official price data.
+
+    The OpenRouter API key is read only from the server environment. It is never
+    accepted from, or returned to, the browser.
+    """
+    question = (payload.userQuestion or payload.message or "").strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="userQuestion is required")
+
+    context = _collect_ai_mandi_context(payload.mandiData)
+    if not context["verified_records"] and not context["single_source_records"]:
+        return {
+            "answer": "अभी official feed me koi mandi bhav uplabdh nahi hai. DATA_GOV_IN_API_KEY और official feeds configure होने के बाद मैं live bhav बता पाऊँगा।",
+            "model": None,
+            "data_status": "no_official_records",
+        }
+
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OPENROUTER_API_KEY is not configured on the backend server",
+        )
+
+    model = os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip() or OPENROUTER_DEFAULT_MODEL
+    max_tokens_raw = os.environ.get("OPENROUTER_MAX_TOKENS", "700").strip()
+    timeout_raw = os.environ.get("OPENROUTER_TIMEOUT_SECONDS", "45").strip()
+    try:
+        max_tokens = max(100, min(1500, int(max_tokens_raw)))
+    except ValueError:
+        max_tokens = 700
+    try:
+        timeout_seconds = max(5, min(120, int(timeout_raw)))
+    except ValueError:
+        timeout_seconds = 45
+
+    request_body = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": _build_openrouter_system_prompt(question, payload.mandiData)},
+            {"role": "user", "content": question},
+        ],
+        "temperature": 0.2,
+        "max_tokens": max_tokens,
+    }
+    request = urllib.request.Request(
+        OPENROUTER_API_URL,
+        data=json.dumps(request_body).encode("utf-8"),
+        headers=_openrouter_headers(api_key),
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            response_payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")[:800]
+        logger.warning("OpenRouter returned HTTP %s: %s", exc.code, error_body)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"OpenRouter AI server returned HTTP {exc.code}",
+        ) from exc
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        logger.warning("OpenRouter request failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server connect nahi ho saka",
+        ) from exc
+
+    answer = ""
+    choices = response_payload.get("choices") if isinstance(response_payload, dict) else None
+    if isinstance(choices, list) and choices:
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        if isinstance(message, dict):
+            answer = str(message.get("content") or "").strip()
+    if not answer:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="OpenRouter AI server ne khaali jawab diya",
+        )
+
+    return {
+        "answer": answer,
+        "model": model,
+        "data_status": "verified_and_source_records_available",
+    }
+
+
+@app.post("/api/chat")
+def chat_alias(payload: MandiAIRequest):
+    """Compatibility endpoint for simple OpenAI-style website chat demos."""
+    result = ask_mandi_ai(payload)
+    return {
+        "reply": result.get("answer") if isinstance(result, dict) else "",
+        "answer": result.get("answer") if isinstance(result, dict) else "",
+        "model": result.get("model") if isinstance(result, dict) else None,
+        "data_status": result.get("data_status") if isinstance(result, dict) else None,
+    }
+
 
 @app.post("/api/v2/rates")
 def create_rate(current_user: db.User = Depends(get_current_user)):

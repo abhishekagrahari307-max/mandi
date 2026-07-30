@@ -22,6 +22,7 @@
 - **🏢 मण्डी परिषद निर्देशिका:** UP Mandi Parishad से मंडल (division), जनपद, मण्डी, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।
 - **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
 - **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
+- **🤖 OpenRouter AI Mandi Sahayak:** किसान/व्यापारी Hindi/Hinglish में सवाल पूछ सकते हैं; backend official mandi JSON को OpenRouter model के context में भेजता है और API key कभी frontend में expose नहीं होती।
 - **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
@@ -81,6 +82,26 @@ docker compose up --build
 ```
 
 `JWT_SECRET` बनाने के लिए `openssl rand -hex 32` का उपयोग कर सकते हैं। असली secret, password या access token को कभी commit न करें।
+
+### OpenRouter AI Mandi Sahayak सेटअप
+
+Backend में `/api/v2/mandi-ai` endpoint जोड़ा गया है। यह official `data/latest.json` और `data/source_prices.json` को context बनाकर OpenRouter को भेजता है और Hindi में जवाब लौटाता है।
+
+1. [OpenRouter](https://openrouter.ai/) से API key बनाएं।
+2. Key को केवल backend environment में रखें:
+   ```bash
+   OPENROUTER_API_KEY=sk-or-...
+   OPENROUTER_MODEL=deepseek/deepseek-r1:free
+   ```
+3. Frontend में key न डालें। GitHub Pages पर static frontend चलाते समय `index.html` में `MANDI_AI_DEFAULT_BACKEND_URL` को Render/Vercel/Docker backend URL पर set करें (या AI card के **Backend URL** field में browser-side override भरें), जैसे `https://your-mandi-api.onrender.com`।
+4. Backend CORS में अपने frontend origin को add करें:
+   ```bash
+   CORS_ORIGINS=https://abhishekagrahari307-max.github.io,http://localhost:8000,http://127.0.0.1:8000
+   ```
+
+Render.com के लिए `render.yaml` blueprint भी तैयार है। Render dashboard में repository connect करके blueprint deploy करें और कम-से-कम ये secret env vars भरें: `ADMIN_PASSWORD`, `OPENROUTER_API_KEY`, `DATA_GOV_IN_API_KEY`। Deploy होने के बाद backend URL को `MANDI_AI_DEFAULT_BACKEND_URL` में set करें या website के AI card में save करें।
+
+अगर `OPENROUTER_API_KEY` set नहीं है तो AI card साफ error दिखाएगा; mandi data फिर भी normal dashboard में दिखता रहेगा।
 
 ---
 

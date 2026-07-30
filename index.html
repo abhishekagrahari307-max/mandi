@@ -261,6 +261,55 @@
             </div>
         </div>
 
+        <!-- OpenRouter AI Mandi Assistant -->
+        <section id="ai-mandi-assistant" class="bg-white border border-emerald-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-900 via-emerald-900 to-emerald-700 text-white p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <span class="inline-flex items-center bg-white/15 border border-white/20 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5 text-yellow-300"></i>
+                        OpenRouter AI + Official Mandi Data
+                    </span>
+                    <h3 class="text-xl font-black">🤖 AI Mandi Sahayak</h3>
+                    <p class="text-xs text-emerald-50 max-w-2xl">Hindi me sawal poochhiye — AI sirf website ke loaded official mandi bhav ko context me lekar jawab dega. API key frontend me kabhi nahi रखी जाती।</p>
+                </div>
+                <div id="mandi-ai-status" class="text-[11px] font-bold bg-white/15 border border-white/20 rounded-xl px-3 py-2">Backend status: ready</div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4">
+                <div class="lg:col-span-2 space-y-3">
+                    <div id="mandi-ai-chat-box" class="h-64 overflow-y-auto custom-scrollbar bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3 text-sm">
+                        <div class="bg-white border border-emerald-100 rounded-xl p-3 shadow-sm">
+                            <p class="font-bold text-emerald-800">AI:</p>
+                            <p class="text-slate-700 mt-1">Namaste! Aap poochh sakte hain: “Aligarh me Masur Dal ka bhav kya hai?” ya “Sabse sasta gehun kis mandi me mil raha hai?”</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <textarea id="mandi-ai-question" rows="2" maxlength="600" placeholder="Apna sawal likhein... jaise: Etah mandi me Mokka ka modal price kya hai?" class="flex-1 px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm resize-none"></textarea>
+                        <button id="mandi-ai-send-btn" onclick="sendMandiAIQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-2 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>पूछें</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                        <p class="font-black text-emerald-900 mb-2">Quick Questions</p>
+                        <div class="space-y-2">
+                            <button type="button" onclick="askMandiAIExample('Aaj Aligarh me Masur Dal ka bhav kya chal raha hai?')" class="w-full text-left bg-white hover:bg-emerald-50 border border-emerald-100 rounded-lg p-2 transition">Aligarh me Masur Dal ka bhav?</button>
+                            <button type="button" onclick="askMandiAIExample('Etah mandi me Mokka ka modal price kya hai?')" class="w-full text-left bg-white hover:bg-emerald-50 border border-emerald-100 rounded-lg p-2 transition">Etah me Mokka modal price?</button>
+                            <button type="button" onclick="askMandiAIExample('Sabse sasta gehun kis mandi me mil raha hai?')" class="w-full text-left bg-white hover:bg-emerald-50 border border-emerald-100 rounded-lg p-2 transition">Sabse sasta gehun?</button>
+                        </div>
+                    </div>
+                    <details class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <summary class="font-black text-slate-700 cursor-pointer">Backend URL (GitHub Pages)</summary>
+                        <p class="text-[10px] text-slate-500 mt-2 leading-relaxed">Agar frontend GitHub Pages par hai aur AI backend Render/Vercel par host hai, to uska base URL yahan save kar sakte hain. Example: https://your-app.onrender.com</p>
+                        <input id="mandi-ai-backend-url" type="url" placeholder="https://your-backend.example.com" class="w-full mt-2 px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <button type="button" onclick="saveMandiAIBackendUrl()" class="mt-2 w-full bg-slate-900 text-white rounded-lg py-2 font-bold">Save backend URL</button>
+                    </details>
+                    <p class="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3">Security: OpenRouter API key sirf backend ke <b>OPENROUTER_API_KEY</b> environment variable me rakhein; HTML/JavaScript me kabhi nahi।</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Desktop Navigation Tabs -->
         <div class="hidden md:flex bg-white rounded-xl shadow-sm p-1.5 border border-slate-200 space-x-2">
             <button onclick="switchTab('rates')" id="tab-btn-rates" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg flex items-center justify-center space-x-2 transition bg-emerald-600 text-white shadow-sm">
@@ -1284,6 +1333,10 @@
         let currentLang = 'hi';
         let currentSortMode = 'district';
         let currentRankingScope = 'all'; // 'all', 'top10', 'bottom10'
+        // Public backend base URL for GitHub Pages deployments. This is not a
+        // secret. Keep it blank for local/same-origin API, or set it to your
+        // Render/Vercel/FastAPI backend URL, e.g. https://your-app.onrender.com
+        const MANDI_AI_DEFAULT_BACKEND_URL = '';
 
         let latestData = [];
         let latestMetadata = {};
@@ -1346,6 +1399,7 @@
         function initializeApp() {
             renderIcons();
             loadLanguage(currentLang);
+            initializeMandiAIControls();
             fetchDashboardData();
             
             if ('serviceWorker' in navigator) {
@@ -2135,6 +2189,211 @@
 
         function refreshData() {
             fetchDashboardData();
+        }
+
+        // ================= OPENROUTER AI MANDI ASSISTANT =================
+        function initializeMandiAIControls() {
+            const backendInput = document.getElementById('mandi-ai-backend-url');
+            if (backendInput) {
+                backendInput.value = localStorage.getItem('mandiAiBackendUrl') || '';
+            }
+            const questionInput = document.getElementById('mandi-ai-question');
+            if (questionInput) {
+                questionInput.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                        event.preventDefault();
+                        sendMandiAIQuestion();
+                    }
+                });
+            }
+            updateMandiAIStatus();
+        }
+
+        function getMandiAIBackendBase() {
+            if (window.MANDI_AI_API_BASE) {
+                return String(window.MANDI_AI_API_BASE).trim().replace(/\/$/, '');
+            }
+            const saved = (localStorage.getItem('mandiAiBackendUrl') || '').trim().replace(/\/$/, '');
+            if (saved) return saved;
+            if (MANDI_AI_DEFAULT_BACKEND_URL) return MANDI_AI_DEFAULT_BACKEND_URL.trim().replace(/\/$/, '');
+            if (window.location.hostname.endsWith('github.io')) return '';
+            return window.location.origin;
+        }
+
+        function updateMandiAIStatus(message, tone = 'ready') {
+            const statusEl = document.getElementById('mandi-ai-status');
+            if (!statusEl) return;
+            const base = getMandiAIBackendBase();
+            const defaultText = base
+                ? `Backend: ${base.replace(/^https?:\/\//, '')}`
+                : 'Backend URL required for AI on GitHub Pages';
+            statusEl.innerText = message || defaultText;
+            const toneClasses = {
+                ready: 'text-[11px] font-bold bg-white/15 border border-white/20 rounded-xl px-3 py-2',
+                loading: 'text-[11px] font-bold bg-yellow-300/20 border border-yellow-200/30 rounded-xl px-3 py-2',
+                error: 'text-[11px] font-bold bg-red-500/20 border border-red-200/30 rounded-xl px-3 py-2',
+                ok: 'text-[11px] font-bold bg-emerald-400/20 border border-emerald-100/30 rounded-xl px-3 py-2'
+            };
+            statusEl.className = toneClasses[tone] || toneClasses.ready;
+        }
+
+        function saveMandiAIBackendUrl() {
+            const input = document.getElementById('mandi-ai-backend-url');
+            const value = (input?.value || '').trim().replace(/\/$/, '');
+            if (value) {
+                try {
+                    const url = new URL(value);
+                    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('bad protocol');
+                    localStorage.setItem('mandiAiBackendUrl', url.origin === value ? value : value);
+                } catch (error) {
+                    alert('Valid backend URL dalen, jaise https://your-app.onrender.com');
+                    return;
+                }
+            } else {
+                localStorage.removeItem('mandiAiBackendUrl');
+            }
+            updateMandiAIStatus(currentLang === 'hi' ? 'AI backend URL save ho gaya' : 'AI backend URL saved', 'ok');
+        }
+
+        function rankMandiAIRecords(records, question) {
+            const tokens = String(question || '').toLowerCase().match(/[a-zA-Z\u0900-\u097F0-9]+/g) || [];
+            const expanded = new Set(tokens);
+            const synonymMap = {
+                'गेहूं': ['wheat'], 'गेहूँ': ['wheat'], 'धान': ['paddy', 'rice'], 'चावल': ['rice', 'paddy'],
+                'आलू': ['potato'], 'मसूर': ['lentil', 'masur'], 'दाल': ['lentil'],
+                'मक्का': ['maize'], 'मोक्का': ['maize'], 'mokka': ['maize'], 'makka': ['maize']
+            };
+            tokens.forEach(token => (synonymMap[token] || []).forEach(item => expanded.add(item)));
+            const usableTokens = Array.from(expanded).filter(token => token.length > 1);
+            const scoreRecord = record => {
+                const haystack = searchableText(
+                    record.district, record.district_hi, record.district_reported,
+                    record.mandi, record.mandi_hi, record.commodity, record.commodity_hi,
+                    record.variety, record.variety_hi, record.grade, record.grade_hi, record.source
+                );
+                return usableTokens.reduce((sum, token) => sum + (haystack.includes(token) ? 1 : 0), 0);
+            };
+            const scored = (Array.isArray(records) ? records : [])
+                .filter(record => record && Number.isFinite(Number(record.modal_price)))
+                .map(record => ({ record, score: scoreRecord(record) }));
+            const relevant = scored.filter(item => item.score > 0).sort((a, b) => b.score - a.score).map(item => item.record);
+            return (relevant.length ? relevant : scored.map(item => item.record)).slice(0, 120);
+        }
+
+        function buildMandiAIClientData(question) {
+            const compactRecord = record => ({
+                district: record.district,
+                district_hi: record.district_hi,
+                mandi: record.mandi,
+                mandi_hi: record.mandi_hi,
+                commodity: record.commodity,
+                commodity_hi: record.commodity_hi,
+                variety: record.variety,
+                grade: record.grade,
+                arrival_date: record.arrival_date,
+                min_price: record.min_price,
+                modal_price: record.modal_price,
+                max_price: record.max_price,
+                arrivals: record.arrivals,
+                arrivals_unit: record.arrivals_unit,
+                source: record.source,
+                verification_count: record.verification_count,
+                multi_source_verified: record.multi_source_verified,
+                three_source_verified: record.three_source_verified,
+                verification_level: record.verification_level
+            });
+            const records = rankMandiAIRecords(latestData, question).map(compactRecord);
+            const feeds = (Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : []).map(feed => ({
+                id: feed.id,
+                name: feed.name,
+                name_hi: feed.name_hi,
+                status: feed.status,
+                records: rankMandiAIRecords(feed.records || [], question).slice(0, 40).map(record => compactRecord({
+                    ...record,
+                    source: record.source || feed.name || feed.id,
+                    verification_level: 'single_source'
+                }))
+            }));
+            return {
+                updated_at: latestMetadata?.updated_at,
+                verified: latestMetadata?.verified,
+                records,
+                feeds
+            };
+        }
+
+        function appendMandiAIMessage(role, text, isError = false) {
+            const box = document.getElementById('mandi-ai-chat-box');
+            if (!box) return;
+            const isUser = role === 'user';
+            const wrapper = document.createElement('div');
+            wrapper.className = isUser
+                ? 'bg-emerald-600 text-white rounded-xl p-3 ml-6 shadow-sm'
+                : (isError ? 'bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 mr-6' : 'bg-white border border-slate-200 rounded-xl p-3 mr-6 shadow-sm');
+            wrapper.innerHTML = `
+                <p class="font-bold ${isUser ? 'text-white' : (isError ? 'text-red-800' : 'text-emerald-800')}">${isUser ? 'Aap' : 'AI'}:</p>
+                <p class="mt-1 whitespace-pre-wrap leading-relaxed">${escapeHtml(text)}</p>
+            `;
+            box.appendChild(wrapper);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function askMandiAIExample(question) {
+            const input = document.getElementById('mandi-ai-question');
+            if (input) input.value = question;
+            sendMandiAIQuestion();
+        }
+
+        async function sendMandiAIQuestion() {
+            const input = document.getElementById('mandi-ai-question');
+            const button = document.getElementById('mandi-ai-send-btn');
+            const question = (input?.value || '').trim();
+            if (!question) return;
+
+            const base = getMandiAIBackendBase();
+            if (!base) {
+                appendMandiAIMessage('ai', 'GitHub Pages static hosting par AI chalane ke liye pehle Backend URL save karein. Backend me OPENROUTER_API_KEY environment variable set hona chahiye.', true);
+                updateMandiAIStatus('Backend URL required', 'error');
+                return;
+            }
+
+            appendMandiAIMessage('user', question);
+            if (input) input.value = '';
+            if (button) {
+                button.disabled = true;
+                button.classList.add('opacity-60', 'cursor-not-allowed');
+            }
+            updateMandiAIStatus(currentLang === 'hi' ? 'AI jawab bana raha hai...' : 'AI is answering...', 'loading');
+
+            try {
+                const response = await fetch(`${base}/api/v2/mandi-ai`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userQuestion: question,
+                        mandiData: buildMandiAIClientData(question)
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.detail || data.error || `HTTP ${response.status}`);
+                }
+                appendMandiAIMessage('ai', data.answer || data.reply || 'AI se jawab nahi mila.');
+                updateMandiAIStatus(data.model ? `Model: ${data.model}` : 'AI ready', 'ok');
+            } catch (error) {
+                console.error('Mandi AI failed:', error);
+                const message = String(error.message || 'Server connect nahi ho saka');
+                const friendly = message.includes('OPENROUTER_API_KEY')
+                    ? 'Backend me OPENROUTER_API_KEY set nahi hai. Key ko Render/Vercel/Docker environment variable me add karein — frontend me kabhi nahi.'
+                    : `AI Server connect nahi ho saka: ${message}`;
+                appendMandiAIMessage('ai', friendly, true);
+                updateMandiAIStatus('AI backend error', 'error');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('opacity-60', 'cursor-not-allowed');
+                }
+            }
         }
 
         function populateDropdowns() {
