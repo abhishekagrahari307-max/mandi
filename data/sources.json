@@ -1,6 +1,5 @@
 {
-  "last_checked_at": "2026-08-02T09:00:44.621211+05:30",
-  "minimum_price_source_matches": 2,
+  "last_checked_at": "2026-08-03T16:03:21.854246+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -11,20 +10,25 @@
   "sources": [
     {
       "name": "data.gov.in",
+      "status": "error",
+      "message": "HTTP Error 403: Forbidden — { \"error\": \"Key not authorised\" } — Possible reasons: key invalid / not verified / expired / email verification pending. Troubleshoot: 1) data.gov.in → My Account → verify email (click verification link). 2) Copy key again without spaces. 3) In GitHub repo → Settings → Secrets and variables → Actions → pencil icon on DATA_GOV_IN_API_KEY → paste → Save. 4) Actions tab → Multi-Daily Mandi Price Update → Run workflow."
+    },
+    {
+      "name": "AGMARKNET (AI)",
       "status": "ok",
-      "records": 201,
-      "message": "Fetched 201 of 2446 UP mandi price records"
+      "records": 10,
+      "message": "AI-fetched via Gemini web browsing from government portal"
     },
     {
       "name": "AGMARKNET portal",
       "status": "error",
       "url": "https://agmarknet.gov.in/home",
-      "message": "HTTP Error 403: Forbidden — portal blocked automated access"
+      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
     },
     {
       "name": "AGMARKNET",
       "status": "error",
-      "message": "HTTP Error 403: Forbidden"
+      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
     },
     {
       "name": "e-NAM trade feed",
@@ -40,7 +44,7 @@
       "name": "2-source verification gate",
       "status": "insufficient_sources",
       "records": 0,
-      "message": "0 of 201 market/commodity/date/price groups matched across 2+ feeds (1 feed connected)"
+      "message": "0 of 10 market/commodity/date/price groups matched across 2+ feeds (1 feeds connected)"
     },
     {
       "name": "UP e-Mandi contacts",
@@ -51,14 +55,84 @@
     {
       "name": "UP Mandi Parishad directory",
       "status": "ok",
-      "records": 195,
+      "records": 9,
       "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx"
     },
     {
       "name": "UP Krishi Vipran state benchmark",
       "status": "error",
       "records": 0,
-      "url": "https://www.upkrishivipran.in/Default.aspx"
+      "url": "https://www.upkrishivipran.in/Default.aspx",
+      "message": "state ticker returned no parseable benchmark rates"
+    },
+    {
+      "name": "e-NAM authorised auction feed",
+      "status": "not_configured",
+      "records": 0
     }
-  ]
+  ],
+  "official_portals": [
+    {
+      "id": "agmarknet",
+      "name_hi": "AGMARKNET (कृषि विपणन सूचना नेटवर्क)",
+      "name_en": "AGMARKNET — Agricultural Marketing Information Network",
+      "role_hi": "राष्ट्रीय मंडी भाव और आवक रिपोर्ट",
+      "role_en": "National mandi price and arrival reports",
+      "url": "https://agmarknet.gov.in/home",
+      "owner": "Directorate of Marketing & Inspection, Government of India",
+      "data_used": "Cross-verified mandi modal prices"
+    },
+    {
+      "id": "data_gov_in",
+      "name_hi": "data.gov.in (ओपन गवर्नमेंट डेटा)",
+      "name_en": "data.gov.in — Open Government Data platform",
+      "role_hi": "AGMARKNET से बनी आधिकारिक मूल्य API",
+      "role_en": "Official price API generated from AGMARKNET",
+      "url": "https://data.gov.in/",
+      "owner": "NIC, Government of India",
+      "data_used": "Cross-verified mandi modal prices"
+    },
+    {
+      "id": "mandi_parishad",
+      "name_hi": "राज्य कृषि उत्पादन मण्डी परिषद, उ0प्र0",
+      "name_en": "UP State Agricultural Produce Market Board",
+      "role_hi": "मण्डी निर्देशिका — मंडल, जनपद, मण्डी, ग्रेड, सचिव और सी.यू.जी",
+      "role_en": "Mandi directory — division, district, mandi, grade, secretary and CUG",
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+      "owner": "Rajya Krishi Utpadan Mandi Parishad, Uttar Pradesh",
+      "data_used": "Mandi directory and official contacts"
+    },
+    {
+      "id": "up_krishi_vipran",
+      "name_hi": "कृषि विपणन एवं कृषि विदेश व्यापार निदेशालय, उ0प्र0",
+      "name_en": "UP Directorate of Agricultural Marketing & Agri Export",
+      "role_hi": "राज्य-स्तरीय संदर्भ भाव (benchmark) — किसी एक मंडी का भाव नहीं",
+      "role_en": "State-level benchmark rates — not an individual mandi rate",
+      "url": "https://www.upkrishivipran.in/Default.aspx",
+      "owner": "Government of Uttar Pradesh",
+      "data_used": "State benchmark ticker only"
+    },
+    {
+      "id": "enam",
+      "name_hi": "e-NAM (राष्ट्रीय कृषि बाज़ार)",
+      "name_en": "e-NAM — National Agriculture Market",
+      "role_hi": "अधिकृत नीलामी lot feed और आधिकारिक बोली पोर्टल",
+      "role_en": "Authorised auction lot feed and official bidding portal",
+      "url": "https://www.enam.gov.in/web/",
+      "owner": "SFAC, Ministry of Agriculture & Farmers Welfare",
+      "data_used": "Auction lots when an authorised feed is configured"
+    },
+    {
+      "id": "up_emandi",
+      "name_hi": "उ0प्र0 ई-मण्डी पोर्टल",
+      "name_en": "UP e-Mandi portal",
+      "role_hi": "मंडी संपर्क निर्देशिका और गेट-पास सेवाएँ",
+      "role_en": "Mandi contact directory and gate-pass services",
+      "url": "https://emandi.up.gov.in/",
+      "owner": "Rajya Krishi Utpadan Mandi Parishad, Uttar Pradesh",
+      "data_used": "Mandi secretary/contact details"
+    }
+  ],
+  "minimum_price_source_matches": 2,
+  "policy": "No simulated prices, arrivals, contacts, lots, or bids are generated."
 }
