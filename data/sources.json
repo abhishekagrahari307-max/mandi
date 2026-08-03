@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-08-03T19:03:37.342987+05:30",
+  "last_checked_at": "2026-08-03T22:35:10.641840+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -45,7 +45,7 @@
       "name": "2-source verification gate",
       "status": "insufficient_sources",
       "records": 0,
-      "message": "0 of 2078 market/commodity/date/price groups matched across 2+ feeds (2 feeds connected)"
+      "message": "0 of 1548 market/commodity/date/price groups matched across 2+ feeds (2 feeds connected)"
     },
     {
       "name": "UP e-Mandi contacts",
