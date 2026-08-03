@@ -26,10 +26,11 @@ class PdfExportRegressionTests(unittest.TestCase):
             "downloadArbitragePDF",
             "downloadBillPDF",
             "downloadRatesPDF",
+            "downloadGuidePDF",
         ):
             self.assertRegex(SOURCE, rf"async function {function_name}\(\)")
 
-        self.assertEqual(SOURCE.count("await savePdfDocument(pdfContainer, opt)"), 4)
+        self.assertEqual(SOURCE.count("await savePdfDocument(pdfContainer, opt)"), 5)
         self.assertNotIn("html2pdf().from(pdfContainer).set(opt)", SOURCE)
 
     def test_long_tables_have_a_mobile_canvas_safety_limit(self):
