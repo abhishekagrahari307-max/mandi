@@ -1,14 +1,13 @@
 {
   "updated_at": null,
-  "last_checked_at": "2026-08-03T22:35:10.641840+05:30",
+  "last_checked_at": "2026-08-04T09:28:38.074193+05:30",
   "source": "Official feed unavailable",
   "verified": false,
   "is_live": false,
   "connected_price_sources": [
-    "data.gov.in (sample)",
     "agmarknet_ai"
   ],
-  "connected_price_source_count": 2,
+  "connected_price_source_count": 1,
   "minimum_price_source_matches": 2,
   "cross_verified_record_count": 0,
   "multi_source_verified_record_count": 0,
