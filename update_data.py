@@ -12,6 +12,7 @@ import html
 import json
 import os
 import re
+import sys
 import tempfile
 import urllib.error
 import urllib.parse
@@ -151,7 +152,7 @@ EXPANDED_MANDI_DIRECTORY = [
     ("Gorakhpur", "Gorakhpur", "Partaval", "C"),
     ("Kushinagar", "Kushinagar", "Padrauna", "B"),
     ("Maharajganj", "Maharajganj", "Maharajganj", "B"),
-    ("Jalaun", "Jalaun (Orai)", "Orai", "A"),
+    ("Jalaun", "Jalaun", "Orai", "A"),
     ("Jhansi", "Jhansi", "Jhansi", "A"),
     ("Jhansi", "Jhansi", "Mauranipur", "C"),
     ("Jhansi", "Jhansi", "Garauth", "C"),
@@ -196,15 +197,15 @@ EXPANDED_MANDI_DIRECTORY = [
     ("Baghpat", "Baghpat", "Baraut", "C"),
     ("Baghpat", "Baghpat", "Khekra", "C"),
     ("Baghpat", "Baghpat", "Baghpat", "B"),
-    ("Bulandshahr", "Bulandshahar", "Bulandshahar", "B"),
-    ("Bulandshahr", "Bulandshahar", "Khurja", "B"),
-    ("Bulandshahr", "Bulandshahar", "Anupshahar", "C"),
-    ("Bulandshahr", "Bulandshahar", "Sikandrabad", "B"),
-    ("Bulandshahr", "Bulandshahar", "Dibai", "B"),
-    ("Bulandshahr", "Bulandshahar", "Shikarpur", "B"),
-    ("Bulandshahr", "Bulandshahar", "Jahangirabad", "A"),
-    ("Bulandshahr", "Bulandshahar", "Gulaothi", "C"),
-    ("Bulandshahr", "Bulandshahar", "Siana", "C"),
+    ("Bulandshahr", "Bulandshahr", "Bulandshahar", "B"),
+    ("Bulandshahr", "Bulandshahr", "Khurja", "B"),
+    ("Bulandshahr", "Bulandshahr", "Anupshahar", "C"),
+    ("Bulandshahr", "Bulandshahr", "Sikandrabad", "B"),
+    ("Bulandshahr", "Bulandshahr", "Dibai", "B"),
+    ("Bulandshahr", "Bulandshahr", "Shikarpur", "B"),
+    ("Bulandshahr", "Bulandshahr", "Jahangirabad", "A"),
+    ("Bulandshahr", "Bulandshahr", "Gulaothi", "C"),
+    ("Bulandshahr", "Bulandshahr", "Siana", "C"),
     ("Gautam Buddha Nagar", "Gautam Buddha Nagar", "Noida", "A+"),
     ("Gautam Buddha Nagar", "Gautam Buddha Nagar", "Dadri", "B"),
     ("Gautam Buddha Nagar", "Gautam Buddha Nagar", "Dankaur", "C"),
@@ -400,6 +401,18 @@ DISTRICT_ALIASES = {
     "Kanpur (Nagar)": "Kanpur Nagar",
     "Ayodhya (Faizabad)": "Ayodhya",
     "Prayagraj (Allahabad)": "Prayagraj",
+    # Bare/alternate district spellings from data.gov.in source feed:
+    "Kanpur": "Kanpur Nagar",
+    "Bhadohi(Sant Ravi Nagar)": "Sant Ravidas Nagar",
+    "Bulandshahar": "Bulandshahr",
+    "Chitrakut": "Chitrakoot",
+    "Farukhabad": "Farrukhabad",
+    "Jalaun (Orai)": "Jalaun",
+    "Kannuj": "Kannauj",
+    "Khiri (Lakhimpur)": "Lakhimpur Kheri",
+    "Mau(Maunathbhanjan)": "Mau",
+    "Pillibhit": "Pilibhit",
+    "Raebarelli": "Raebareli",
 }
 
 
@@ -964,6 +977,38 @@ def build_source_prices_snapshot(
         stored_records: list[dict[str, Any]] = []
         for raw in raw_records[:SOURCE_SNAPSHOT_RECORD_LIMIT]:
             record = dict(raw)
+
+            # ── STATE FILTER: Only keep Uttar Pradesh records ──
+            # The sample data.gov.in key returns all-India data; we only show UP.
+            rec_state = str(record.get("state", ""))
+            if rec_state and rec_state not in {"Uttar Pradesh", "UP", "U.P."}:
+                continue
+
+            # ── DISTRICT NORMALIZATION ──
+            # Cached records may have pre-alias district names (e.g. "Kanpur"
+            # instead of "Kanpur Nagar", "Pillibhit" instead of "Pilibhit").
+            rec_district = str(record.get("district", ""))
+            canonical_dist = canonical_district(rec_district)
+            if canonical_dist != rec_district:
+                if not record.get("district_reported"):
+                    record["district_reported"] = rec_district
+                record["district"] = canonical_dist
+                record["district_hi"] = DISTRICT_HI.get(canonical_dist, canonical_dist)
+
+            # ── OUTLIER REMOVAL ──
+            # Common!Rice or Paddy(Common) with variety "Common" > ₹8000/quintal
+            # is almost always a data entry error (e.g. Makhana mislabelled as Rice).
+            # Official UP Common Rice range is ₹2300–₹4000.
+            commodity = str(record.get("commodity", "")).lower()
+            variety = str(record.get("variety", "")).lower()
+            modal = record.get("modal_price") or 0
+            is_rice_common = (
+                ("rice" in commodity or "paddy" in commodity or "chawal" in commodity)
+                and ("common" in variety)
+            )
+            if is_rice_common and isinstance(modal, (int, float)) and modal > 8000:
+                continue  # skip obvious outlier
+
             record.update({
                 "source_id": feed_id,
                 "source": spec["name"],
@@ -1557,8 +1602,18 @@ def build_mandi_directory(
     for row in parishad_rows or []:
         parishad_map.setdefault(normalize_name(row["mandi"]), row)
 
+    def _strip_mandi_suffix(name: str) -> str:
+        """Remove APMC/Mandi suffix and parenthetical qualifiers like
+        (Grain), (F&V), (New Mandi), (Laharpur), (Chitrakut), (Rampur)
+        so that 'Kanpur(Grain) APMC' → 'Kanpur', 'Mau(Chitrakut) APMC' → 'Mau'."""
+        name = name.replace("APMC", "").replace("Mandi", "")
+        # Strip parenthetical suffixes: "(Grain)", "(F&V)", "(New Mandi)", etc.
+        # Some have spaces before '(' like "Hargaon (Laharpur)", others don't like "Kanpur(Grain)".
+        name = re.sub(r"\s*\([^)]+\)", "", name)
+        return re.sub(r"\s+", " ", name).strip()
+
     def parishad_for(mandi_name: str) -> dict[str, Any]:
-        key = normalize_name(mandi_name.replace("APMC", "").replace("Mandi", ""))
+        key = normalize_name(_strip_mandi_suffix(mandi_name))
         entry = parishad_map.get(key)
         if entry is None and len(key) >= 5:
             entry = next(
@@ -1570,12 +1625,16 @@ def build_mandi_directory(
     grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for record in records:
         if record.get("state") == "Uttar Pradesh":
-            grouped[(record["district"], record["mandi"], record.get("mandi_hi") or record["mandi"])].append(record)
+            rec_dist = canonical_district(record["district"]) if record.get("district") else record.get("district", "")
+            if rec_dist != record.get("district", ""):
+                record["district"] = rec_dist
+                record["district_hi"] = district_hi_for(rec_dist)
+            grouped[(rec_dist, record["mandi"], record.get("mandi_hi") or record["mandi"])].append(record)
 
     mandis: list[dict[str, Any]] = []
     matched_contact_keys: set[str] = set()
     for (district, mandi, mandi_hi), rows in grouped.items():
-        key = normalize_name(mandi.replace("APMC", "").replace("Mandi", ""))
+        key = normalize_name(_strip_mandi_suffix(mandi))
         local_contacts = contact_map.get(key, [])
         if local_contacts:
             matched_contact_keys.add(key)
@@ -1688,7 +1747,7 @@ def build_mandi_directory(
     # Ensure ALL known UP APMC mandis appear in the directory even if they
     # did not report prices in the current data.gov.in snapshot.
     existing_mandi_keys = {
-        (m["district"].lower(), m["mandi"].lower().replace(" apmc", "").replace(" mandi", ""))
+        (m["district"].lower(), re.sub(r"\s*\([^)]+\)", "", m["mandi"].lower()).replace(" apmc", "").replace(" mandi", "").strip())
         for m in mandis
     }
     for div, dist, mandi_name, grade in EXPANDED_MANDI_DIRECTORY:
@@ -1729,6 +1788,38 @@ def build_mandi_directory(
                 f"{mandi_name} Mandi, {dist}, Uttar Pradesh"
             ),
         })
+
+    # ── Enrich mandis with UP e-Mandi Directory contacts ──
+    # Merge secretary/CUG from dashboard.mandiprojects.in (Method 6)
+    up_emandi_dir_path = DATA_DIR / "up_emandi_directory.json"
+    if up_emandi_dir_path.exists():
+        try:
+            up_emandi_data = read_json(up_emandi_dir_path, {})
+            up_emandi_mandis = up_emandi_data.get("mandis", []) if isinstance(up_emandi_data, dict) else []
+            for emandi_entry in up_emandi_mandis:
+                emandi_name = emandi_entry.get("mandi", "")
+                emandi_dist = emandi_entry.get("district", "")
+                if not emandi_name:
+                    continue
+                emandi_key = normalize_name(_strip_mandi_suffix(emandi_name))
+                # Find matching mandi in our directory
+                for m in mandis:
+                    m_key = normalize_name(_strip_mandi_suffix(m["mandi"]))
+                    if m_key == emandi_key or (len(m_key) >= 5 and (m_key in emandi_key or emandi_key in m_key)):
+                        # Also check district match if available
+                        if emandi_dist and m.get("district") and canonical_district(emandi_dist) != canonical_district(m["district"]):
+                            continue
+                        if emandi_entry.get("secretary") and not m.get("secretary"):
+                            m["secretary"] = emandi_entry["secretary"]
+                        if emandi_entry.get("cug") and not m.get("cug"):
+                            m["cug"] = emandi_entry["cug"]
+                        if emandi_entry.get("grade") and not m.get("grade"):
+                            m["grade"] = emandi_entry["grade"]
+                        break
+            if up_emandi_mandis:
+                directory_sources.append("dashboard.mandiprojects.in")
+        except Exception as exc:
+            print(f"  ⚠ UP e-Mandi directory enrichment failed: {exc}")
 
     mandis.sort(key=lambda item: (item.get("district") or "", item["mandi"]))
     directory_sources = [source for source in (
@@ -1953,6 +2044,39 @@ def main() -> None:
             print("  ⚠ ai_data_fetcher module not available")
         except Exception as ai_exc:
             print(f"  ⚠ AI data fetch error: {ai_exc}")
+
+    # ── Gemini AI Direct (Google AI Studio — web grounding bypasses AGMARKNET 403) ──
+    # Uses GEMINI_API_KEY directly (not via OpenRouter) for more reliable web-grounded fetch.
+    if not offline:
+        gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if gemini_key:
+            try:
+                # Import from complete_fetcher_all_methods if available
+                sys.path.insert(0, str(Path(__file__).parent))
+                from complete_fetcher_all_methods import fetch_method2_gemini_direct
+                gemini_records, gemini_label = fetch_method2_gemini_direct()
+                if gemini_records:
+                    # Format records through our pipeline
+                    formatted_gemini = []
+                    for raw in gemini_records:
+                        record = format_record(raw)
+                        if record:
+                            formatted_gemini.append(record)
+                    if formatted_gemini:
+                        candidate_feeds.append(("AGMARKNET (Gemini AI)", formatted_gemini))
+                        source_price_results["agmarknet_gemini"] = {"status": "live", "records": formatted_gemini}
+                        sources.append({
+                            "name": "AGMARKNET (Gemini AI)",
+                            "status": "ok",
+                            "records": len(formatted_gemini),
+                            "message": "AI-fetched via Gemini web grounding from AGMARKNET portal",
+                        })
+            except ImportError:
+                print("  ⚠ complete_fetcher_all_methods not available for Gemini direct fetch")
+            except Exception as gemini_exc:
+                print(f"  ⚠ Gemini AI direct fetch error: {gemini_exc}")
+        else:
+            print("  ⚠ GEMINI_API_KEY not set — Gemini direct fetch skipped (set in GitHub Secrets)")
 
     # AGMARKNET portal availability, recorded independently of price parsing.
     agmarknet_home: dict[str, Any] | None = None
@@ -2188,6 +2312,47 @@ def main() -> None:
         else previous.get("updated_at") if previous_verified
         else None
     )
+
+    # ── FALLBACK: When cross-verified latest.json is empty but source_prices
+    # has live/cached UP records, promote those into latest.json (as
+    # unverified) so the main "मंडी भाव" table is not blank. ──
+    if not up_records:
+        sp_fallback: list[dict[str, Any]] = []
+        for feed in source_prices.get("feeds", []):
+            if feed.get("status") in ("live", "cached") and isinstance(feed.get("records"), list):
+                sp_fallback.extend(feed["records"])
+        # Apply state filter + outlier removal (same as build_source_prices_snapshot)
+        sp_fallback = [
+            r for r in sp_fallback
+            if str(r.get("state", "")) in {"Uttar Pradesh", "UP", "U.P.", ""}
+        ]
+        sp_fallback_clean: list[dict[str, Any]] = []
+        for r in sp_fallback:
+            commodity = str(r.get("commodity", "")).lower()
+            variety = str(r.get("variety", "")).lower()
+            modal = r.get("modal_price") or 0
+            is_rice_common = (
+                ("rice" in commodity or "paddy" in commodity or "chawal" in commodity)
+                and ("common" in variety)
+            )
+            if is_rice_common and isinstance(modal, (int, float)) and modal > 8000:
+                continue
+            # Normalize district for cached records
+            rec_dist = str(r.get("district", ""))
+            canonical_dist = canonical_district(rec_dist)
+            if canonical_dist != rec_dist:
+                if not r.get("district_reported"):
+                    r["district_reported"] = rec_dist
+                r["district"] = canonical_dist
+                r["district_hi"] = DISTRICT_HI.get(canonical_dist, canonical_dist)
+            sp_fallback_clean.append(r)
+        if sp_fallback_clean:
+            up_records = sp_fallback_clean
+            source_name = "Single-source fallback (source_prices UP records)"
+            effective_verified = False
+            fresh_verified_data = False
+            print(f"  ⚠ latest.json empty — promoted {len(up_records)} UP source_prices records as unverified fallback")
+
     latest_payload = {
         "updated_at": effective_updated_at,
         "last_checked_at": checked_at,
@@ -2216,6 +2381,7 @@ def main() -> None:
     }
 
     state_prices = aggregate_state_prices(all_india_records, source_name, effective_verified)
+    # Use whichever records we have (verified or fallback) for the mandi directory
     directory = build_mandi_directory(up_records, contacts, contact_source, parishad_rows)
     benchmarks = build_benchmarks(
         state_ticker, ticker_status, ticker_message,
@@ -2276,12 +2442,12 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-    # ── AUTOMATIC WEB SCRAPER: Fetch from mandipulse.com (AGMARKNET aggregator) ──
+    # ── AUTOMATIC WEB SCRAPER: Fetch from acrop.app (AGMARKNET aggregator) ──
     # Runs automatically after main() — no separate workflow step needed.
-    # Fetches Wheat, Rice, Potato, Onion, Tomato, Maize, Green Chilli, Brinjal
-    # from mandipulse.com and merges into source_prices.json + cross-verifies.
+    # acrop.app replaced mandipulse.com (which now returns 404).
+    # Fetches per-district per-market prices and merges into source_prices.json.
     try:
-        print("\n🤖 Running automatic web scraper (mandipulse.com / AGMARKNET)...")
+        print("\n🤖 Running automatic web scraper (acrop.app / AGMARKNET)...")
         import urllib.request
         import re
         from collections import defaultdict
@@ -2344,7 +2510,7 @@ if __name__ == "__main__":
         today_str = datetime.now(IST).strftime("%d/%m/%Y")
         all_scraped = []
         for commodity in COMMODITIES_TO_SCRAPE:
-            url = f"https://mandipulse.com/mandi-bhav/uttar-pradesh/{commodity}"
+            url = f"https://acrop.app/mandi/uttar-pradesh/{commodity}"
             html = _fetch_url(url)
             if html:
                 records = _parse_mandipulse(html, commodity, today_str)
@@ -2417,7 +2583,7 @@ if __name__ == "__main__":
             agmarknet_feed["total_record_count"] = len(existing)
             agmarknet_feed["stored_record_count"] = len(existing)
             agmarknet_feed["records_truncated"] = False
-            agmarknet_feed["message"] = f"Auto-scraped {len(existing)} records from mandipulse.com"
+            agmarknet_feed["message"] = f"Auto-scraped {len(existing)} records from acrop.app"
             write_json_atomic(sp_path, source_prices_data)
             print(f"  ✅ AGMARKNET feed: +{added} new → {len(existing)} total")
 
