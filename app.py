@@ -429,6 +429,20 @@ def _collect_ai_mandi_context(mandi_data: Any = None) -> dict[str, Any]:
             for record in feed_records:
                 if not isinstance(record, dict):
                     continue
+                # ── STATE FILTER: Only keep Uttar Pradesh records ──
+                rec_state = str(record.get("state", ""))
+                if rec_state and rec_state not in {"Uttar Pradesh", "UP", "U.P."}:
+                    continue
+                # ── OUTLIER REMOVAL: Common Rice > ₹8000 is data entry error ──
+                commodity = str(record.get("commodity", "")).lower()
+                variety = str(record.get("variety", "")).lower()
+                modal = record.get("modal_price") or 0
+                is_rice_common = (
+                    ("rice" in commodity or "paddy" in commodity or "chawal" in commodity)
+                    and ("common" in variety)
+                )
+                if is_rice_common and isinstance(modal, (int, float)) and modal > 8000:
+                    continue
                 single_source_records.append({
                     **record,
                     "source": record.get("source") or feed.get("name") or feed.get("id"),

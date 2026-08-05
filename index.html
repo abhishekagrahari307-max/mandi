@@ -2242,6 +2242,10 @@
                 if (feed.status !== 'live' && feed.status !== 'cached') return;
                 (Array.isArray(feed.records) ? feed.records : []).forEach(record => {
                     if (!record || !Number.isFinite(Number(record.modal_price))) return;
+                    // ── STATE FILTER: Only keep Uttar Pradesh records ──
+                    if (!isUPRecord(record)) return;
+                    // ── OUTLIER REMOVAL: Common Rice > ₹8000 is data entry error ──
+                    if (isOutlier(record)) return;
                     const key = [
                         record.district, record.mandi, record.commodity,
                         record.arrival_date, record.modal_price, feed.id
@@ -2708,11 +2712,25 @@
 
         function buildAtoZMandiDirectory() {
             const officialMandis = Array.isArray(mandiDetailsData?.mandis) ? mandiDetailsData.mandis : [];
+            // Enrich mandis with commodity_count from latestData when JSON has 0
             if (officialMandis.length) {
-                mandiDirectoryList = officialMandis.map(mandi => ({
-                    ...mandi,
-                    records: latestData.filter(row => row.mandi === mandi.mandi && row.district === mandi.district)
-                }));
+                mandiDirectoryList = officialMandis.map(mandi => {
+                    const mandiRecords = latestData.filter(row => {
+                        const mMatch = (row.mandi || '').replace(/ APMC$/i, '') === (mandi.mandi || '').replace(/ APMC$/i, '');
+                        const dMatch = (row.district || '') === (mandi.district || '');
+                        return mMatch && dMatch;
+                    });
+                    const liveCommodities = [...new Set(mandiRecords.map(r => r.commodity).filter(Boolean))];
+                    return {
+                        ...mandi,
+                        records: mandiRecords,
+                        // Override commodity_count=0 with live data when available
+                        commodity_count: mandi.commodity_count > 0 ? mandi.commodity_count : liveCommodities.length,
+                        commodities: (mandi.commodities && mandi.commodities.length) ? mandi.commodities : liveCommodities,
+                        minimum_modal_price: mandi.minimum_modal_price ?? (mandiRecords.length ? Math.min(...mandiRecords.map(r => Number(r.modal_price)).filter(Number.isFinite)) : null),
+                        maximum_modal_price: mandi.maximum_modal_price ?? (mandiRecords.length ? Math.max(...mandiRecords.map(r => Number(r.modal_price)).filter(Number.isFinite)) : null),
+                    };
+                });
             } else {
                 const uniqueMandisMap = {};
                 latestData.forEach(row => {
@@ -2912,7 +2930,7 @@
                 ${officialDirectoryHtml}
                 ${rateDetailsHtml}
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${mandi.commodity_count ?? commodities.length}</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${(mandi.commodity_count > 0 ? mandi.commodity_count : null) ?? commodities.length || (mandi.records && mandi.records.length ? new Set(mandi.records.map(r => r.commodity)).size : 0)}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">न्यूनतम मॉडल</span><p class="font-black">${mandi.minimum_modal_price ? '₹' + mandi.minimum_modal_price : '—'}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">अधिकतम मॉडल</span><p class="font-black">${mandi.maximum_modal_price ? '₹' + mandi.maximum_modal_price : '—'}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">भाव तिथि</span><p class="font-black text-xs">${escapeHtml(mandi.latest_price_date || '—')}</p></div>
@@ -3721,14 +3739,27 @@
         // ================= COMBINED DATA HELPER =================
         // Merges verified (latest.json) + single-source (source_prices.json) records
         // so Wheat/Rice cards always show real prices even without cross-verification.
+        // Also applies state filter (UP only) and outlier removal (Common Rice > ₹8000).
+        function isUPRecord(r) {
+            const s = String(r.state || '');
+            return !s || s === 'Uttar Pradesh' || s === 'UP' || s === 'U.P.';
+        }
+        function isOutlier(r) {
+            // Common Rice/Paddy with modal_price > 8000 is almost always a data entry error
+            const c = String(r.commodity || '').toLowerCase();
+            const v = String(r.variety || '').toLowerCase();
+            const p = Number(r.modal_price) || 0;
+            const isRiceCommon = (c.includes('rice') || c.includes('paddy') || c.includes('chawal')) && v.includes('common');
+            return isRiceCommon && p > 8000;
+        }
         function getAllPriceRecords() {
-            const verified = Array.isArray(latestData) ? latestData : [];
+            const verified = (Array.isArray(latestData) ? latestData : []).filter(r => isUPRecord(r) && !isOutlier(r));
             const singleSource = [];
             if (Array.isArray(sourcePriceData?.feeds)) {
                 for (const feed of sourcePriceData.feeds) {
                     if (feed && Array.isArray(feed.records)) {
                         for (const r of feed.records) {
-                            if (r && Number.isFinite(Number(r.modal_price))) {
+                            if (r && Number.isFinite(Number(r.modal_price)) && isUPRecord(r) && !isOutlier(r)) {
                                 singleSource.push({
                                     ...r,
                                     source: r.source || feed.name || feed.id,

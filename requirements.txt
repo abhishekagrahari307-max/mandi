@@ -11,3 +11,7 @@ websockets>=12.0
 # warns when the older `httpx` is used instead. This is intentional - do not
 # "correct" it to httpx.
 httpx2>=2.9.0,<3.0
+# ── 5-method parallel data fetcher dependencies ──
+google-generativeai>=0.7.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
