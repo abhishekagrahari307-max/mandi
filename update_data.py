@@ -12,6 +12,7 @@ import html
 import json
 import os
 import re
+import sys
 import tempfile
 import urllib.error
 import urllib.parse
@@ -1788,6 +1789,38 @@ def build_mandi_directory(
             ),
         })
 
+    # ── Enrich mandis with UP e-Mandi Directory contacts ──
+    # Merge secretary/CUG from dashboard.mandiprojects.in (Method 6)
+    up_emandi_dir_path = DATA_DIR / "up_emandi_directory.json"
+    if up_emandi_dir_path.exists():
+        try:
+            up_emandi_data = read_json(up_emandi_dir_path, {})
+            up_emandi_mandis = up_emandi_data.get("mandis", []) if isinstance(up_emandi_data, dict) else []
+            for emandi_entry in up_emandi_mandis:
+                emandi_name = emandi_entry.get("mandi", "")
+                emandi_dist = emandi_entry.get("district", "")
+                if not emandi_name:
+                    continue
+                emandi_key = normalize_name(_strip_mandi_suffix(emandi_name))
+                # Find matching mandi in our directory
+                for m in mandis:
+                    m_key = normalize_name(_strip_mandi_suffix(m["mandi"]))
+                    if m_key == emandi_key or (len(m_key) >= 5 and (m_key in emandi_key or emandi_key in m_key)):
+                        # Also check district match if available
+                        if emandi_dist and m.get("district") and canonical_district(emandi_dist) != canonical_district(m["district"]):
+                            continue
+                        if emandi_entry.get("secretary") and not m.get("secretary"):
+                            m["secretary"] = emandi_entry["secretary"]
+                        if emandi_entry.get("cug") and not m.get("cug"):
+                            m["cug"] = emandi_entry["cug"]
+                        if emandi_entry.get("grade") and not m.get("grade"):
+                            m["grade"] = emandi_entry["grade"]
+                        break
+            if up_emandi_mandis:
+                directory_sources.append("dashboard.mandiprojects.in")
+        except Exception as exc:
+            print(f"  ⚠ UP e-Mandi directory enrichment failed: {exc}")
+
     mandis.sort(key=lambda item: (item.get("district") or "", item["mandi"]))
     directory_sources = [source for source in (
         contact_source,
@@ -2011,6 +2044,39 @@ def main() -> None:
             print("  ⚠ ai_data_fetcher module not available")
         except Exception as ai_exc:
             print(f"  ⚠ AI data fetch error: {ai_exc}")
+
+    # ── Gemini AI Direct (Google AI Studio — web grounding bypasses AGMARKNET 403) ──
+    # Uses GEMINI_API_KEY directly (not via OpenRouter) for more reliable web-grounded fetch.
+    if not offline:
+        gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if gemini_key:
+            try:
+                # Import from complete_fetcher_all_methods if available
+                sys.path.insert(0, str(Path(__file__).parent))
+                from complete_fetcher_all_methods import fetch_method2_gemini_direct
+                gemini_records, gemini_label = fetch_method2_gemini_direct()
+                if gemini_records:
+                    # Format records through our pipeline
+                    formatted_gemini = []
+                    for raw in gemini_records:
+                        record = format_record(raw)
+                        if record:
+                            formatted_gemini.append(record)
+                    if formatted_gemini:
+                        candidate_feeds.append(("AGMARKNET (Gemini AI)", formatted_gemini))
+                        source_price_results["agmarknet_gemini"] = {"status": "live", "records": formatted_gemini}
+                        sources.append({
+                            "name": "AGMARKNET (Gemini AI)",
+                            "status": "ok",
+                            "records": len(formatted_gemini),
+                            "message": "AI-fetched via Gemini web grounding from AGMARKNET portal",
+                        })
+            except ImportError:
+                print("  ⚠ complete_fetcher_all_methods not available for Gemini direct fetch")
+            except Exception as gemini_exc:
+                print(f"  ⚠ Gemini AI direct fetch error: {gemini_exc}")
+        else:
+            print("  ⚠ GEMINI_API_KEY not set — Gemini direct fetch skipped (set in GitHub Secrets)")
 
     # AGMARKNET portal availability, recorded independently of price parsing.
     agmarknet_home: dict[str, Any] | None = None
