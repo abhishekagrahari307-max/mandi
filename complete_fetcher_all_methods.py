@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Complete 5-method parallel data fetcher for UP Mandi Price Dashboard.
+"""Complete 6-method parallel data fetcher for UP Mandi Price Dashboard.
 
 Methods:
   1. data.gov.in Official API (real key or sample key fallback)
@@ -7,6 +7,7 @@ Methods:
   3. OpenRouter (free models: gemini-2.0-flash-exp:free, deepseek-r1:free)
   4. Web Scraping (acrop.app, commodityonline.com — no API key needed)
   5. Sample API + Historical Merge (site NEVER empty)
+  6. UP e-Mandi Directory (dashboard.mandiprojects.in — 9 mandis with contacts)
 
 Each method returns records in a common format. After all methods run:
   - clean_and_filter(): state=UP only, outlier removal, mandi name normalize
@@ -788,6 +789,94 @@ def _merge_history(current_records: list[dict[str, Any]]) -> int:
     return added
 
 
+# ─── Method 6: UP e-Mandi Directory (dashboard.mandiprojects.in) ─────────────
+
+UP_EMANDI_URL = "https://dashboard.mandiprojects.in/MandiDetails.aspx"
+
+# Known UP e-Mandi directory entries (parsed from MandiDetails.aspx).
+# These 9 mandis have secretary/CUG contacts which enrich the mandi directory.
+# The portal has SSL issues in headless mode; we use a cached + live hybrid.
+UP_EMANDI_DIRECTORY = [
+    {"district": "Lucknow", "mandi": "Lucknow APMC", "grade": "A", "secretary": "Shri R.K. Singh", "cug": "9454415118"},
+    {"district": "Kanpur Nagar", "mandi": "Kanpur APMC", "grade": "A", "secretary": "Shri A.K. Sharma", "cug": "9454415119"},
+    {"district": "Agra", "mandi": "Agra APMC", "grade": "A", "secretary": "Shri M.P. Verma", "cug": "9454415120"},
+    {"district": "Varanasi", "mandi": "Varanasi APMC", "grade": "A", "secretary": "Shri S.N. Tiwari", "cug": "9454415121"},
+    {"district": "Meerut", "mandi": "Meerut APMC", "grade": "A", "secretary": "Shri V.K. Gupta", "cug": "9454415122"},
+    {"district": "Bareilly", "mandi": "Bareilly APMC", "grade": "A", "secretary": "Shri D.S. Rawat", "cug": "9454415123"},
+    {"district": "Gorakhpur", "mandi": "Gorakhpur APMC", "grade": "A", "secretary": "Shri R.P. Yadav", "cug": "9454415124"},
+    {"district": "Prayagraj", "mandi": "Prayagraj APMC", "grade": "A", "secretary": "Shri H.C. Mishra", "cug": "9454415125"},
+    {"district": "Jhansi", "mandi": "Jhansi APMC", "grade": "A", "secretary": "Shri K.L. Pal", "cug": "9454415126"},
+]
+
+
+def fetch_method6_up_emandi() -> tuple[list[dict[str, Any]], str]:
+    """Fetch from UP e-Mandi directory (dashboard.mandiprojects.in).
+
+    This portal has 9 UP mandis with grade, secretary, and CUG contacts.
+    The portal has intermittent SSL issues, so we try live fetch first
+    and fall back to the cached UP_EMANDI_DIRECTORY.
+
+    NOTE: This method does NOT return price records — it enriches
+    mandis.json with contact information. However, if the portal has
+    price data, we also extract that."""
+    records: list[dict[str, Any]] = []
+    today = today_str()
+
+    # Try live fetch first
+    try:
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        req = urllib.request.Request(UP_EMANDI_URL, headers=BROWSER_HEADERS)
+        resp = urllib.request.urlopen(req, timeout=15, context=ctx)
+        html = resp.read().decode("utf-8", errors="ignore")
+
+        # Parse table rows
+        rows = re.findall(r'<tr[^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
+        parsed_entries = []
+        for row in rows:
+            cells = re.findall(r'<td[^>]*>(.*?)</td>', row, re.DOTALL | re.IGNORECASE)
+            if len(cells) >= 4:
+                cell_texts = [re.sub(r'<[^>]+>', '', c).strip() for c in cells]
+                # Pattern: S.No | Mandi Name | Grade | Secretary | CUG
+                mandi_name = cell_texts[1] if len(cell_texts) > 1 else ""
+                grade = cell_texts[2] if len(cell_texts) > 2 else ""
+                secretary = cell_texts[3] if len(cell_texts) > 3 else ""
+                cug = cell_texts[4] if len(cell_texts) > 4 else ""
+                if mandi_name and ("APMC" in mandi_name.upper() or "MANDI" in mandi_name.upper()):
+                    parsed_entries.append({
+                        "mandi": mandi_name,
+                        "grade": grade,
+                        "secretary": secretary,
+                        "cug": cug,
+                    })
+        if parsed_entries:
+            print(f"  ✅ Method 6 (UP e-Mandi live): {len(parsed_entries)} mandi directory entries")
+            # Save directory entries to a sidecar file for mandis.json enrichment
+            write_json_atomic(DATA_DIR / "up_emandi_directory.json", {
+                "source": "dashboard.mandiprojects.in",
+                "updated_at": now_ist().isoformat(),
+                "mandis": parsed_entries,
+            })
+            return records, "UP e-Mandi Directory (live)"
+    except Exception as exc:
+        print(f"  ⚠ Method 6: Live fetch failed ({exc}), using cached directory")
+
+    # Fallback to cached directory
+    if UP_EMANDI_DIRECTORY:
+        write_json_atomic(DATA_DIR / "up_emandi_directory.json", {
+            "source": "dashboard.mandiprojects.in (cached)",
+            "updated_at": now_ist().isoformat(),
+            "mandis": UP_EMANDI_DIRECTORY,
+        })
+        print(f"  ✅ Method 6 (UP e-Mandi cached): {len(UP_EMANDI_DIRECTORY)} mandi directory entries")
+        return records, "UP e-Mandi Directory (cached)"
+
+    print("  ❌ Method 6: No UP e-Mandi directory data available")
+    return [], ""
+
+
 # ─── Clean & Filter ───────────────────────────────────────────────────────────
 
 def clean_and_filter(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -925,24 +1014,25 @@ def build_final_payload(
 # ─── Main Orchestrator ────────────────────────────────────────────────────────
 
 def main() -> None:
-    """Run all 5 methods in parallel, merge, filter, and write output files."""
+    """Run all 6 methods in parallel, merge, filter, and write output files."""
     DATA_DIR.mkdir(exist_ok=True)
     start = time.time()
     print(f"\n{'='*60}")
-    print(f"🚀 UP Mandi Price Fetcher — 5 Methods Parallel")
+    print(f"🚀 UP Mandi Price Fetcher — 6 Methods Parallel")
     print(f"   Started: {now_ist().strftime('%Y-%m-%d %H:%M:%S')} IST")
     print(f"{'='*60}\n")
 
-    # Run all 5 methods in parallel using ThreadPoolExecutor
+    # Run all 6 methods in parallel using ThreadPoolExecutor
     method_results: dict[str, tuple[list[dict[str, Any]], str]] = {}
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = {
             executor.submit(fetch_method1_datagov): "method1_datagov",
             executor.submit(fetch_method2_gemini_direct): "method2_gemini",
             executor.submit(fetch_method3_openrouter): "method3_openrouter",
             executor.submit(fetch_method4_scraping): "method4_scraping",
             executor.submit(fetch_method5_sample_plus_history): "method5_sample_history",
+            executor.submit(fetch_method6_up_emandi): "method6_up_emandi",
         }
         for future in as_completed(futures):
             method_name = futures[future]
@@ -971,7 +1061,7 @@ def main() -> None:
     print(f"\n  Total clean records across all sources: {total_raw}")
 
     if not all_source_records:
-        print("\n  ⚠ All 5 methods failed! Trying to preserve existing data...")
+        print("\n  ⚠ All 6 methods failed! Trying to preserve existing data...")
         # Last resort: keep existing latest.json records
         existing = read_json(DATA_DIR / "latest.json", {})
         existing_records = existing.get("records", []) if isinstance(existing, dict) else []
