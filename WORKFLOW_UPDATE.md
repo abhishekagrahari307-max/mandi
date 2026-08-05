@@ -1,0 +1,126 @@
+# ⚠️ Workflow Manual Update Required
+
+GitHub App does not have `workflows` permission, so `.github/workflows/update.yml` could NOT be auto-pushed.
+
+## Aapko ye changes manually karna hoga:
+
+### Step 1: Repo pe jao
+```
+https://github.com/abhishekagrahari307-max/mandi
+```
+
+### Step 2: `.github/workflows/update.yml` edit karo
+
+Replace the entire file with the content below:
+
+```yaml
+name: Multi-Daily Mandi Price Update
+
+on:
+  schedule:
+    # GitHub cron is UTC. These runs are 06:30, 12:30, 16:30 and 20:30
+    # in India Standard Time (UTC+05:30), matching the documented cycles.
+    - cron: '0 1,7,11,15 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mandi-official-data-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update-prices:
+    name: Refresh and publish official snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run 6-method parallel data fetcher
+        env:
+          DATA_GOV_IN_API_KEY: ${{ secrets.DATA_GOV_IN_API_KEY }}
+          DATA_GOV_RESOURCE_ID: ${{ secrets.DATA_GOV_RESOURCE_ID || '9ef84268-d588-465a-a308-a864a43d0070' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python complete_fetcher_all_methods.py
+
+      - name: Refresh official government data
+        env:
+          DATA_GOV_IN_API_KEY: ${{ secrets.DATA_GOV_IN_API_KEY }}
+          DATA_GOV_RESOURCE_ID: ${{ secrets.DATA_GOV_RESOURCE_ID || '9ef84268-d588-465a-a308-a864a43d0070' }}
+          ENAM_TRADE_FEED_URL: ${{ secrets.ENAM_TRADE_FEED_URL }}
+          ENAM_TRADE_API_KEY: ${{ secrets.ENAM_TRADE_API_KEY }}
+          UP_EMANDI_TRADE_FEED_URL: ${{ secrets.UP_EMANDI_TRADE_FEED_URL }}
+          UP_EMANDI_TRADE_API_KEY: ${{ secrets.UP_EMANDI_TRADE_API_KEY }}
+          ENAM_AUCTION_FEED_URL: ${{ secrets.ENAM_AUCTION_FEED_URL }}
+          ENAM_AUCTION_API_KEY: ${{ secrets.ENAM_AUCTION_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'deepseek/deepseek-r1:free' }}
+          OPENROUTER_VISION_MODEL: ${{ vars.OPENROUTER_VISION_MODEL || 'google/gemini-2.0-flash-exp:free' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python update_data.py
+
+      - name: Validate application and generated snapshots
+        run: python run_tests_safe.py
+
+      - name: Commit and push changed snapshots
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+workflow@users.noreply.github.com"
+          git add -- \
+            data/latest.json \
+            data/source_prices.json \
+            data/history.json \
+            data/state_prices.json \
+            data/mandis.json \
+            data/auction.json \
+            data/benchmarks.json \
+            data/sources.json \
+            data/up_emandi_directory.json
+
+          if git diff --cached --quiet; then
+            echo "Official snapshots are already current."
+            exit 0
+          fi
+
+          git commit -m "chore(data): refresh official mandi snapshots"
+          git push origin "HEAD:${DEFAULT_BRANCH}"
+```
+
+### Key Changes:
+1. ✅ **New step:** `Run 6-method parallel data fetcher` runs `complete_fetcher_all_methods.py` BEFORE `update_data.py`
+2. ✅ **GEMINI_API_KEY** added to both step env blocks
+3. ✅ **up_emandi_directory.json** added to git add list
+4. ✅ Step name changed: "Install test dependencies" → "Install dependencies"
+
+### Step 3: GitHub Secrets add karo
+
+Repo → Settings → Secrets and variables → Actions → New repository secret
+
+| Secret Name | Kahan se milegi |
+|---|---|
+| `DATA_GOV_IN_API_KEY` | data.gov.in → Register → Email verify → My Account → API Key |
+| `GEMINI_API_KEY` | aistudio.google.com/app/apikey → Create (FREE, 1500 req/day) |
+| `OPENROUTER_API_KEY` | openrouter.ai/keys → Create (FREE credits) |
+
+### Step 4: Manual Run karo
+- Actions tab → Multi-Daily Mandi Price Update → Run workflow
+- Green tick aayega to 6 methods parallel run honge
