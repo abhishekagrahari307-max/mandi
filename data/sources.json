@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-08-04T22:16:51.346436+05:30",
+  "last_checked_at": "2026-08-05T09:23:57.498649+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -16,7 +16,7 @@
     {
       "name": "AGMARKNET (AI)",
       "status": "ok",
-      "records": 10,
+      "records": 8,
       "message": "AI-fetched via Gemini web browsing from government portal"
     },
     {
@@ -44,7 +44,7 @@
       "name": "2-source verification gate",
       "status": "insufficient_sources",
       "records": 0,
-      "message": "0 of 10 market/commodity/date/price groups matched across 2+ feeds (1 feeds connected)"
+      "message": "0 of 8 market/commodity/date/price groups matched across 2+ feeds (1 feeds connected)"
     },
     {
       "name": "UP e-Mandi contacts",

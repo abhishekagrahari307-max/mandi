@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-08-04T22:16:51.346436+05:30",
+  "last_checked_at": "2026-08-05T09:23:57.498649+05:30",
   "policy": "Each feed is displayed separately exactly as reported. Prices are not averaged or merged. These rows are single-source observations; only data/latest.json contains prices that passed the three-source gate.",
   "policy_hi": "हर feed का भाव उसके अपने नाम से अलग दिखाया गया है। भावों को मिलाया या औसत नहीं किया जाता। ये single-source भाव हैं; तीन-source जाँच पास भाव केवल data/latest.json में होते हैं।",
   "record_limit_per_feed": 5000,
