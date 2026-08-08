@@ -1,470 +1,524 @@
 {
-  "Groundnut": [
-    {
-      "date": "2026-08-04",
-      "price": 6620
-    }
-  ],
   "Wheat": [
     {
-      "date": "2026-08-04",
-      "price": 2483
-    }
-  ],
-  "Firewood": [
-    {
-      "date": "2026-08-04",
-      "price": 447
+      "date": "2026-08-08",
+      "price": 2488
     }
   ],
   "Wood": [
     {
-      "date": "2026-08-04",
-      "price": 670
-    }
-  ],
-  "Rice": [
-    {
-      "date": "2026-08-04",
-      "price": 3403
-    }
-  ],
-  "Cabbage": [
-    {
-      "date": "2026-08-04",
-      "price": 1209
-    }
-  ],
-  "Bajra(Pearl Millet/Cumbu)": [
-    {
-      "date": "2026-08-04",
-      "price": 1924
-    }
-  ],
-  "Bhindi(Ladies Finger)": [
-    {
-      "date": "2026-08-04",
-      "price": 1716
-    }
-  ],
-  "Apple": [
-    {
-      "date": "2026-08-04",
-      "price": 10677
-    }
-  ],
-  "Tomato": [
-    {
-      "date": "2026-08-04",
-      "price": 1992
-    }
-  ],
-  "Cucumbar(Kheera)": [
-    {
-      "date": "2026-08-04",
-      "price": 1376
-    }
-  ],
-  "Papaya(Raw)": [
-    {
-      "date": "2026-08-04",
-      "price": 1500
-    }
-  ],
-  "Rab/Liquid Jaggery/Molasses": [
-    {
-      "date": "2026-08-04",
-      "price": 3200
-    }
-  ],
-  "Ridgeguard(Tori)": [
-    {
-      "date": "2026-08-04",
-      "price": 1340
-    }
-  ],
-  "Pointed gourd(Parval)": [
-    {
-      "date": "2026-08-04",
-      "price": 2200
-    }
-  ],
-  "Black Gram Dal(Urd Dal)": [
-    {
-      "date": "2026-08-04",
-      "price": 8785
-    }
-  ],
-  "Banana - Green": [
-    {
-      "date": "2026-08-04",
-      "price": 1500
-    }
-  ],
-  "Brinjal": [
-    {
-      "date": "2026-08-04",
-      "price": 1245
-    }
-  ],
-  "Cauliflower": [
-    {
-      "date": "2026-08-04",
-      "price": 2208
-    }
-  ],
-  "Mango": [
-    {
-      "date": "2026-08-04",
-      "price": 3310
-    }
-  ],
-  "Chili Red": [
-    {
-      "date": "2026-08-04",
-      "price": 10682
-    }
-  ],
-  "Onion": [
-    {
-      "date": "2026-08-04",
-      "price": 1740
-    }
-  ],
-  "Grapes": [
-    {
-      "date": "2026-08-04",
-      "price": 4350
-    }
-  ],
-  "Lemon": [
-    {
-      "date": "2026-08-04",
-      "price": 4550
-    }
-  ],
-  "Broken Rice": [
-    {
-      "date": "2026-08-04",
-      "price": 2049
-    }
-  ],
-  "Colacasia": [
-    {
-      "date": "2026-08-04",
-      "price": 2211
-    }
-  ],
-  "Maize": [
-    {
-      "date": "2026-08-04",
-      "price": 1935
-    }
-  ],
-  "Coriander(Leaves)": [
-    {
-      "date": "2026-08-04",
-      "price": 11200
-    }
-  ],
-  "Bitter gourd": [
-    {
-      "date": "2026-08-04",
-      "price": 1934
-    }
-  ],
-  "Green Chilli": [
-    {
-      "date": "2026-08-04",
-      "price": 2947
-    }
-  ],
-  "Pegeon Pea(Arhar Fali)": [
-    {
-      "date": "2026-08-04",
-      "price": 10212
-    }
-  ],
-  "Gram Raw(Chholia)": [
-    {
-      "date": "2026-08-04",
-      "price": 6851
-    }
-  ],
-  "Peas(Dry)": [
-    {
-      "date": "2026-08-04",
-      "price": 3880
-    }
-  ],
-  "Gur(Jaggery)": [
-    {
-      "date": "2026-08-04",
-      "price": 3889
-    }
-  ],
-  "Potato": [
-    {
-      "date": "2026-08-04",
-      "price": 628
-    }
-  ],
-  "Green Gram(Moong)(Whole)": [
-    {
-      "date": "2026-08-04",
-      "price": 7286
-    }
-  ],
-  "Capsicum": [
-    {
-      "date": "2026-08-04",
-      "price": 2600
-    }
-  ],
-  "Bottle gourd": [
-    {
-      "date": "2026-08-04",
-      "price": 1304
-    }
-  ],
-  "Paddy(Common)": [
-    {
-      "date": "2026-08-04",
-      "price": 2550
-    }
-  ],
-  "Ginger(Green)": [
-    {
-      "date": "2026-08-04",
-      "price": 7789
-    }
-  ],
-  "Sesamum(Sesame,Gingelly,Til)": [
-    {
-      "date": "2026-08-04",
-      "price": 9360
-    }
-  ],
-  "Red gram/Arhar/Tur(whole)": [
-    {
-      "date": "2026-08-04",
-      "price": 6052
-    }
-  ],
-  "Garlic": [
-    {
-      "date": "2026-08-04",
-      "price": 7000
-    }
-  ],
-  "Mustard": [
-    {
-      "date": "2026-08-04",
-      "price": 6928
-    }
-  ],
-  "Mentha Oil": [
-    {
-      "date": "2026-08-04",
-      "price": 167057
-    }
-  ],
-  "Turmeric": [
-    {
-      "date": "2026-08-04",
-      "price": 10926
-    }
-  ],
-  "gulli": [
-    {
-      "date": "2026-08-04",
-      "price": 4950
-    }
-  ],
-  "Mahua Seed(Hippe seed)": [
-    {
-      "date": "2026-08-04",
-      "price": 5022
-    }
-  ],
-  "Fish": [
-    {
-      "date": "2026-08-04",
-      "price": 3898
-    }
-  ],
-  "Tobacco": [
-    {
-      "date": "2026-08-04",
-      "price": 3165
-    }
-  ],
-  "Makhana(Foxnut)": [
-    {
-      "date": "2026-08-04",
-      "price": 40389
-    }
-  ],
-  "Pumpkin": [
-    {
-      "date": "2026-08-04",
-      "price": 1062
-    }
-  ],
-  "Sponge gourd": [
-    {
-      "date": "2026-08-04",
-      "price": 1400
-    }
-  ],
-  "Pineapple": [
-    {
-      "date": "2026-08-04",
-      "price": 4600
-    }
-  ],
-  "Mousambi(Sweet Lime)": [
-    {
-      "date": "2026-08-04",
-      "price": 3400
-    }
-  ],
-  "Tendu Leaves/Kendu leaves/Bidi Leaves": [
-    {
-      "date": "2026-08-04",
-      "price": 2500
-    }
-  ],
-  "Dal Mix": [
-    {
-      "date": "2026-08-04",
-      "price": 11039
-    }
-  ],
-  "Green Gram Dal(Moong Dal)": [
-    {
-      "date": "2026-08-04",
-      "price": 10340
+      "date": "2026-08-08",
+      "price": 699
     }
   ],
   "Masur Dal": [
     {
-      "date": "2026-08-04",
-      "price": 7855
+      "date": "2026-08-08",
+      "price": 7500
     }
   ],
-  "Bengal Gram Dal(Chana Dal)": [
+  "Gram Raw(Chholia)": [
     {
-      "date": "2026-08-04",
-      "price": 7800
+      "date": "2026-08-08",
+      "price": 6673
     }
   ],
-  "Barley(Jau)": [
+  "Chicory(Chikori/Kasni)": [
     {
-      "date": "2026-08-04",
-      "price": 2288
+      "date": "2026-08-08",
+      "price": 3000
     }
   ],
-  "Bengal Gram(Gram)(Whole)": [
+  "Green Gram(Moong)(Whole)": [
     {
-      "date": "2026-08-04",
-      "price": 8291
+      "date": "2026-08-08",
+      "price": 7293
     }
   ],
-  "Guava": [
+  "Groundnut": [
     {
-      "date": "2026-08-04",
-      "price": 4013
+      "date": "2026-08-08",
+      "price": 6555
     }
   ],
-  "Jowar(Sorghum)": [
+  "Cauliflower": [
     {
-      "date": "2026-08-04",
-      "price": 2010
-    }
-  ],
-  "Soyabean": [
-    {
-      "date": "2026-08-04",
-      "price": 5442
-    }
-  ],
-  "dried mango": [
-    {
-      "date": "2026-08-04",
-      "price": 6000
-    }
-  ],
-  "Mahua": [
-    {
-      "date": "2026-08-04",
-      "price": 2000
-    }
-  ],
-  "Arecanut(Betelnut/Supari)": [
-    {
-      "date": "2026-08-04",
-      "price": 25499
-    }
-  ],
-  "Carrot": [
-    {
-      "date": "2026-08-04",
-      "price": 1708
-    }
-  ],
-  "Pomegranate": [
-    {
-      "date": "2026-08-04",
-      "price": 5200
-    }
-  ],
-  "Banana": [
-    {
-      "date": "2026-08-04",
-      "price": 2595
-    }
-  ],
-  "Sweet Saag": [
-    {
-      "date": "2026-08-04",
-      "price": 15746
+      "date": "2026-08-08",
+      "price": 2224
     }
   ],
   "Raddish": [
     {
-      "date": "2026-08-04",
-      "price": 1548
+      "date": "2026-08-08",
+      "price": 1513
     }
   ],
-  "Paddy(Basmati)": [
+  "Rice": [
     {
-      "date": "2026-08-04",
-      "price": 3400
+      "date": "2026-08-08",
+      "price": 3383
+    }
+  ],
+  "Sponge gourd": [
+    {
+      "date": "2026-08-08",
+      "price": 1417
+    }
+  ],
+  "Tomato": [
+    {
+      "date": "2026-08-08",
+      "price": 1935
+    }
+  ],
+  "Lemon": [
+    {
+      "date": "2026-08-08",
+      "price": 4732
+    }
+  ],
+  "Maize": [
+    {
+      "date": "2026-08-08",
+      "price": 1932
+    }
+  ],
+  "Paddy(Common)": [
+    {
+      "date": "2026-08-08",
+      "price": 2569
+    }
+  ],
+  "Peas(Dry)": [
+    {
+      "date": "2026-08-08",
+      "price": 3709
+    }
+  ],
+  "Brinjal": [
+    {
+      "date": "2026-08-08",
+      "price": 1280
+    }
+  ],
+  "Onion": [
+    {
+      "date": "2026-08-08",
+      "price": 1684
+    }
+  ],
+  "Potato": [
+    {
+      "date": "2026-08-08",
+      "price": 636
+    }
+  ],
+  "Black Gram Dal(Urd Dal)": [
+    {
+      "date": "2026-08-08",
+      "price": 8684
+    }
+  ],
+  "Gond": [
+    {
+      "date": "2026-08-08",
+      "price": 6742
+    }
+  ],
+  "Turmeric": [
+    {
+      "date": "2026-08-08",
+      "price": 8917
     }
   ],
   "Khandsari(Desi Khand)": [
     {
-      "date": "2026-08-04",
+      "date": "2026-08-08",
       "price": 5400
     }
   ],
-  "Mango(Raw-Ripe)": [
+  "Mustard": [
     {
-      "date": "2026-08-04",
-      "price": 2853
+      "date": "2026-08-08",
+      "price": 6965
     }
   ],
-  "Spinach": [
+  "Firewood": [
     {
-      "date": "2026-08-04",
-      "price": 1300
+      "date": "2026-08-08",
+      "price": 511
+    }
+  ],
+  "Cowpea(Lobia/Karamani)": [
+    {
+      "date": "2026-08-08",
+      "price": 6800
+    }
+  ],
+  "Green Chilli": [
+    {
+      "date": "2026-08-08",
+      "price": 2969
+    }
+  ],
+  "Broken Rice": [
+    {
+      "date": "2026-08-08",
+      "price": 2039
+    }
+  ],
+  "Gur(Jaggery)": [
+    {
+      "date": "2026-08-08",
+      "price": 3845
+    }
+  ],
+  "Barley(Jau)": [
+    {
+      "date": "2026-08-08",
+      "price": 2318
+    }
+  ],
+  "Garlic": [
+    {
+      "date": "2026-08-08",
+      "price": 7052
+    }
+  ],
+  "Tinda": [
+    {
+      "date": "2026-08-08",
+      "price": 2680
+    }
+  ],
+  "Bajra(Pearl Millet/Cumbu)": [
+    {
+      "date": "2026-08-08",
+      "price": 1943
+    }
+  ],
+  "Cucumbar(Kheera)": [
+    {
+      "date": "2026-08-08",
+      "price": 1609
+    }
+  ],
+  "Tobacco": [
+    {
+      "date": "2026-08-08",
+      "price": 2858
+    }
+  ],
+  "Bhindi(Ladies Finger)": [
+    {
+      "date": "2026-08-08",
+      "price": 1752
+    }
+  ],
+  "Grapes": [
+    {
+      "date": "2026-08-08",
+      "price": 4350
     }
   ],
   "Papaya": [
     {
-      "date": "2026-08-04",
+      "date": "2026-08-08",
       "price": 1620
+    }
+  ],
+  "Bitter gourd": [
+    {
+      "date": "2026-08-08",
+      "price": 1815
+    }
+  ],
+  "Colacasia": [
+    {
+      "date": "2026-08-08",
+      "price": 2140
+    }
+  ],
+  "Cowpea(Veg)": [
+    {
+      "date": "2026-08-08",
+      "price": 1500
+    }
+  ],
+  "Chili Red": [
+    {
+      "date": "2026-08-08",
+      "price": 10514
+    }
+  ],
+  "Sugar": [
+    {
+      "date": "2026-08-08",
+      "price": 6800
+    }
+  ],
+  "Ginger(Green)": [
+    {
+      "date": "2026-08-08",
+      "price": 7737
+    }
+  ],
+  "Fish": [
+    {
+      "date": "2026-08-08",
+      "price": 4222
+    }
+  ],
+  "Cabbage": [
+    {
+      "date": "2026-08-08",
+      "price": 1331
+    }
+  ],
+  "Sesamum(Sesame,Gingelly,Til)": [
+    {
+      "date": "2026-08-08",
+      "price": 9360
+    }
+  ],
+  "Sweet Saag": [
+    {
+      "date": "2026-08-08",
+      "price": 15746
+    }
+  ],
+  "Pumpkin": [
+    {
+      "date": "2026-08-08",
+      "price": 1013
+    }
+  ],
+  "Banana": [
+    {
+      "date": "2026-08-08",
+      "price": 2595
+    }
+  ],
+  "Mentha Oil": [
+    {
+      "date": "2026-08-08",
+      "price": 167057
+    }
+  ],
+  "Makhana(Foxnut)": [
+    {
+      "date": "2026-08-08",
+      "price": 40461
+    }
+  ],
+  "Ridgeguard(Tori)": [
+    {
+      "date": "2026-08-08",
+      "price": 1380
+    }
+  ],
+  "Banana - Green": [
+    {
+      "date": "2026-08-08",
+      "price": 1500
+    }
+  ],
+  "Bottle gourd": [
+    {
+      "date": "2026-08-08",
+      "price": 1302
+    }
+  ],
+  "Guava": [
+    {
+      "date": "2026-08-08",
+      "price": 4110
+    }
+  ],
+  "Papaya(Raw)": [
+    {
+      "date": "2026-08-08",
+      "price": 1500
+    }
+  ],
+  "Mango": [
+    {
+      "date": "2026-08-08",
+      "price": 3317
+    }
+  ],
+  "Capsicum": [
+    {
+      "date": "2026-08-08",
+      "price": 2600
+    }
+  ],
+  "Pegeon Pea(Arhar Fali)": [
+    {
+      "date": "2026-08-08",
+      "price": 10611
+    }
+  ],
+  "Apple": [
+    {
+      "date": "2026-08-08",
+      "price": 10677
+    }
+  ],
+  "Rab/Liquid Jaggery/Molasses": [
+    {
+      "date": "2026-08-08",
+      "price": 3200
+    }
+  ],
+  "Rambans(Agave /Century plant)": [
+    {
+      "date": "2026-08-08",
+      "price": 500
+    }
+  ],
+  "Coriander(Leaves)": [
+    {
+      "date": "2026-08-08",
+      "price": 10275
+    }
+  ],
+  "Carrot": [
+    {
+      "date": "2026-08-08",
+      "price": 1708
+    }
+  ],
+  "Arecanut(Betelnut/Supari)": [
+    {
+      "date": "2026-08-08",
+      "price": 25499
+    }
+  ],
+  "Bengal Gram Dal(Chana Dal)": [
+    {
+      "date": "2026-08-08",
+      "price": 7950
+    }
+  ],
+  "Pointed gourd(Parval)": [
+    {
+      "date": "2026-08-08",
+      "price": 2200
+    }
+  ],
+  "Little gourd(Kundru)": [
+    {
+      "date": "2026-08-08",
+      "price": 2000
+    }
+  ],
+  "Pea Pod/Pea Cod/हरी मटर": [
+    {
+      "date": "2026-08-08",
+      "price": 4425
+    }
+  ],
+  "Red gram/Arhar/Tur(whole)": [
+    {
+      "date": "2026-08-08",
+      "price": 6052
+    }
+  ],
+  "gulli": [
+    {
+      "date": "2026-08-08",
+      "price": 4950
+    }
+  ],
+  "Green Gram Dal(Moong Dal)": [
+    {
+      "date": "2026-08-08",
+      "price": 9610
+    }
+  ],
+  "Dal Mix": [
+    {
+      "date": "2026-08-08",
+      "price": 11039
+    }
+  ],
+  "Bengal Gram(Gram)(Whole)": [
+    {
+      "date": "2026-08-08",
+      "price": 8291
+    }
+  ],
+  "dried mango": [
+    {
+      "date": "2026-08-08",
+      "price": 6000
+    }
+  ],
+  "Soyabean": [
+    {
+      "date": "2026-08-08",
+      "price": 5442
+    }
+  ],
+  "Pomegranate": [
+    {
+      "date": "2026-08-08",
+      "price": 5200
+    }
+  ],
+  "Mahua Seed(Hippe seed)": [
+    {
+      "date": "2026-08-08",
+      "price": 5022
+    }
+  ],
+  "Pineapple": [
+    {
+      "date": "2026-08-08",
+      "price": 4600
+    }
+  ],
+  "Paddy(Basmati)": [
+    {
+      "date": "2026-08-08",
+      "price": 3400
+    }
+  ],
+  "Mousambi(Sweet Lime)": [
+    {
+      "date": "2026-08-08",
+      "price": 3400
+    }
+  ],
+  "Mango(Raw-Ripe)": [
+    {
+      "date": "2026-08-08",
+      "price": 2853
+    }
+  ],
+  "Tendu Leaves/Kendu leaves/Bidi Leaves": [
+    {
+      "date": "2026-08-08",
+      "price": 2500
+    }
+  ],
+  "Jowar(Sorghum)": [
+    {
+      "date": "2026-08-08",
+      "price": 2010
+    }
+  ],
+  "Mahua": [
+    {
+      "date": "2026-08-08",
+      "price": 2000
+    }
+  ],
+  "Spinach": [
+    {
+      "date": "2026-08-08",
+      "price": 1350
     }
   ]
 }

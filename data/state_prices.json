@@ -1,6 +1,75 @@
 {
-  "updated_at": "2026-08-05T09:24:18.109863+05:30",
-  "source": "Official feed unavailable",
-  "verified": false,
-  "states": []
+  "updated_at": "2026-08-08T18:28:05.943186+05:30",
+  "source": "Cross-verified OGD & AGMARKNET snapshot",
+  "verified": true,
+  "states": [
+    {
+      "state": "Uttar Pradesh",
+      "district_count": 70,
+      "mandi_count": 221,
+      "record_count": 1000,
+      "average_modal_price": 4009,
+      "minimum_price": 150,
+      "maximum_price": 370000,
+      "top_commodity": "Wheat",
+      "markets": [
+        {
+          "district": "Bareilly",
+          "mandi": "Bareilly APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 370000,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Lucknow",
+          "mandi": "Lucknow APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 134500,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Barabanki",
+          "mandi": "Barabanki APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 134146,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Raebareli",
+          "mandi": "Salon APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 133500,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Barabanki",
+          "mandi": "Safdarganj APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 132810,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Ambedkar Nagar",
+          "mandi": "Tanda Akbarpur APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 132500,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Sitapur",
+          "mandi": "Mehmoodabad APMC",
+          "commodity": "Mentha Oil",
+          "modal_price": 131944,
+          "arrival_date": "03/08/2026"
+        },
+        {
+          "district": "Gorakhpur",
+          "mandi": "Gorakhpur APMC",
+          "commodity": "Makhana(Foxnut)",
+          "modal_price": 40677,
+          "arrival_date": "03/08/2026"
+        }
+      ]
+    }
+  ]
 }
