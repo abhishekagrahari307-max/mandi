@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-08-05T09:23:57.498649+05:30",
+  "last_checked_at": "2026-08-08T18:28:05.106301+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -11,24 +11,18 @@
     {
       "name": "data.gov.in",
       "status": "error",
-      "message": "HTTP Error 403: Forbidden — { \"error\": \"Key not authorised\" } — Possible reasons: key invalid / not verified / expired / email verification pending. Troubleshoot: 1) data.gov.in → My Account → verify email (click verification link). 2) Copy key again without spaces. 3) In GitHub repo → Settings → Secrets and variables → Actions → pencil icon on DATA_GOV_IN_API_KEY → paste → Save. 4) Actions tab → Multi-Daily Mandi Price Update → Run workflow."
-    },
-    {
-      "name": "AGMARKNET (AI)",
-      "status": "ok",
-      "records": 8,
-      "message": "AI-fetched via Gemini web browsing from government portal"
+      "message": "DATA_GOV_IN_API_KEY is not configured"
     },
     {
       "name": "AGMARKNET portal",
       "status": "error",
       "url": "https://agmarknet.gov.in/home",
-      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
+      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
     },
     {
       "name": "AGMARKNET",
       "status": "error",
-      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
+      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
     },
     {
       "name": "e-NAM trade feed",
@@ -41,12 +35,6 @@
       "records": 0
     },
     {
-      "name": "2-source verification gate",
-      "status": "insufficient_sources",
-      "records": 0,
-      "message": "0 of 8 market/commodity/date/price groups matched across 2+ feeds (1 feeds connected)"
-    },
-    {
       "name": "UP e-Mandi contacts",
       "status": "unavailable",
       "records": 0,
@@ -54,16 +42,17 @@
     },
     {
       "name": "UP Mandi Parishad directory",
-      "status": "ok",
+      "status": "error",
       "records": 9,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx"
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
     },
     {
       "name": "UP Krishi Vipran state benchmark",
       "status": "error",
       "records": 0,
       "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "state ticker returned no parseable benchmark rates"
+      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
     },
     {
       "name": "e-NAM authorised auction feed",

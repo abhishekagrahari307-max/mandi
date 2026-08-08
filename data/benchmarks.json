@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-05T09:24:18.113379+05:30",
+  "updated_at": "2026-08-08T18:28:05.956425+05:30",
   "policy": "Every value below is copied from an official government portal. No simulated, random or interpolated figure is stored.",
   "state_benchmark": {
     "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
@@ -11,7 +11,7 @@
     "source": "UP Krishi Vipran (Directorate of Agricultural Marketing, UP)",
     "source_url": "https://www.upkrishivipran.in/Default.aspx",
     "status": "unavailable",
-    "message": "state ticker returned no parseable benchmark rates",
+    "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>",
     "commodities": []
   },
   "mandi_parishad_directory": {
@@ -19,7 +19,7 @@
     "title_en": "UP State Agricultural Produce Market Board — mandi directory",
     "source": "राज्य कृषि उत्पादन मण्डी परिषद, उत्तर प्रदेश",
     "source_url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-    "status": "ok",
+    "status": "cached",
     "fields": [
       "division",
       "district",
@@ -167,7 +167,7 @@
     "status": {
       "reachable": false,
       "url": "https://agmarknet.gov.in/home",
-      "error": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
+      "error": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
     }
   },
   "official_portals": [

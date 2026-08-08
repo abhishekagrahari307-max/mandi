@@ -2239,8 +2239,8 @@
             const feeds = Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : [];
             const seen = new Map();
             feeds.forEach(feed => {
-                if (feed.status !== 'live' && feed.status !== 'cached') return;
-                (Array.isArray(feed.records) ? feed.records : []).forEach(record => {
+                if (!feed || !Array.isArray(feed.records) || feed.records.length === 0) return;
+                feed.records.forEach(record => {
                     if (!record || !Number.isFinite(Number(record.modal_price))) return;
                     // ── STATE FILTER: Only keep Uttar Pradesh records ──
                     if (!isUPRecord(record)) return;
@@ -2994,6 +2994,12 @@
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();
+                    })
+                    .then(data => {
+                        if (!data || !Array.isArray(data.records) || data.records.length === 0) {
+                            return fetch(`data/latest.json?t=${timestamp}`).then(res => res.json());
+                        }
+                        return data;
                     })
                     .catch(() => fetch(`data/latest.json?t=${timestamp}`).then(res => res.json()))
                     .catch(() => ({ records: [] }))

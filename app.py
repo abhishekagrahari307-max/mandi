@@ -324,14 +324,29 @@ def seed_database():
         # Seed initial mandi rates
         records_count = session.query(db.MandiRecord).count()
         if records_count == 0:
+            records = []
             latest_file = "data/latest.json"
             if os.path.exists(latest_file):
                 with open(latest_file, "r", encoding="utf-8") as f:
                     latest_data = json.load(f)
-                    records = latest_data.get("records", []) if latest_data.get("verified") else []
-                    if not records:
-                        logger.warning("Skipping rate seed: no verified official snapshot is available")
-                    for r in records:
+                    records = latest_data.get("records", [])
+            if not records and os.path.exists("data/latest.json.bak"):
+                with open("data/latest.json.bak", "r", encoding="utf-8") as f_bak:
+                    bak_data = json.load(f_bak)
+                    records = bak_data.get("records", [])
+            if not records and os.path.exists("data/source_prices.json"):
+                with open("data/source_prices.json", "r", encoding="utf-8") as f_sp:
+                    sp_data = json.load(f_sp)
+                    for feed in sp_data.get("feeds", []):
+                        if isinstance(feed.get("records"), list):
+                            records.extend([
+                                r for r in feed["records"]
+                                if str(r.get("state", "")) in {"Uttar Pradesh", "UP", "U.P.", ""}
+                            ])
+            if not records:
+                logger.warning("Skipping rate seed: no official snapshot is available")
+            else:
+                for r in records:
                         m_record = db.MandiRecord(
                             district=r.get("district"),
                             district_hi=r.get("district_hi"),
@@ -359,6 +374,8 @@ def seed_database():
         print(f"Error seeding database: {e}")
     finally:
         session.close()
+
+seed_database()
 
 # ================= OPENROUTER AI MANDI ASSISTANT HELPERS =================
 

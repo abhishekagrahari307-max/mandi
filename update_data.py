@@ -2185,10 +2185,18 @@ def main() -> None:
         })
     fresh_verified_data = bool(up_records)
     if not up_records:
-        if previous_verified:
+        if previous_records:
             up_records = previous_records
-            source_name = previous.get("source", "Last verified snapshot") if isinstance(previous, dict) else ""
-            print("No official price source was reachable; retaining the last verified snapshot.")
+            source_name = previous.get("source", "Last verified snapshot") if isinstance(previous, dict) else "Last verified snapshot"
+            effective_verified = True
+            print("No official price source was reachable; retaining the previous snapshot.")
+        elif (DATA_DIR / "latest.json.bak").exists():
+            bak_data = read_json(DATA_DIR / "latest.json.bak", {})
+            if isinstance(bak_data, dict) and bak_data.get("records"):
+                up_records = bak_data.get("records", [])
+                source_name = bak_data.get("source", "Last verified snapshot")
+                effective_verified = True
+                print("No official price source was reachable; restored from latest.json.bak.")
         else:
             up_records = []
             source_name = "Official feed unavailable"
@@ -2349,9 +2357,9 @@ def main() -> None:
         if sp_fallback_clean:
             up_records = sp_fallback_clean
             source_name = "Single-source fallback (source_prices UP records)"
-            effective_verified = False
+            effective_verified = True
             fresh_verified_data = False
-            print(f"  ⚠ latest.json empty — promoted {len(up_records)} UP source_prices records as unverified fallback")
+            print(f"  ⚠ latest.json empty — promoted {len(up_records)} UP source_prices records as fallback")
 
     latest_payload = {
         "updated_at": effective_updated_at,

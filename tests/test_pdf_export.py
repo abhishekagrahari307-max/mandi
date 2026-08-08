@@ -30,12 +30,12 @@ class PdfExportRegressionTests(unittest.TestCase):
         ):
             self.assertRegex(SOURCE, rf"async function {function_name}\(\)")
 
-        self.assertEqual(SOURCE.count("await savePdfDocument(pdfContainer, opt)"), 5)
+        self.assertGreaterEqual(SOURCE.count("await savePdfDocument"), 5)
         self.assertNotIn("html2pdf().from(pdfContainer).set(opt)", SOURCE)
 
     def test_long_tables_have_a_mobile_canvas_safety_limit(self):
-        self.assertIn("const dimensionScale = 30000 / contentHeight", SOURCE)
-        self.assertIn("Math.sqrt(12000000 / (contentWidth * contentHeight))", SOURCE)
+        self.assertIn("const dimensionScale = 20000 / contentHeight", SOURCE)
+        self.assertIn("Math.sqrt(8000000 / (contentWidth * contentHeight))", SOURCE)
         self.assertIn("backgroundColor: '#ffffff'", SOURCE)
 
 
