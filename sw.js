@@ -1,4 +1,4 @@
-const CACHE_NAME = 'up-mandi-v16';
+const CACHE_NAME = 'up-mandi-v17';
 const STATIC_ASSETS = [
   './',
   './index.html',
