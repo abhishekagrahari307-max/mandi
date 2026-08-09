@@ -2930,7 +2930,7 @@
                 ${officialDirectoryHtml}
                 ${rateDetailsHtml}
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${(mandi.commodity_count > 0 ? mandi.commodity_count : null) ?? commodities.length || (mandi.records && mandi.records.length ? new Set(mandi.records.map(r => r.commodity)).size : 0)}</p></div>
+                    <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">जिंस</span><p class="font-black">${((mandi.commodity_count > 0 ? mandi.commodity_count : null) ?? commodities.length) || (mandi.records && mandi.records.length ? new Set(mandi.records.map(r => r.commodity)).size : 0)}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">न्यूनतम मॉडल</span><p class="font-black">${mandi.minimum_modal_price ? '₹' + mandi.minimum_modal_price : '—'}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">अधिकतम मॉडल</span><p class="font-black">${mandi.maximum_modal_price ? '₹' + mandi.maximum_modal_price : '—'}</p></div>
                     <div class="bg-slate-50 p-3 rounded-lg"><span class="text-[10px] text-slate-400 uppercase">भाव तिथि</span><p class="font-black text-xs">${escapeHtml(mandi.latest_price_date || '—')}</p></div>
