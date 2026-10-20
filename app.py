@@ -80,10 +80,11 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Permit only explicitly configured browser origins.
+# Permit only explicitly configured browser origins plus live preview hosts.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=r"^https://[a-zA-Z0-9-]+\.e2b\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1486,3 +1487,6 @@ if os.path.isdir("data"):
     app.mount("/data", StaticFiles(directory="data"), name="data")
 if os.path.isdir("images"):
     app.mount("/images", StaticFiles(directory="images"), name="images")
+if os.path.isdir("craft-studio"):
+    app.mount("/craft-studio", StaticFiles(directory="craft-studio", html=True), name="craft-studio")
+

@@ -43,6 +43,11 @@ class CraftStudioTests(unittest.TestCase):
             path = STUDIO_ROOT / "vendor" / bundle
             self.assertTrue(path.is_file() and path.stat().st_size > 10_000, f"Invalid bundle: {path}")
 
+    def test_server_script_defaults_to_studio_root(self):
+        server_src = (STUDIO_ROOT / "server.py").read_text(encoding="utf-8")
+        self.assertIn("root = here", server_src)
+
+
 
 if __name__ == "__main__":
     unittest.main()
