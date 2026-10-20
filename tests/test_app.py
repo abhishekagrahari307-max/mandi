@@ -61,17 +61,106 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertLessEqual(len(response.json()["records"]), 2)
 
-    def test_mandi_ai_requires_server_side_openrouter_key(self):
-        previous_key = os.environ.pop("OPENROUTER_API_KEY", None)
+    def test_mandi_ai_requires_server_side_provider_key(self):
+        provider_vars = ("AI_API_BASE_URL", "AI_API_KEY", "OPENROUTER_API_KEY")
+        previous = {name: os.environ.pop(name, None) for name in provider_vars}
         try:
             response = self.client.post("/api/v2/mandi-ai", json={
                 "userQuestion": "Aligarh me Masur Dal ka bhav kya hai?",
             })
         finally:
-            if previous_key is not None:
-                os.environ["OPENROUTER_API_KEY"] = previous_key
+            for name, value in previous.items():
+                if value is not None:
+                    os.environ[name] = value
         self.assertEqual(response.status_code, 503)
         self.assertIn("OPENROUTER_API_KEY", response.text)
+        self.assertIn("AI_API_KEY", response.text)
+
+    def test_freellmapi_openai_compatible_endpoint_uses_its_own_key(self):
+        import io
+        import json
+        from unittest.mock import patch
+
+        config = {
+            "AI_API_BASE_URL": "http://freellmapi:3001/v1",
+            "AI_API_KEY": "freellmapi-unified-test-key",
+            "AI_MODEL": "",
+            "AI_VISION_MODEL": "",
+            "OPENROUTER_API_KEY": "must-not-be-forwarded",
+            "OPENROUTER_MODEL": "openrouter-model-should-not-be-used",
+            "OPENROUTER_SITE_URL": "https://example.invalid/",
+        }
+        fake_response = io.BytesIO(
+            b'{"choices":[{"message":{"content":"Namaste"}}],"model":"gemini-2.5-flash"}'
+        )
+        with patch.dict(os.environ, config), patch(
+            "app.urllib.request.urlopen", return_value=fake_response
+        ) as mocked_urlopen:
+            answer, model = mandi_app._call_ai_chat([
+                {"role": "user", "content": "Namaste"},
+            ])
+
+        request = mocked_urlopen.call_args.args[0]
+        request_headers = {key.lower(): value for key, value in request.header_items()}
+        request_body = json.loads(request.data.decode("utf-8"))
+        self.assertEqual(request.full_url, "http://freellmapi:3001/v1/chat/completions")
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request_headers["authorization"], "Bearer freellmapi-unified-test-key")
+        self.assertNotIn("http-referer", request_headers)
+        self.assertNotIn("x-title", request_headers)
+        self.assertEqual(request_body["model"], "auto")
+        self.assertEqual(answer, "Namaste")
+        self.assertEqual(model, "gemini-2.5-flash")
+
+    def test_custom_ai_endpoint_never_falls_back_to_openrouter_key(self):
+        from fastapi import HTTPException
+        from unittest.mock import patch
+
+        with patch.dict(os.environ, {
+            "AI_API_BASE_URL": "http://freellmapi:3001/v1",
+            "AI_API_KEY": "",
+            "OPENROUTER_API_KEY": "do-not-send-to-custom-provider",
+        }):
+            with self.assertRaises(HTTPException) as raised:
+                mandi_app._call_ai_chat([{"role": "user", "content": "hello"}])
+        self.assertEqual(raised.exception.status_code, 503)
+        self.assertIn("AI_API_KEY", raised.exception.detail)
+
+    def test_existing_openrouter_environment_settings_still_work(self):
+        import io
+        import json
+        from unittest.mock import patch
+
+        config = {
+            "AI_API_BASE_URL": "",
+            "AI_API_KEY": "",
+            "AI_MODEL": "",
+            "AI_VISION_MODEL": "",
+            "OPENROUTER_API_KEY": "openrouter-test-key",
+            "OPENROUTER_MODEL": "deepseek/test:free",
+            "OPENROUTER_SITE_URL": "https://mandi.example/",
+            "OPENROUTER_APP_NAME": "Mandi test",
+        }
+        fake_response = io.BytesIO(
+            b'{"choices":[{"message":{"content":"Namaste"}}]}'
+        )
+        with patch.dict(os.environ, config), patch(
+            "app.urllib.request.urlopen", return_value=fake_response
+        ) as mocked_urlopen:
+            answer, model = mandi_app._call_ai_chat([
+                {"role": "user", "content": "Namaste"},
+            ])
+
+        request = mocked_urlopen.call_args.args[0]
+        request_headers = {key.lower(): value for key, value in request.header_items()}
+        request_body = json.loads(request.data.decode("utf-8"))
+        self.assertEqual(request.full_url, "https://openrouter.ai/api/v1/chat/completions")
+        self.assertEqual(request_headers["authorization"], "Bearer openrouter-test-key")
+        self.assertEqual(request_headers["http-referer"], "https://mandi.example/")
+        self.assertEqual(request_headers["x-title"], "Mandi test")
+        self.assertEqual(request_body["model"], "deepseek/test:free")
+        self.assertEqual(answer, "Namaste")
+        self.assertEqual(model, "deepseek/test:free")
 
     def test_auction_does_not_create_local_bids(self):
         snapshot = self.client.get("/api/v2/auction/lots")

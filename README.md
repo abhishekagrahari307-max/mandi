@@ -22,8 +22,8 @@
 - **🏢 मण्डी परिषद निर्देशिका:** UP Mandi Parishad से मंडल (division), जनपद, मण्डी, मण्डी ग्रेड, सचिव का नाम और सी.यू.जी नंबर।
 - **📊 राज्य-स्तरीय संदर्भ भाव:** UP Krishi Vipran ticker स्पष्ट रूप से *state-level benchmark* के रूप में लेबल—किसी एक मंडी का भाव नहीं।
 - **🛰️ Government Source Monitor + Official Portal cards:** हर सरकारी portal की live status, record count और सीधा link।
-- **🤖 OpenRouter AI Mandi Sahayak:** किसान/व्यापारी Hindi/Hinglish में सवाल पूछ सकते हैं; backend official mandi JSON को OpenRouter model के context में भेजता है और API key कभी frontend में expose नहीं होती।
-- **🏆 Smart Agri-Tech AI Tools:** OpenRouter Vision/Text models से crop disease photo scanner, mandi receipt OCR/local khata, sell/hold trend advisor, Hindi voice question+answer, transport profit calculator, Open-Meteo weather risk warning और govt scheme advisor।
+- **🤖 AI Mandi Sahayak:** किसान/व्यापारी Hindi/Hinglish में सवाल पूछ सकते हैं; backend official mandi JSON को OpenRouter या किसी भी configured OpenAI-compatible AI provider तक भेजता है और API key कभी frontend में expose नहीं होती।
+- **🏆 Smart Agri-Tech AI Tools:** configured Vision/Text models से crop disease photo scanner, mandi receipt OCR/local khata, sell/hold trend advisor, Hindi voice question+answer, transport profit calculator, Open-Meteo weather risk warning और govt scheme advisor।
 - **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
 
 ---
@@ -84,26 +84,34 @@ docker compose up --build
 
 `JWT_SECRET` बनाने के लिए `openssl rand -hex 32` का उपयोग कर सकते हैं। असली secret, password या access token को कभी commit न करें।
 
-### OpenRouter AI Mandi Sahayak सेटअप
+### AI Mandi Sahayak: OpenRouter या FreeLLMAPI
 
-Backend में `/api/v2/mandi-ai` endpoint जोड़ा गया है। यह official `data/latest.json` और `data/source_prices.json` को context बनाकर OpenRouter को भेजता है और Hindi में जवाब लौटाता है।
+`/api/v2/mandi-ai` और `/api/v2/ai-tools` official mandi JSON के साथ OpenAI-compatible `/v1/chat/completions` API इस्तेमाल करते हैं। Default provider OpenRouter है और पुराने `OPENROUTER_*` settings काम करते रहेंगे।
 
-1. [OpenRouter](https://openrouter.ai/) से API key बनाएं।
-2. Key को केवल backend environment में रखें:
-   ```bash
-   OPENROUTER_API_KEY=sk-or-...
-   OPENROUTER_MODEL=deepseek/deepseek-r1:free
-   OPENROUTER_VISION_MODEL=google/gemini-2.0-flash-exp:free
-   ```
-3. Frontend में key न डालें। GitHub Pages पर static frontend चलाते समय `index.html` में `MANDI_AI_DEFAULT_BACKEND_URL` को Render/Vercel/Docker backend URL पर set करें (या AI card के **Backend URL** field में browser-side override भरें), जैसे `https://your-mandi-api.onrender.com`।
-4. Backend CORS में अपने frontend origin को add करें:
-   ```bash
-   CORS_ORIGINS=https://abhishekagrahari307-max.github.io,http://localhost:8000,http://127.0.0.1:8000
-   ```
+**OpenRouter (default):**
+```bash
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_MODEL=deepseek/deepseek-r1:free
+OPENROUTER_VISION_MODEL=google/gemini-2.0-flash-exp:free
+```
 
-Render.com के लिए `render.yaml` blueprint भी तैयार है। Render dashboard में repository connect करके blueprint deploy करें और कम-से-कम ये secret env vars भरें: `ADMIN_PASSWORD`, `OPENROUTER_API_KEY`, `DATA_GOV_IN_API_KEY`। Deploy होने के बाद backend URL को `MANDI_AI_DEFAULT_BACKEND_URL` में set करें या website के AI card में save करें।
+**[FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) (self-hosted gateway):** यह खुद कोई बिना-key hosted inference endpoint नहीं है। इसे अपने server/desktop पर चलाएँ, dashboard में upstream provider keys जोड़ें और उसका unified key बनाएँ। फिर Mandi backend में:
+```bash
+AI_API_BASE_URL=http://localhost:3001/v1
+AI_API_KEY=freellmapi-your-unified-key
+AI_MODEL=auto
+AI_VISION_MODEL=auto
+```
+`AI_API_BASE_URL` किसी भी compatible `/v1` base URL पर set किया जा सकता है; `AI_MODEL` और `AI_VISION_MODEL` से gateway के उपलब्ध model/profile चुनें। OpenRouter की credentials custom endpoint पर forward नहीं होतीं। `AI_TIMEOUT_SECONDS` और `AI_MAX_TOKENS` वैकल्पिक overrides हैं। ये `AI_API_*` settings interactive assistant/tools के लिए हैं; `update_data.py` का वैकल्पिक web-grounded AI fetcher अभी अलग से `OPENROUTER_API_KEY` या `GEMINI_API_KEY` पढ़ता है। Core price refresh फिर भी official feeds पर आधारित है।
 
-अगर `OPENROUTER_API_KEY` set नहीं है तो AI card साफ error दिखाएगा; mandi data फिर भी normal dashboard में दिखता रहेगा।
+FreeLLMAPI upstream free-tier quotas/availability पर निर्भर करता है; provider keys और model requests upstream providers तक पहुँचते हैं, इसलिए उनके terms/privacy भी देखें। Mandi की server-side key को `index.html` या browser JavaScript में कभी न रखें। Docker में `localhost` Mandi container को बताता है—FreeLLMAPI उसी host/network पर चल रहा हो तो reachable service/host URL इस्तेमाल करें। Render जैसे cloud backend से local computer का `localhost` उपलब्ध नहीं होगा; वहाँ backend से reachable, secured HTTPS/private endpoint configure करें और उसे अनधिकृत public access के लिए न खोलें।
+
+GitHub Pages पर static frontend चलाते समय `index.html` में `MANDI_AI_DEFAULT_BACKEND_URL` को Render/Vercel/Docker backend URL पर set करें (या AI card के **Backend URL** field में browser-side override भरें), जैसे `https://your-mandi-api.onrender.com`। Backend CORS में frontend origin जोड़ें:
+```bash
+CORS_ORIGINS=https://abhishekagrahari307-max.github.io,http://localhost:8000,http://127.0.0.1:8000
+```
+
+Render.com के लिए `render.yaml` blueprint भी तैयार है। Render dashboard में repository connect करके blueprint deploy करें और `ADMIN_PASSWORD`, `DATA_GOV_IN_API_KEY`, तथा चुने हुए AI provider की key (`OPENROUTER_API_KEY` या `AI_API_KEY`) भरें। Custom FreeLLMAPI endpoint के लिए `AI_API_BASE_URL` और आवश्यकता अनुसार `AI_MODEL`/`AI_VISION_MODEL` भी set करें। Deploy होने के बाद backend URL को `MANDI_AI_DEFAULT_BACKEND_URL` में set करें या website के AI card में save करें। AI key missing होने पर AI card error दिखाएगा; official mandi data सामान्य रूप से चलता रहेगा।
 
 ---
 
@@ -242,6 +250,10 @@ Public e-NAM pages aggregate trade data देते हैं, लेकिन 
 - `ENAM_AUCTION_API_KEY`
 
 Feed JSON में `lot_number`, `district`, `mandi`, `commodity` और lot details होने चाहिए। इनके बिना auction tab official e-NAM link और “feed unavailable” status दिखाता है—नकली auction नहीं। Username/password को secret या scraper में न डालें।
+
+### दिए गए GitHub links का मूल्यांकन
+
+[`government-data` topic](https://github.com/topics/government-data) और [Government collection](https://github.com/collections/government) code/project खोजने की GitHub directory pages हैं—ये अपने-आप में machine-readable price feeds या API नहीं हैं। इनसे कोई UP mandi dataset नहीं मिला; इसलिए foreign/international projects को official mandi evidence की तरह जोड़ना उचित नहीं होगा। यह dashboard पहले से भारत/UP के official sources नीचे इस्तेमाल करता है। नए भाव-स्रोत केवल तभी जोड़ें जब वह संबंधित सरकारी विभाग का documented feed हो; e-NAM/UP e-Mandi के restricted feeds के लिए अधिकृत access जरूरी है।
 
 ### Official sources
 
