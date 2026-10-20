@@ -2,6 +2,7 @@ import os
 import json
 import urllib.request
 import urllib.error
+import urllib.parse
 import re
 import csv
 import io
@@ -119,7 +120,7 @@ class Token(BaseModel):
 
 
 class MandiAIRequest(BaseModel):
-    """Chat request for the OpenRouter-powered mandi assistant.
+    """Chat request for the configurable OpenAI-compatible mandi assistant.
 
     `userQuestion` is used by the public dashboard. `message` is accepted too
     so clients can call the endpoint with a more generic chat payload. Optional
@@ -133,10 +134,10 @@ class MandiAIRequest(BaseModel):
 
 
 class SmartAIToolRequest(BaseModel):
-    """Payload for advanced OpenRouter agri-tech tools.
+    """Payload for advanced OpenAI-compatible agri-tech tools.
 
     Images are accepted as browser-created data URLs and are forwarded directly
-    to OpenRouter; they are never stored on disk by this application.
+    to the configured AI provider; they are never stored on disk by this application.
     """
     action: str = Field(
         ...,
@@ -377,9 +378,10 @@ def seed_database():
 
 seed_database()
 
-# ================= OPENROUTER AI MANDI ASSISTANT HELPERS =================
+# ================= OPENAI-COMPATIBLE AI ASSISTANT HELPERS =================
 
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_API_BASE_URL = "https://openrouter.ai/api/v1"
+OPENROUTER_API_URL = f"{OPENROUTER_API_BASE_URL}/chat/completions"
 OPENROUTER_DEFAULT_MODEL = "deepseek/deepseek-r1:free"
 MAX_AI_CONTEXT_RECORDS = 120
 
@@ -558,7 +560,7 @@ def _compact_ai_record(record: dict[str, Any], verified: bool) -> dict[str, Any]
     }
 
 
-def _build_openrouter_system_prompt(question: str, mandi_data: Any = None) -> str:
+def _build_ai_system_prompt(question: str, mandi_data: Any = None) -> str:
     context = _collect_ai_mandi_context(mandi_data)
     verified = _rank_ai_records(context["verified_records"], question)
     single_source = _rank_ai_records(context["single_source_records"], question)
@@ -582,28 +584,99 @@ def _build_openrouter_system_prompt(question: str, mandi_data: Any = None) -> st
     )
 
 
-def _openrouter_headers(api_key: str) -> dict[str, str]:
+def _configured_ai_base_url() -> str:
+    """Return the configured OpenAI-compatible API base, defaulting to OpenRouter."""
+    return os.environ.get("AI_API_BASE_URL", "").strip() or OPENROUTER_API_BASE_URL
+
+
+def _is_openrouter_endpoint(base_url: str) -> bool:
+    try:
+        hostname = (urllib.parse.urlsplit(base_url).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    return hostname in {"openrouter.ai", "api.openrouter.ai"}
+
+
+def _chat_completions_url(base_url: str) -> str:
+    """Normalize an OpenAI-compatible base URL to its chat completions route."""
+    try:
+        parts = urllib.parse.urlsplit(base_url.strip())
+        if (
+            parts.scheme not in {"http", "https"}
+            or not parts.hostname
+            or parts.username
+            or parts.password
+            or parts.query
+            or parts.fragment
+        ):
+            raise ValueError("unsupported URL form")
+        path = parts.path.rstrip("/")
+        if path.endswith("/chat/completions"):
+            pass
+        elif path.endswith("/v1"):
+            path += "/chat/completions"
+        else:
+            path += "/v1/chat/completions"
+        return urllib.parse.urlunsplit((parts.scheme, parts.netloc, path, "", ""))
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "AI_API_BASE_URL must be a valid HTTP(S) OpenAI-compatible URL "
+                "without embedded credentials, query parameters or fragments"
+            ),
+        ) from exc
+
+
+def _configured_ai_api_key(base_url: str) -> str:
+    """Do not send an OpenRouter key to a custom endpoint by accident."""
+    api_key = os.environ.get("AI_API_KEY", "").strip()
+    if api_key:
+        return api_key
+    if _is_openrouter_endpoint(base_url):
+        return os.environ.get("OPENROUTER_API_KEY", "").strip()
+    return ""
+
+
+def _ai_provider_headers(api_key: str, base_url: str) -> dict[str, str]:
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    site_url = os.environ.get("OPENROUTER_SITE_URL", "").strip()
-    app_name = os.environ.get("OPENROUTER_APP_NAME", "UP Mandi Dashboard").strip()
-    if site_url:
-        headers["HTTP-Referer"] = site_url
-    if app_name:
-        headers["X-Title"] = app_name
+    # OpenRouter's attribution headers are provider-specific. Do not forward
+    # them to a self-hosted FreeLLMAPI instance or another custom endpoint.
+    if _is_openrouter_endpoint(base_url):
+        site_url = os.environ.get("OPENROUTER_SITE_URL", "").strip()
+        app_name = os.environ.get("OPENROUTER_APP_NAME", "UP Mandi Dashboard").strip()
+        if site_url:
+            headers["HTTP-Referer"] = site_url
+        if app_name:
+            headers["X-Title"] = app_name
     return headers
 
 
-def _configured_openrouter_model(vision: bool = False) -> str:
-    if vision:
+def _configured_ai_model(vision: bool = False, base_url: str | None = None) -> str:
+    base_url = base_url or _configured_ai_base_url()
+    model_var = "AI_VISION_MODEL" if vision else "AI_MODEL"
+    configured = os.environ.get(model_var, "").strip()
+    if configured:
+        return configured
+
+    if _is_openrouter_endpoint(base_url):
+        if vision:
+            return (
+                os.environ.get("OPENROUTER_VISION_MODEL", "").strip()
+                or os.environ.get("OPENROUTER_MODEL", "").strip()
+                or "google/gemini-2.0-flash-exp:free"
+            )
         return (
-            os.environ.get("OPENROUTER_VISION_MODEL", "").strip()
-            or os.environ.get("OPENROUTER_MODEL", "").strip()
-            or "google/gemini-2.0-flash-exp:free"
+            os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip()
+            or OPENROUTER_DEFAULT_MODEL
         )
-    return os.environ.get("OPENROUTER_MODEL", OPENROUTER_DEFAULT_MODEL).strip() or OPENROUTER_DEFAULT_MODEL
+
+    # FreeLLMAPI accepts `auto` and can select a vision-capable model when the
+    # request contains image content. Other compatible gateways can override it.
+    return "auto"
 
 
 def _parse_positive_int_env(name: str, default: int, low: int, high: int) -> int:
@@ -613,7 +686,19 @@ def _parse_positive_int_env(name: str, default: int, low: int, high: int) -> int
         return default
 
 
-def _call_openrouter_chat(
+def _configured_ai_positive_int(
+    primary_name: str,
+    legacy_name: str,
+    default: int,
+    low: int,
+    high: int,
+) -> int:
+    if os.environ.get(primary_name, "").strip():
+        return _parse_positive_int_env(primary_name, default, low, high)
+    return _parse_positive_int_env(legacy_name, default, low, high)
+
+
+def _call_ai_chat(
     messages: list[dict[str, Any]],
     *,
     model: str | None = None,
@@ -621,16 +706,29 @@ def _call_openrouter_chat(
     temperature: float = 0.2,
     max_tokens: int | None = None,
 ) -> tuple[str, str]:
-    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    """Call OpenRouter or any configured OpenAI-compatible chat endpoint."""
+    base_url = _configured_ai_base_url()
+    endpoint_url = _chat_completions_url(base_url)
+    is_openrouter = _is_openrouter_endpoint(base_url)
+    api_key = _configured_ai_api_key(base_url)
     if not api_key:
+        if is_openrouter:
+            detail = "AI_API_KEY or OPENROUTER_API_KEY is not configured on the backend server"
+        else:
+            detail = "AI_API_KEY is not configured for the selected AI endpoint"
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OPENROUTER_API_KEY is not configured on the backend server",
+            detail=detail,
         )
 
-    selected_model = model or _configured_openrouter_model(vision=vision)
-    resolved_max_tokens = max_tokens or _parse_positive_int_env("OPENROUTER_MAX_TOKENS", 700, 100, 1800)
-    timeout_seconds = _parse_positive_int_env("OPENROUTER_TIMEOUT_SECONDS", 45, 5, 120)
+    selected_model = model or _configured_ai_model(vision=vision, base_url=base_url)
+    default_max_tokens = _configured_ai_positive_int(
+        "AI_MAX_TOKENS", "OPENROUTER_MAX_TOKENS", 700, 100, 1800
+    )
+    resolved_max_tokens = max_tokens or default_max_tokens
+    timeout_seconds = _configured_ai_positive_int(
+        "AI_TIMEOUT_SECONDS", "OPENROUTER_TIMEOUT_SECONDS", 45, 5, 120
+    )
     request_body = {
         "model": selected_model,
         "messages": messages,
@@ -638,27 +736,28 @@ def _call_openrouter_chat(
         "max_tokens": resolved_max_tokens,
     }
     request = urllib.request.Request(
-        OPENROUTER_API_URL,
+        endpoint_url,
         data=json.dumps(request_body).encode("utf-8"),
-        headers=_openrouter_headers(api_key),
+        headers=_ai_provider_headers(api_key, base_url),
         method="POST",
     )
 
+    provider_name = "OpenRouter" if is_openrouter else "configured AI provider"
     try:
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             response_payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace")[:800]
-        logger.warning("OpenRouter returned HTTP %s: %s", exc.code, error_body)
+        logger.warning("%s returned HTTP %s: %s", provider_name, exc.code, error_body)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"OpenRouter AI server returned HTTP {exc.code}",
+            detail=f"{provider_name} returned HTTP {exc.code}",
         ) from exc
     except (urllib.error.URLError, TimeoutError, ValueError) as exc:
-        logger.warning("OpenRouter request failed: %s", exc)
+        logger.warning("%s request failed: %s", provider_name, exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="OpenRouter AI server connect nahi ho saka",
+            detail=f"{provider_name} connect nahi ho saka",
         ) from exc
 
     answer = ""
@@ -670,9 +769,11 @@ def _call_openrouter_chat(
     if not answer:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="OpenRouter AI server ne khaali jawab diya",
+            detail=f"{provider_name} ne khaali jawab diya",
         )
-    return answer, selected_model
+
+    served_model = response_payload.get("model") if isinstance(response_payload, dict) else None
+    return answer, str(served_model or selected_model)
 
 
 def _fetch_open_meteo_forecast(latitude: float, longitude: float) -> dict[str, Any]:
@@ -766,10 +867,10 @@ def get_metrics(db_sess: Session = Depends(get_db)):
 @app.post("/api/v2/mandi-ai")
 @app.post("/api/mandi-ai")
 def ask_mandi_ai(payload: MandiAIRequest):
-    """Answer Hindi mandi questions using OpenRouter with official price data.
+    """Answer Hindi mandi questions using verified data and a server-side AI provider.
 
-    The OpenRouter API key is read only from the server environment. It is never
-    accepted from, or returned to, the browser.
+    Provider credentials are read only from the backend environment. They are
+    never accepted from, or returned to, the browser.
     """
     question = (payload.userQuestion or payload.message or "").strip()
     if not question:
@@ -783,8 +884,8 @@ def ask_mandi_ai(payload: MandiAIRequest):
             "data_status": "no_official_records",
         }
 
-    answer, model = _call_openrouter_chat([
-        {"role": "system", "content": _build_openrouter_system_prompt(question, payload.mandiData)},
+    answer, model = _call_ai_chat([
+        {"role": "system", "content": _build_ai_system_prompt(question, payload.mandiData)},
         {"role": "user", "content": question},
     ])
 
@@ -810,7 +911,7 @@ def chat_alias(payload: MandiAIRequest):
 @app.post("/api/v2/ai-tools")
 @app.post("/api/ai-tools")
 def run_smart_ai_tool(payload: SmartAIToolRequest):
-    """Advanced OpenRouter tools: vision, trends, transport, weather and schemes."""
+    """Advanced OpenAI-compatible tools: vision, trends, transport, weather and schemes."""
     action = payload.action
     base_question = (payload.question or "").strip()
     crop = (payload.crop or "").strip()
@@ -825,7 +926,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
             "5) kab expert ya KVK se milna chahiye. Agar image clear nahi hai to clear photo maangien. "
             "Kabhi bhi banned/unsafe chemical ka exact prescription na dein."
         )
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap Hindi bolne wale krishi rog pehchan sahayak hain. Safety-first, practical aur non-alarming answer dein."},
             {"role": "user", "content": [
                 {"type": "text", "text": prompt + (f"\nUser context: {base_question}" if base_question else "")},
@@ -842,7 +943,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
             "Pehle 'JSON:' ke baad ek valid JSON object dein with keys: crop, mandi, date, quantity_quintal, rate_per_quintal, total_amount, fees, party_name, confidence. "
             "Phir 'Summary:' ke baad simple Hindi explanation. Agar field clear nahi hai to null rakhein; guess na karein."
         )
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap OCR aur mandi khata assistant hain. Sirf image me dikh rahe data ko extract karein; uncertain values ko null rakhein."},
             {"role": "user", "content": [
                 {"type": "text", "text": prompt},
@@ -863,7 +964,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
                 "If data is insufficient, say that trend advice is not reliable yet.",
             ],
         }
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap mandi price trend analyst hain. Farmers ko simple Hindi me cautious, data-based advice dein."},
             {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
         ], max_tokens=900)
@@ -895,7 +996,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
             "total_net_gain": round(total_net_gain, 2),
             "question": base_question,
         }
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap mandi transport profit calculator hain. Calculation ko verify karke simple Hindi me final recommendation dein."},
             {"role": "user", "content": json.dumps(calc_context, ensure_ascii=False)},
         ], max_tokens=700)
@@ -917,7 +1018,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
                 "Give practical steps like tarpaulin, drying, storage, transport timing.",
             ],
         }
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap weather + mandi risk warning assistant hain."},
             {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
         ], max_tokens=850)
@@ -934,7 +1035,7 @@ def run_smart_ai_tool(payload: SmartAIToolRequest):
                 "Personal/legal/financial guarantee na dein; step-by-step apply checklist dein.",
             ],
         }
-        answer, model = _call_openrouter_chat([
+        answer, model = _call_ai_chat([
             {"role": "system", "content": "Aap sarkari yojana sahayak hain. Clear Hindi guidance, documents list aur official verification disclaimer dein."},
             {"role": "user", "content": json.dumps(prompt, ensure_ascii=False)},
         ], max_tokens=900)

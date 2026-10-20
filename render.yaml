@@ -26,6 +26,18 @@ services:
         sync: false
       - key: DATA_GOV_RESOURCE_ID
         value: 9ef84268-d588-465a-a308-a864a43d0070
+      - key: AI_API_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: ""
+      - key: AI_VISION_MODEL
+        value: ""
+      - key: AI_TIMEOUT_SECONDS
+        value: "45"
+      - key: AI_MAX_TOKENS
+        value: "700"
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL

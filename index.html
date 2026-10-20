@@ -3185,7 +3185,7 @@
             }
         });
 
-        // ================= OPENROUTER AI MANDI ASSISTANT =================
+        // ================= AI MANDI ASSISTANT =================
         function initializeMandiAIControls() {
             const backendInput = document.getElementById('mandi-ai-backend-url');
             if (backendInput) {
@@ -3346,7 +3346,7 @@
 
             const base = getMandiAIBackendBase();
             if (!base) {
-                appendMandiAIMessage('ai', 'GitHub Pages static hosting par AI chalane ke liye pehle Backend URL save karein. Backend me OPENROUTER_API_KEY environment variable set hona chahiye.', true);
+                appendMandiAIMessage('ai', 'GitHub Pages static hosting par AI chalane ke liye pehle Backend URL save karein. Backend me OpenRouter key (OPENROUTER_API_KEY) ya custom provider key (AI_API_KEY) set hona chahiye.', true);
                 updateMandiAIStatus('Backend URL required', 'error');
                 return;
             }
@@ -3379,8 +3379,9 @@
             } catch (error) {
                 console.error('Mandi AI failed:', error);
                 const message = String(error.message || 'Server connect nahi ho saka');
-                const friendly = message.includes('OPENROUTER_API_KEY')
-                    ? 'Backend me OPENROUTER_API_KEY set nahi hai. Key ko Render/Vercel/Docker environment variable me add karein — frontend me kabhi nahi.'
+                const missingProviderKey = message.includes('AI_API_KEY') || message.includes('OPENROUTER_API_KEY');
+                const friendly = missingProviderKey
+                    ? 'Backend me AI_API_KEY (custom provider) ya OPENROUTER_API_KEY (default OpenRouter) set nahi hai. Key ko Render/Vercel/Docker environment me add karein — frontend me kabhi nahi.'
                     : `AI Server connect nahi ho saka: ${message}`;
                 appendMandiAIMessage('ai', friendly, true);
                 updateMandiAIStatus('AI backend error', 'error');
