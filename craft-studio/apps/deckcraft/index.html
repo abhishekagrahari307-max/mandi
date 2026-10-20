@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeckCraft — Presentations & PPTX Studio</title>
+  <link rel="icon" href="../../assets/icons/deckcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #f07a1e; }
+    .deck-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 205px 1fr 250px; }
+    .slide-rail { background: var(--ui-panel); border-right: 1px solid var(--ui-line); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .slide-mini { padding: 8px; border-radius: 8px; border: 1px solid var(--ui-line); background: #121620; cursor: pointer; }
+    .slide-mini.active { border-color: #f07a1e; background: rgba(240, 122, 30, 0.16); }
+    .deck-stage { display: grid; place-items: center; padding: 24px; background: #0f1219; overflow: auto; }
+    .slide-canvas {
+      width: min(860px, 100%); aspect-ratio: 16 / 9; position: relative; border-radius: 8px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.65); overflow: hidden; padding: 48px 56px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .deck-props { background: var(--ui-panel); border-left: 1px solid var(--ui-line); padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    @media (max-width: 860px) { .deck-body { grid-template-columns: 1fr; } .slide-rail { flex-direction: row; border-right: 0; border-bottom: 1px solid var(--ui-line); } .slide-canvas { padding: 22px; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/deckcraft.png" alt=""> DeckCraft <small style="opacity:.6">PPTX</small></span>
+    <button class="ws-btn primary" id="exportPptxBtn">💾 Export .PPTX</button>
+    <button class="ws-btn" id="presentBtn">▶ Present Fullscreen</button>
+    <span class="ws-sep"></span>
+    <button class="ws-btn" id="addSlideBtn">+ New Slide</button>
+    <button class="ws-btn" id="dupSlideBtn">⧉ Duplicate</button>
+    <button class="ws-btn" id="delSlideBtn">🗑 Delete</button>
+    <span class="ws-sep"></span>
+    <select id="themeSelect" class="ws-select">
+      <option value="midnight">Theme: Midnight Pro</option>
+      <option value="ember">Theme: Solar Ember</option>
+      <option value="emerald">Theme: Emerald Tech</option>
+      <option value="light">Theme: Clean Studio White</option>
+    </select>
+  </div>
+
+  <div class="deck-body">
+    <aside class="slide-rail" id="slideRail"></aside>
+    <main class="deck-stage">
+      <div class="slide-canvas" id="slideCanvas"></div>
+    </main>
+    <aside class="deck-props">
+      <strong style="font-size:12px">Slide Inspector & Speaker Notes</strong>
+      <label>Slide Kicker / Tag
+        <input id="inpTag" class="ws-input" style="width:100%;margin-top:4px">
+      </label>
+      <label>Headline Title
+        <input id="inpTitle" class="ws-input" style="width:100%;margin-top:4px">
+      </label>
+      <label>Key Bullet Points (one per line)
+        <textarea id="inpBody" class="ws-input" style="width:100%;height:130px;padding:8px;margin-top:4px;resize:vertical"></textarea>
+      </label>
+      <label>Speaker Notes
+        <textarea id="inpNotes" class="ws-input" style="width:100%;height:80px;padding:8px;margin-top:4px;resize:vertical"></textarea>
+      </label>
+    </aside>
+  </div>
+
+  <div class="ws-status">
+    <span id="deckStatus">Click directly on slide text or edit in Inspector · Real .PPTX export ready</span>
+    <span id="slideCounter">Slide 1 / 4</span>
+  </div>
+</div>
+
+<script type="module">
+  import { PptxGenJS } from "../../vendor/office.bundle.js";
+
+  const THEMES = {
+    midnight: { bg: "linear-gradient(135deg,#0f172a,#1e293b)", hex: "0F172A", fg: "#f8fafc", sub: "#93c5fd", acc: "#38bdf8" },
+    ember: { bg: "linear-gradient(135deg,#1c100d,#431407)", hex: "2A120A", fg: "#fff7ed", sub: "#fdba74", acc: "#f97316" },
+    emerald: { bg: "linear-gradient(135deg,#062019,#0f3d2e)", hex: "08281E", fg: "#ecfdf5", sub: "#6ee7b7", acc: "#10b981" },
+    light: { bg: "linear-gradient(135deg,#ffffff,#f1f5f9)", hex: "FFFFFF", fg: "#0f172a", sub: "#475569", acc: "#2563eb" }
+  };
+
+  let themeKey = "midnight";
+  let slides = [
+    { tag: "2026 PRODUCT VISION", title: "Next-Generation Creative & Office Suite", body: "100% browser-native editing with instant startup\nZero cloud lock-in — your files stay on your machine\nExports native PowerPoint .pptx presentations", notes: "Open with core value proposition." },
+    { tag: "KEY METRICS", title: "3.4× Faster Workflow Across Teams", body: "Spreadsheets, PSD graphics, PDFs & decks in one tab bar\nSide-by-side Split Screen mode for zero context switching\nWorks across Windows, macOS, Linux, Android & iOS", notes: "Highlight split-screen productivity." },
+    { tag: "ARCHITECTURE", title: "Built on Clean Open Specifications", body: "Standards-compliant OOXML (.xlsx, .docx, .pptx)\nLayered PSD & vector PDF pipeline\nOffline-first local storage & instant export", notes: "Walk through file compatibility." },
+    { tag: "NEXT STEPS", title: "Ready to Launch & Ship Today", body: "Edit any slide right here in DeckCraft\nClick Present Fullscreen to pitch live\nClick Export .PPTX to download PowerPoint file", notes: "Wrap up Q&A." }
+  ];
+  let cur = 0;
+
+  function render() {
+    const t = THEMES[themeKey];
+    const s = slides[cur];
+    document.getElementById("slideRail").innerHTML = slides.map((sl, i) => `
+      <div class="slide-mini ${i === cur ? "active" : ""}" data-idx="${i}">
+        <div class="mono" style="font-size:10px;color:#94a3b8">${i + 1}. ${sl.tag}</div>
+        <div style="font-weight:700;margin-top:3px;font-size:12px">${sl.title}</div>
+      </div>`).join("");
+
+    const cv = document.getElementById("slideCanvas");
+    cv.style.background = t.bg;
+    cv.style.color = t.fg;
+    cv.innerHTML = `
+      <div style="font-family:GeistMonoVar,monospace;font-size:13px;font-weight:700;letter-spacing:.12em;color:${t.acc};margin-bottom:14px">${s.tag}</div>
+      <h1 contenteditable="true" id="liveTitle" style="margin:0 0 22px;font-size:clamp(22px,3.2vw,42px);line-height:1.14;outline:none">${s.title}</h1>
+      <ul style="margin:0;padding-left:22px;font-size:clamp(14px,1.5vw,20px);line-height:1.75;color:${t.sub}">
+        ${s.body.split("\n").filter(Boolean).map((line) => `<li>${line}</li>`).join("")}
+      </ul>`;
+
+    cv.querySelector("#liveTitle").oninput = (e) => { s.title = e.target.textContent; document.getElementById("inpTitle").value = s.title; };
+    document.getElementById("inpTag").value = s.tag;
+    document.getElementById("inpTitle").value = s.title;
+    document.getElementById("inpBody").value = s.body;
+    document.getElementById("inpNotes").value = s.notes;
+    document.getElementById("slideCounter").textContent = `Slide ${cur + 1} / ${slides.length}`;
+  }
+
+  document.getElementById("slideRail").onclick = (e) => {
+    const item = e.target.closest("[data-idx]");
+    if (item) { cur = Number(item.dataset.idx); render(); }
+  };
+  ["Tag", "Title", "Body", "Notes"].forEach((k) => {
+    document.getElementById("inp" + k).oninput = (e) => {
+      slides[cur][k.toLowerCase()] = e.target.value;
+      render();
+    };
+  });
+  document.getElementById("themeSelect").onchange = (e) => { themeKey = e.target.value; render(); };
+  document.getElementById("addSlideBtn").onclick = () => {
+    slides.push({ tag: `SLIDE 0${slides.length + 1}`, title: "New Presentation Slide", body: "First key takeaway\nSecond supporting point", notes: "" });
+    cur = slides.length - 1; render();
+  };
+  document.getElementById("dupSlideBtn").onclick = () => { slides.splice(cur + 1, 0, { ...slides[cur] }); cur++; render(); };
+  document.getElementById("delSlideBtn").onclick = () => { if (slides.length > 1) { slides.splice(cur, 1); cur = Math.max(0, cur - 1); render(); } };
+  document.getElementById("presentBtn").onclick = () => document.getElementById("slideCanvas").requestFullscreen?.();
+
+  document.getElementById("exportPptxBtn").onclick = async () => {
+    const pptx = new PptxGenJS();
+    pptx.layout = "LAYOUT_16x9";
+    const t = THEMES[themeKey];
+    slides.forEach((s) => {
+      const slide = pptx.addSlide();
+      slide.background = { color: t.hex };
+      slide.addText(s.tag, { x: 0.7, y: 0.7, w: 8.5, h: 0.4, fontSize: 12, bold: true, color: t.acc.slice(1) });
+      slide.addText(s.title, { x: 0.7, y: 1.25, w: 8.6, h: 1.1, fontSize: 28, bold: true, color: t.fg.slice(1) });
+      slide.addText(
+        s.body.split("\n").filter(Boolean).map((line) => ({ text: line, options: { bullet: true } })),
+        { x: 0.7, y: 2.55, w: 8.5, h: 2.4, fontSize: 16, color: t.sub.slice(1), lineSpacingMultiple: 1.35 }
+      );
+      if (s.notes) slide.addNotes(s.notes);
+    });
+    await pptx.writeFile({ fileName: "deckcraft-presentation.pptx" });
+    document.getElementById("deckStatus").textContent = "Exported deckcraft-presentation.pptx";
+  };
+
+  render();
+</script>
+</body>
+</html>

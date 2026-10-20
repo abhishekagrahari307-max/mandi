@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GridCraft — Excel Spreadsheet Studio</title>
+  <link rel="icon" href="../../assets/icons/gridcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #1f9d55; }
+    .formula-strip {
+      display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+      background: #151923; border-bottom: 1px solid var(--ui-line);
+    }
+    .name-box { width: 68px; text-align: center; font-weight: 700; }
+    .fx-tag { font-style: italic; font-weight: 800; color: #4fd68a; padding: 0 6px; font-family: Georgia, serif; font-size: 14px; }
+    .fx-input { flex: 1; font-family: "GeistMonoVar", monospace; }
+    .wb-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 310px; }
+    .wb-body.hide-chart { grid-template-columns: 1fr; }
+    .sheet-scroll { overflow: auto; background: #0f131b; position: relative; }
+    table.grid { border-collapse: collapse; table-layout: fixed; user-select: none; }
+    table.grid th, table.grid td {
+      border: 1px solid rgba(255,255,255,0.1); height: 27px; padding: 0 6px;
+      font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    table.grid thead th {
+      position: sticky; top: 0; z-index: 3; background: #1c2230; color: #cbd5e1;
+      font-weight: 700; text-align: center; min-width: 108px; width: 108px; cursor: pointer;
+    }
+    table.grid thead th.corner { left: 0; z-index: 4; min-width: 44px; width: 44px; }
+    table.grid tbody th {
+      position: sticky; left: 0; z-index: 2; background: #1c2230; color: #94a3b8;
+      text-align: center; width: 44px; min-width: 44px; font-family: "GeistMonoVar", monospace; font-size: 11px;
+    }
+    table.grid td { background: #131823; color: #f1f5f9; cursor: cell; }
+    table.grid td.selected { outline: 2px solid #22c55e; outline-offset: -2px; background: rgba(34,197,94,0.1); }
+    table.grid td.in-range { background: rgba(34,197,94,0.14); }
+    .chart-panel {
+      border-left: 1px solid var(--ui-line); background: var(--ui-panel);
+      padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto;
+    }
+    .wb-body.hide-chart .chart-panel { display: none; }
+    .sheet-tabs {
+      height: 32px; background: #151a24; border-top: 1px solid var(--ui-line);
+      display: flex; align-items: center; gap: 5px; padding: 0 10px; overflow-x: auto;
+    }
+    .sheet-tab {
+      height: 24px; padding: 0 12px; border-radius: 5px; border: 1px solid var(--ui-line);
+      background: #1d2331; color: #94a3b8; font-weight: 600; font-size: 11.5px; cursor: pointer;
+    }
+    .sheet-tab.active { background: #1f9d55; border-color: #1f9d55; color: #fff; }
+    .pivot-box { background: #121620; border: 1px solid var(--ui-line); border-radius: 8px; padding: 9px; font-size: 11.5px; }
+    @media (max-width: 860px) { .wb-body { grid-template-columns: 1fr; } .chart-panel { border-left: 0; border-top: 1px solid var(--ui-line); max-height: 240px; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <!-- Ribbon Top Toolbar -->
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/gridcraft.png" alt=""> GridCraft <small style="opacity:.6">XLSX</small></span>
+    <label class="ws-btn">📂 Open .XLSX/.CSV <input id="fileOpen" type="file" accept=".xlsx,.xls,.csv,.tsv" hidden></label>
+    <button class="ws-btn primary" id="exportXlsxBtn">💾 Save .XLSX</button>
+    <button class="ws-btn" id="exportCsvBtn">⬇ .CSV</button>
+    <select class="ws-select" id="templateSelect" title="Load Ready Workbook Template">
+      <option value="">📋 Templates…</option>
+      <option value="sales">Q4 Regional Sales & Profit</option>
+      <option value="gst">GST Tax Invoice (India ₹)</option>
+      <option value="budget">Monthly Household Budget</option>
+    </select>
+    <span class="ws-sep"></span>
+    <button class="ws-btn" id="undoBtn" title="Undo (Ctrl+Z)">↶</button>
+    <button class="ws-btn" id="boldBtn"><b>B</b></button>
+    <button class="ws-btn" id="italicBtn"><i>I</i></button>
+    <select class="ws-select" id="alignSelect">
+      <option value="">Align</option>
+      <option value="left">⬅ Left</option>
+      <option value="center">↔ Center</option>
+      <option value="right">➡ Right</option>
+    </select>
+    <select class="ws-select" id="fmtSelect" title="Number Format">
+      <option value="general">123 General</option>
+      <option value="inr">₹ INR Currency</option>
+      <option value="usd">$ USD Currency</option>
+      <option value="pct">% Percentage</option>
+    </select>
+    <input type="color" id="bgColor" value="#1e3a2f" title="Cell Fill Color">
+    <input type="color" id="fgColor" value="#ffffff" title="Text Color">
+    <span class="ws-sep"></span>
+    <button class="ws-btn" data-fn="SUM">∑ SUM</button>
+    <button class="ws-btn" data-fn="AVERAGE">x̄ AVG</button>
+    <button class="ws-btn" id="sortAscBtn">A→Z</button>
+    <button class="ws-btn" id="sortDescBtn">Z→A</button>
+    <button class="ws-btn active" id="toggleChartBtn">📊 Chart & Pivot</button>
+  </div>
+
+  <!-- Formula Bar -->
+  <div class="formula-strip">
+    <input id="nameBox" class="ws-input name-box mono" value="A1" readonly>
+    <span class="fx-tag">fx</span>
+    <input id="formulaInput" class="ws-input fx-input" placeholder="Enter value or formula: =SUM(B2:B6), =AVERAGE(C2:C6), =B2*C2, =IF(D2>50000,'High','OK')">
+    <button class="ws-btn" id="addRowBtn">+ Rows</button>
+  </div>
+
+  <!-- Main Grid + Live Chart & Pivot Inspector -->
+  <div class="wb-body" id="wbBody">
+    <div class="sheet-scroll">
+      <table class="grid" id="sheetTable"></table>
+    </div>
+    <aside class="chart-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:13px">📊 Live Workbook Insights</strong>
+        <select id="chartType" class="ws-select">
+          <option value="bar">Bar Chart</option>
+          <option value="line">Trend Line</option>
+          <option value="pie">Share Donut</option>
+        </select>
+      </div>
+      <canvas id="chartCanvas" width="284" height="195" style="width:100%;background:#111520;border-radius:8px;border:1px solid var(--ui-line)"></canvas>
+      <div class="pivot-box" id="selectionStats"></div>
+      <div class="pivot-box" id="pivotSummary"></div>
+    </aside>
+  </div>
+
+  <!-- Multi-Sheet Tabs -->
+  <div class="sheet-tabs" id="sheetTabs"></div>
+
+  <!-- Status Bar -->
+  <div class="ws-status">
+    <span id="statusLeft">Ready — Double-click or type to edit cells · Formulas recalculate live</span>
+    <span id="statusRight">SUM: 0 · AVG: 0 · COUNT: 0</span>
+  </div>
+</div>
+
+<script type="module">
+  import { XLSX } from "../../vendor/xlsx.bundle.js";
+
+  const COLS = 14;
+  let ROWS = 32;
+  const colName = (c) => String.fromCharCode(65 + c);
+  const cellKey = (r, c) => `${colName(c)}${r + 1}`;
+  const parseRef = (ref) => {
+    const m = /^([A-Z]+)(\d+)$/i.exec(ref.trim());
+    if (!m) return null;
+    return { c: m[1].toUpperCase().charCodeAt(0) - 65, r: parseInt(m[2], 10) - 1 };
+  };
+
+  const TEMPLATES = {
+    sales: {
+      name: "Q4_Sales",
+      cells: {
+        A1:{v:"Category",b:1,bg:"#18392b"}, B1:{v:"Units",b:1,bg:"#18392b",al:"right"}, C1:{v:"Unit Price",b:1,bg:"#18392b",al:"right"},
+        D1:{v:"Revenue",b:1,bg:"#18392b",al:"right"}, E1:{v:"Cost",b:1,bg:"#18392b",al:"right"}, F1:{v:"Net Profit",b:1,bg:"#18392b",al:"right"}, G1:{v:"Status",b:1,bg:"#18392b"},
+        A2:{v:"Laptops Pro"}, B2:{v:"48"}, C2:{v:"62500",fmt:"inr"}, D2:{v:"=B2*C2",fmt:"inr"}, E2:{v:"2340000",fmt:"inr"}, F2:{v:"=D2-E2",fmt:"inr"}, G2:{v:'=IF(F2>500000,"Star","Steady")'},
+        A3:{v:"Workstations"}, B3:{v:"26"}, C3:{v:"94000",fmt:"inr"}, D3:{v:"=B3*C3",fmt:"inr"}, E3:{v:"1820000",fmt:"inr"}, F3:{v:"=D3-E3",fmt:"inr"}, G3:{v:'=IF(F3>500000,"Star","Steady")'},
+        A4:{v:"4K Monitors"}, B4:{v:"85"}, C4:{v:"24500",fmt:"inr"}, D4:{v:"=B4*C4",fmt:"inr"}, E4:{v:"1490000",fmt:"inr"}, F4:{v:"=D4-E4",fmt:"inr"}, G4:{v:'=IF(F4>500000,"Star","Steady")'},
+        A5:{v:"Tablets & Pen"}, B5:{v:"112"}, C5:{v:"19800",fmt:"inr"}, D5:{v:"=B5*C5",fmt:"inr"}, E5:{v:"1610000",fmt:"inr"}, F5:{v:"=D5-E5",fmt:"inr"}, G5:{v:'=IF(F5>500000,"Star","Steady")'},
+        A6:{v:"Cloud Licenses"}, B6:{v:"310"}, C6:{v:"6800",fmt:"inr"}, D6:{v:"=B6*C6",fmt:"inr"}, E6:{v:"620000",fmt:"inr"}, F6:{v:"=D6-E6",fmt:"inr"}, G6:{v:'=IF(F6>500000,"Star","Steady")'},
+        A7:{v:"TOTAL / SUMMARY",b:1,bg:"#1e293b"}, B7:{v:"=SUM(B2:B6)",b:1,bg:"#1e293b"}, C7:{v:"=AVERAGE(C2:C6)",b:1,fmt:"inr",bg:"#1e293b"},
+        D7:{v:"=SUM(D2:D6)",b:1,fmt:"inr",bg:"#1e293b"}, E7:{v:"=SUM(E2:E6)",b:1,fmt:"inr",bg:"#1e293b"}, F7:{v:"=SUM(F2:F6)",b:1,fmt:"inr",bg:"#1e293b",fg:"#4fd68a"}
+      }
+    },
+    gst: {
+      name: "GST_Invoice",
+      cells: {
+        A1:{v:"Item Description",b:1,bg:"#1e3a5f"}, B1:{v:"HSN",b:1,bg:"#1e3a5f"}, C1:{v:"Qty",b:1,bg:"#1e3a5f"},
+        D1:{v:"Rate (₹)",b:1,bg:"#1e3a5f"}, E1:{v:"Taxable Amt",b:1,bg:"#1e3a5f"}, F1:{v:"GST 18%",b:1,bg:"#1e3a5f"}, G1:{v:"Line Total",b:1,bg:"#1e3a5f"},
+        A2:{v:"Solar Inverter 5kW"}, B2:{v:"8504"}, C2:{v:"4"}, D2:{v:"38500",fmt:"inr"}, E2:{v:"=C2*D2",fmt:"inr"}, F2:{v:"=E2*0.18",fmt:"inr"}, G2:{v:"=E2+F2",fmt:"inr"},
+        A3:{v:"LiFePO4 Battery Pack"}, B3:{v:"8507"}, C3:{v:"8"}, D3:{v:"26000",fmt:"inr"}, E3:{v:"=C3*D3",fmt:"inr"}, F3:{v:"=E3*0.18",fmt:"inr"}, G3:{v:"=E3+F3",fmt:"inr"},
+        A4:{v:"Mono Perc Panels"}, B4:{v:"8541"}, C4:{v:"20"}, D4:{v:"11200",fmt:"inr"}, E4:{v:"=C4*D4",fmt:"inr"}, F4:{v:"=E4*0.18",fmt:"inr"}, G4:{v:"=E4+F4",fmt:"inr"},
+        A5:{v:"GRAND TOTAL",b:1,bg:"#1e293b"}, E5:{v:"=SUM(E2:E4)",b:1,fmt:"inr",bg:"#1e293b"}, F5:{v:"=SUM(F2:F4)",b:1,fmt:"inr",bg:"#1e293b"}, G5:{v:"=SUM(G2:G4)",b:1,fmt:"inr",bg:"#1e293b",fg:"#4fd68a"}
+      }
+    },
+    budget: {
+      name: "Monthly_Budget",
+      cells: {
+        A1:{v:"Expense Head",b:1,bg:"#3b1f47"}, B1:{v:"Planned",b:1,bg:"#3b1f47"}, C1:{v:"Actual",b:1,bg:"#3b1f47"}, D1:{v:"Variance",b:1,bg:"#3b1f47"},
+        A2:{v:"Housing & Utilities"}, B2:{v:"22000",fmt:"inr"}, C2:{v:"21400",fmt:"inr"}, D2:{v:"=B2-C2",fmt:"inr"},
+        A3:{v:"Groceries & Fresh"}, B3:{v:"14000",fmt:"inr"}, C3:{v:"13250",fmt:"inr"}, D3:{v:"=B3-C3",fmt:"inr"},
+        A4:{v:"Transport & Fuel"}, B4:{v:"6500",fmt:"inr"}, C4:{v:"5900",fmt:"inr"}, D4:{v:"=B4-C4",fmt:"inr"},
+        A5:{v:"SIP Investments"}, B5:{v:"25000",fmt:"inr"}, C5:{v:"25000",fmt:"inr"}, D5:{v:"=B5-C5",fmt:"inr"},
+        A6:{v:"Total Monthly",b:1}, B6:{v:"=SUM(B2:B5)",b:1,fmt:"inr"}, C6:{v:"=SUM(C2:C5)",b:1,fmt:"inr"}, D6:{v:"=SUM(D2:D5)",b:1,fmt:"inr",fg:"#4fd68a"}
+      }
+    }
+  };
+
+  let sheets = [
+    JSON.parse(JSON.stringify(TEMPLATES.sales)),
+    JSON.parse(JSON.stringify(TEMPLATES.gst)),
+    JSON.parse(JSON.stringify(TEMPLATES.budget))
+  ];
+  let activeSheet = 0;
+  let sel = { r: 1, c: 3, r2: 5, c2: 3 };
+  let dragging = false;
+  let history = [];
+
+  const curCells = () => sheets[activeSheet].cells;
+  const snapshot = () => {
+    history.push(JSON.stringify(sheets));
+    if (history.length > 40) history.shift();
+  };
+
+  function expandRange(a, b, depth) {
+    const p1 = parseRef(a), p2 = parseRef(b);
+    if (!p1 || !p2) return [];
+    const vals = [];
+    for (let r = Math.min(p1.r, p2.r); r <= Math.max(p1.r, p2.r); r++) {
+      for (let c = Math.min(p1.c, p2.c); c <= Math.max(p1.c, p2.c); c++) {
+        const v = evalCell(cellKey(r, c), depth + 1);
+        const n = Number(v);
+        if (!Number.isNaN(n) && v !== "") vals.push(n);
+      }
+    }
+    return vals;
+  }
+
+  function evalCell(key, depth = 0) {
+    if (depth > 16) return "#REF!";
+    const cell = curCells()[key];
+    if (!cell || cell.v === undefined || cell.v === "") return "";
+    const raw = String(cell.v);
+    if (!raw.startsWith("=")) {
+      const n = Number(raw);
+      return !Number.isNaN(n) && raw.trim() !== "" ? n : raw;
+    }
+    let expr = raw.slice(1).trim();
+
+    // IF(cond, "yes", "no")
+    const ifMatch = /^IF\(([^,]+),([^,]+),([^)]+)\)$/i.exec(expr);
+    if (ifMatch) {
+      try {
+        const condExpr = replaceRefs(ifMatch[1], depth);
+        const ok = Function(`"use strict"; return Boolean(${condExpr});`)();
+        const branch = (ok ? ifMatch[2] : ifMatch[3]).trim();
+        if (/^["'].*["']$/.test(branch)) return branch.slice(1, -1);
+        const res = evalFormulaExpr(branch, depth);
+        return res;
+      } catch {
+        return "#ERR";
+      }
+    }
+    return evalFormulaExpr(expr, depth);
+  }
+
+  function replaceRefs(str, depth) {
+    let s = str.replace(/\b(SUM|AVERAGE|AVG|MIN|MAX|COUNT)\(([A-Z]+\d+):([A-Z]+\d+)\)/gi, (_, fn, a, b) => {
+      const nums = expandRange(a, b, depth);
+      const u = fn.toUpperCase();
+      if (u === "COUNT") return nums.length;
+      if (!nums.length) return 0;
+      const sum = nums.reduce((x, y) => x + y, 0);
+      if (u === "SUM") return sum;
+      if (u === "AVERAGE" || u === "AVG") return sum / nums.length;
+      if (u === "MIN") return Math.min(...nums);
+      if (u === "MAX") return Math.max(...nums);
+      return 0;
+    });
+    s = s.replace(/\bROUND\(([^,]+),(\d+)\)/gi, (_, inner, dec) => {
+      const v = evalFormulaExpr(inner, depth);
+      return Number(v).toFixed(Number(dec));
+    });
+    s = s.replace(/\b([A-Z]+\d+)\b/gi, (ref) => {
+      const v = evalCell(ref.toUpperCase(), depth + 1);
+      return typeof v === "number" ? v : v === "" ? 0 : JSON.stringify(v);
+    });
+    return s;
+  }
+
+  function evalFormulaExpr(expr, depth) {
+    try {
+      const clean = replaceRefs(expr, depth);
+      const out = Function(`"use strict"; return (${clean});`)();
+      return typeof out === "number" && Number.isFinite(out) ? Math.round(out * 100) / 100 : out;
+    } catch {
+      return "#ERR";
+    }
+  }
+
+  function formatDisplay(val, cell) {
+    if (val === "" || val === undefined) return "";
+    if (typeof val === "number") {
+      if (cell?.fmt === "inr") return "₹" + val.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+      if (cell?.fmt === "usd") return "$" + val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (cell?.fmt === "pct") return (val * 100).toFixed(1) + "%";
+      return val.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+    }
+    return String(val);
+  }
+
+  function renderTable() {
+    const tbl = document.getElementById("sheetTable");
+    let thead = '<thead><tr><th class="corner"></th>';
+    for (let c = 0; c < COLS; c++) thead += `<th data-col="${c}">${colName(c)}</th>`;
+    thead += "</tr></thead><tbody>";
+
+    const rMin = Math.min(sel.r, sel.r2), rMax = Math.max(sel.r, sel.r2);
+    const cMin = Math.min(sel.c, sel.c2), cMax = Math.max(sel.c, sel.c2);
+
+    for (let r = 0; r < ROWS; r++) {
+      thead += `<tr><th>${r + 1}</th>`;
+      for (let c = 0; c < COLS; c++) {
+        const key = cellKey(r, c);
+        const cell = curCells()[key];
+        const val = evalCell(key);
+        const isPrimary = r === sel.r && c === sel.c;
+        const inRange = r >= rMin && r <= rMax && c >= cMin && c <= cMax;
+        const cls = isPrimary ? "selected" : inRange ? "in-range" : "";
+        const align = cell?.al || (typeof val === "number" ? "right" : "left");
+        const styles = [
+          `text-align:${align}`,
+          cell?.b ? "font-weight:700" : "",
+          cell?.i ? "font-style:italic" : "",
+          cell?.bg ? `background:${cell.bg}` : "",
+          cell?.fg ? `color:${cell.fg}` : ""
+        ].filter(Boolean).join(";");
+        thead += `<td class="${cls}" data-r="${r}" data-c="${c}" style="${styles}">${formatDisplay(val, cell)}</td>`;
+      }
+      thead += "</tr>";
+    }
+    thead += "</tbody>";
+    tbl.innerHTML = thead;
+
+    const activeKey = cellKey(sel.r, sel.c);
+    document.getElementById("nameBox").value = activeKey;
+    document.getElementById("formulaInput").value = curCells()[activeKey]?.v ?? "";
+    renderTabs();
+    renderInsights();
+  }
+
+  function renderTabs() {
+    const wrap = document.getElementById("sheetTabs");
+    wrap.innerHTML =
+      sheets.map((s, idx) => `<button class="sheet-tab ${idx === activeSheet ? "active" : ""}" data-tab="${idx}">${s.name}</button>`).join("") +
+      `<button class="ws-btn" id="newSheetBtn" style="height:24px">+ Sheet</button>`;
+  }
+
+  function renderInsights() {
+    // Selection aggregate metrics
+    const nums = [];
+    const rMin = Math.min(sel.r, sel.r2), rMax = Math.max(sel.r, sel.r2);
+    const cMin = Math.min(sel.c, sel.c2), cMax = Math.max(sel.c, sel.c2);
+    for (let r = rMin; r <= rMax; r++) {
+      for (let c = cMin; c <= cMax; c++) {
+        const v = evalCell(cellKey(r, c));
+        if (typeof v === "number") nums.push(v);
+      }
+    }
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const avg = nums.length ? sum / nums.length : 0;
+    const summaryText = `SUM: ${sum.toLocaleString("en-IN", { maximumFractionDigits: 2 })} · AVG: ${avg.toLocaleString("en-IN", { maximumFractionDigits: 2 })} · COUNT: ${nums.length}`;
+    document.getElementById("statusRight").textContent = summaryText;
+    document.getElementById("selectionStats").innerHTML =
+      `<strong>Selection (${cellKey(rMin, cMin)}:${cellKey(rMax, cMax)})</strong><div class="mono" style="margin-top:5px;color:#4fd68a">${summaryText}</div>`;
+
+    // Extract label/value series from rows 2..N for live chart + pivot summary
+    const labels = [], values = [];
+    for (let r = 1; r < ROWS; r++) {
+      const lbl = evalCell(cellKey(r, 0));
+      if (!lbl || String(lbl).toUpperCase().includes("TOTAL")) continue;
+      // Pick first numeric column among D, E, F, B, C
+      let num = null;
+      for (const colIdx of [3, 5, 4, 2, 1]) {
+        const candidate = evalCell(cellKey(r, colIdx));
+        if (typeof candidate === "number") { num = candidate; break; }
+      }
+      if (num !== null) { labels.push(String(lbl).slice(0, 12)); values.push(num); }
+    }
+
+    const cv = document.getElementById("chartCanvas");
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const palette = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#14b8a6", "#a855f7"];
+    const type = document.getElementById("chartType").value;
+
+    if (values.length) {
+      const maxV = Math.max(...values, 1);
+      if (type === "pie") {
+        const total = values.reduce((a, b) => a + Math.max(0, b), 0) || 1;
+        let angle = -Math.PI / 2;
+        values.forEach((v, i) => {
+          const slice = (Math.max(0, v) / total) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(95, 98);
+          ctx.arc(95, 98, 68, angle, angle + slice);
+          ctx.fillStyle = palette[i % palette.length];
+          ctx.fill();
+          ctx.fillStyle = "#cbd5e1";
+          ctx.font = "11px sans-serif";
+          ctx.fillText(`${labels[i]} (${Math.round((v / total) * 100)}%)`, 176, 36 + i * 24);
+          angle += slice;
+        });
+        ctx.beginPath(); ctx.arc(95, 98, 34, 0, Math.PI * 2); ctx.fillStyle = "#111520"; ctx.fill();
+      } else if (type === "line") {
+        ctx.strokeStyle = "#22c55e"; ctx.lineWidth = 2.5; ctx.beginPath();
+        values.forEach((v, i) => {
+          const x = 28 + (i * (cv.width - 56)) / Math.max(values.length - 1, 1);
+          const y = 162 - (v / maxV) * 130;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        values.forEach((v, i) => {
+          const x = 28 + (i * (cv.width - 56)) / Math.max(values.length - 1, 1);
+          const y = 162 - (v / maxV) * 130;
+          ctx.fillStyle = "#4fd68a"; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#94a3b8"; ctx.font = "10px sans-serif"; ctx.fillText(labels[i].slice(0, 7), x - 16, 182);
+        });
+      } else {
+        const bw = Math.min(34, (cv.width - 40) / values.length - 8);
+        values.forEach((v, i) => {
+          const x = 22 + i * ((cv.width - 36) / values.length);
+          const h = Math.max(4, (v / maxV) * 132);
+          ctx.fillStyle = palette[i % palette.length];
+          ctx.fillRect(x, 162 - h, bw, h);
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "10px sans-serif";
+          ctx.fillText(labels[i].slice(0, 6), x, 180);
+        });
+      }
+      document.getElementById("pivotSummary").innerHTML =
+        `<strong>Pivot Breakdown (${labels.length} rows)</strong>` +
+        labels.map((l, i) => `<div style="display:flex;justify-content:space-between;margin-top:4px"><span>${l}</span><span class="mono">${values[i].toLocaleString("en-IN")}</span></div>`).join("");
+    }
+  }
+
+  function startInlineEdit(td, initialChar = null) {
+    const r = Number(td.dataset.r), c = Number(td.dataset.c);
+    const key = cellKey(r, c);
+    const inp = document.createElement("input");
+    inp.style.cssText = "width:100%;height:100%;border:0;outline:none;background:#0b1320;color:#fff;font-size:12.5px;font-family:inherit";
+    inp.value = initialChar !== null ? initialChar : (curCells()[key]?.v ?? "");
+    td.textContent = "";
+    td.appendChild(inp);
+    inp.focus();
+    const commit = () => {
+      snapshot();
+      curCells()[key] = { ...(curCells()[key] || {}), v: inp.value };
+      renderTable();
+    };
+    inp.addEventListener("blur", commit, { once: true });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); sel.r = sel.r2 = Math.min(ROWS - 1, r + 1); inp.blur(); }
+      if (e.key === "Tab") { e.preventDefault(); sel.c = sel.c2 = Math.min(COLS - 1, c + 1); inp.blur(); }
+      if (e.key === "Escape") { renderTable(); }
+    });
+  }
+
+  document.getElementById("sheetTable").addEventListener("mousedown", (e) => {
+    const td = e.target.closest("td[data-r]");
+    if (!td) return;
+    dragging = true;
+    sel.r = sel.r2 = Number(td.dataset.r);
+    sel.c = sel.c2 = Number(td.dataset.c);
+    renderTable();
+  });
+  document.getElementById("sheetTable").addEventListener("mouseover", (e) => {
+    if (!dragging) return;
+    const td = e.target.closest("td[data-r]");
+    if (!td) return;
+    sel.r2 = Number(td.dataset.r);
+    sel.c2 = Number(td.dataset.c);
+    renderTable();
+  });
+  window.addEventListener("mouseup", () => { dragging = false; });
+
+  document.getElementById("sheetTable").addEventListener("dblclick", (e) => {
+    const td = e.target.closest("td[data-r]");
+    if (td) startInlineEdit(td);
+  });
+
+  document.getElementById("formulaInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      snapshot();
+      const key = cellKey(sel.r, sel.c);
+      curCells()[key] = { ...(curCells()[key] || {}), v: e.target.value };
+      renderTable();
+    }
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT") return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      if (history.length) { sheets = JSON.parse(history.pop()); renderTable(); }
+      return;
+    }
+    if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      e.preventDefault();
+      if (e.key === "ArrowDown") sel.r = Math.min(ROWS - 1, sel.r + 1);
+      if (e.key === "ArrowUp") sel.r = Math.max(0, sel.r - 1);
+      if (e.key === "ArrowRight") sel.c = Math.min(COLS - 1, sel.c + 1);
+      if (e.key === "ArrowLeft") sel.c = Math.max(0, sel.c - 1);
+      sel.r2 = sel.r; sel.c2 = sel.c;
+      renderTable();
+      return;
+    }
+    if (e.key === "Delete" || e.key === "Backspace") {
+      snapshot();
+      for (let r = Math.min(sel.r, sel.r2); r <= Math.max(sel.r, sel.r2); r++)
+        for (let c = Math.min(sel.c, sel.c2); c <= Math.max(sel.c, sel.c2); c++)
+          if (curCells()[cellKey(r, c)]) curCells()[cellKey(r, c)].v = "";
+      renderTable();
+      return;
+    }
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      const td = document.querySelector(`td[data-r="${sel.r}"][data-c="${sel.c}"]`);
+      if (td) startInlineEdit(td, e.key);
+    }
+  });
+
+  function styleSelection(mutator) {
+    snapshot();
+    for (let r = Math.min(sel.r, sel.r2); r <= Math.max(sel.r, sel.r2); r++) {
+      for (let c = Math.min(sel.c, sel.c2); c <= Math.max(sel.c, sel.c2); c++) {
+        const k = cellKey(r, c);
+        curCells()[k] = curCells()[k] || { v: "" };
+        mutator(curCells()[k]);
+      }
+    }
+    renderTable();
+  }
+
+  document.getElementById("boldBtn").onclick = () => styleSelection((c) => { c.b = c.b ? 0 : 1; });
+  document.getElementById("italicBtn").onclick = () => styleSelection((c) => { c.i = c.i ? 0 : 1; });
+  document.getElementById("alignSelect").onchange = (e) => { if (e.target.value) styleSelection((c) => { c.al = e.target.value; }); };
+  document.getElementById("fmtSelect").onchange = (e) => styleSelection((c) => { c.fmt = e.target.value; });
+  document.getElementById("bgColor").oninput = (e) => styleSelection((c) => { c.bg = e.target.value; });
+  document.getElementById("fgColor").oninput = (e) => styleSelection((c) => { c.fg = e.target.value; });
+  document.getElementById("undoBtn").onclick = () => { if (history.length) { sheets = JSON.parse(history.pop()); renderTable(); } };
+  document.getElementById("addRowBtn").onclick = () => { ROWS += 20; renderTable(); };
+  document.getElementById("chartType").onchange = renderInsights;
+  document.getElementById("toggleChartBtn").onclick = (e) => {
+    document.getElementById("wbBody").classList.toggle("hide-chart");
+    e.currentTarget.classList.toggle("active");
+  };
+
+  document.querySelectorAll("[data-fn]").forEach((btn) => {
+    btn.onclick = () => {
+      const fn = btn.dataset.fn;
+      const topR = Math.max(0, sel.r - 5), botR = Math.max(0, sel.r - 1);
+      snapshot();
+      const k = cellKey(sel.r, sel.c);
+      curCells()[k] = { ...(curCells()[k] || {}), v: `=${fn}(${cellKey(topR, sel.c)}:${cellKey(botR, sel.c)})`, b: 1 };
+      renderTable();
+    };
+  });
+
+  function sortByActiveCol(asc = true) {
+    snapshot();
+    const rows = [];
+    for (let r = 1; r < ROWS; r++) {
+      const rowObj = {};
+      let nonEmpty = false;
+      for (let c = 0; c < COLS; c++) {
+        const cell = curCells()[cellKey(r, c)];
+        if (cell?.v) nonEmpty = true;
+        rowObj[c] = cell ? { ...cell } : null;
+      }
+      if (nonEmpty) rows.push({ r, sortVal: evalCell(cellKey(r, sel.c)), rowObj });
+    }
+    rows.sort((a, b) => {
+      if (typeof a.sortVal === "number" && typeof b.sortVal === "number") return asc ? a.sortVal - b.sortVal : b.sortVal - a.sortVal;
+      return asc ? String(a.sortVal).localeCompare(String(b.sortVal)) : String(b.sortVal).localeCompare(String(a.sortVal));
+    });
+    for (let r = 1; r < ROWS; r++) for (let c = 0; c < COLS; c++) delete curCells()[cellKey(r, c)];
+    rows.forEach((item, idx) => {
+      for (let c = 0; c < COLS; c++) if (item.rowObj[c]) curCells()[cellKey(idx + 1, c)] = item.rowObj[c];
+    });
+    renderTable();
+  }
+  document.getElementById("sortAscBtn").onclick = () => sortByActiveCol(true);
+  document.getElementById("sortDescBtn").onclick = () => sortByActiveCol(false);
+
+  document.getElementById("templateSelect").onchange = (e) => {
+    const t = TEMPLATES[e.target.value];
+    if (!t) return;
+    snapshot();
+    sheets[activeSheet] = JSON.parse(JSON.stringify(t));
+    e.target.value = "";
+    renderTable();
+  };
+
+  document.getElementById("sheetTabs").addEventListener("click", (e) => {
+    if (e.target.id === "newSheetBtn") {
+      sheets.push({ name: `Sheet${sheets.length + 1}`, cells: {} });
+      activeSheet = sheets.length - 1;
+      renderTable();
+      return;
+    }
+    const tb = e.target.closest("[data-tab]");
+    if (tb) { activeSheet = Number(tb.dataset.tab); renderTable(); }
+  });
+
+  // Real binary .XLSX / .CSV Import & Export via SheetJS
+  document.getElementById("fileOpen").onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { cellFormula: true });
+    sheets = wb.SheetNames.map((name) => {
+      const ws = wb.Sheets[name];
+      const cells = {};
+      const range = XLSX.utils.decode_range(ws["!ref"] || "A1:N32");
+      ROWS = Math.max(ROWS, range.e.r + 5);
+      for (let r = range.s.r; r <= range.e.r; r++) {
+        for (let c = range.s.c; c <= Math.min(range.e.c, COLS - 1); c++) {
+          const addr = XLSX.utils.encode_cell({ r, c });
+          const item = ws[addr];
+          if (item) cells[cellKey(r, c)] = { v: item.f ? `=${item.f}` : String(item.v ?? "") };
+        }
+      }
+      return { name, cells };
+    });
+    activeSheet = 0;
+    document.getElementById("statusLeft").textContent = `Opened ${file.name} (${sheets.length} sheet(s))`;
+    renderTable();
+  };
+
+  function buildWorkbook() {
+    const wb = XLSX.utils.book_new();
+    sheets.forEach((sh) => {
+      const aoa = [];
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          const prev = activeSheet;
+          activeSheet = sheets.indexOf(sh);
+          const v = evalCell(cellKey(r, c));
+          activeSheet = prev;
+          row.push(v);
+        }
+        aoa.push(row);
+      }
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      Object.entries(sh.cells).forEach(([k, cell]) => {
+        if (String(cell.v || "").startsWith("=") && ws[k]) ws[k].f = String(cell.v).slice(1);
+      });
+      XLSX.utils.book_append_sheet(wb, ws, sh.name.slice(0, 31));
+    });
+    return wb;
+  }
+
+  document.getElementById("exportXlsxBtn").onclick = () => {
+    XLSX.writeFile(buildWorkbook(), `${sheets[activeSheet].name}.xlsx`);
+    document.getElementById("statusLeft").textContent = `Saved ${sheets[activeSheet].name}.xlsx`;
+  };
+  document.getElementById("exportCsvBtn").onclick = () => {
+    const wb = buildWorkbook();
+    const csv = XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[activeSheet]]);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = `${sheets[activeSheet].name}.csv`;
+    a.click();
+  };
+
+  renderTable();
+</script>
+</body>
+</html>

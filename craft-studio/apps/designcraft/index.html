@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DesignCraft — Print Spread & Page Layout Studio</title>
+  <link rel="icon" href="../../assets/icons/designcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #7bb51c; }
+    .dtp-stage { flex: 1; overflow: auto; padding: 28px; display: grid; place-items: center; background: #12151c; }
+    .spread {
+      display: grid; grid-template-columns: 1fr 1fr; width: min(980px, 100%); min-height: 620px;
+      background: #faf9f6; color: #18181b; box-shadow: 0 24px 65px rgba(0,0,0,0.65); position: relative;
+    }
+    .spread.show-guides .spread-page {
+      background-image: linear-gradient(to right, rgba(123,181,28,0.14) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(59,130,246,0.1) 1px, transparent 1px);
+      background-size: 33.33% 24px;
+    }
+    .spread-page { padding: 44px 42px; border-right: 1px solid #d4d4d8; display: flex; flex-direction: column; gap: 16px; outline: none; }
+    .spread-page:last-child { border-right: 0; }
+    .crop-marks::before, .crop-marks::after {
+      content: "╋ BLEED 3MM"; position: absolute; font-family: monospace; font-size: 9px; color: #ef4444;
+    }
+    .crop-marks::before { top: -16px; left: 0; }
+    .crop-marks::after { bottom: -16px; right: 0; }
+    @media print { .ws-menubar, .ws-status { display: none !important; } .dtp-stage { padding: 0; background: #fff; } .spread { box-shadow: none; } }
+    @media (max-width: 780px) { .spread { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/designcraft.png" alt=""> DesignCraft <small style="opacity:.6">PRINT / DTP</small></span>
+    <button class="ws-btn primary" id="exportPrintPdf">💾 Export Print PDF</button>
+    <button class="ws-btn active" id="guidesBtn">⊞ Baseline & Column Grid</button>
+    <button class="ws-btn active" id="bleedBtn">✂ Crop & Bleed Marks</button>
+    <select id="colsSelect" class="ws-select">
+      <option value="1">1 Story Column</option>
+      <option value="2" selected>2 Magazine Columns</option>
+      <option value="3">3 Newspaper Columns</option>
+    </select>
+    <label class="ws-btn">🖼 Replace Hero Photo <input id="heroInput" type="file" accept="image/*" hidden></label>
+  </div>
+
+  <main class="dtp-stage">
+    <div class="spread show-guides crop-marks" id="spreadRoot">
+      <section class="spread-page" contenteditable="true">
+        <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#65a30d;font-weight:800">ISSUE 14 · EDITORIAL FEATURE</div>
+        <h1 style="font-size:38px;line-height:1.05;margin:0;font-family:Georgia,serif">The Craft of Modern Digital Publishing</h1>
+        <img id="spreadImg" src="../../assets/screenshots/designcraft/spread.jpg" alt="" style="width:100%;height:230px;object-fit:cover;border-radius:4px">
+        <p style="font-size:13.5px;line-height:1.65;color:#3f3f46;margin:0">Edit any headline, pull-quote, caption or multi-column story directly on the facing spread. Toggle baseline grids and 3mm printer bleed marks above.</p>
+      </section>
+      <section class="spread-page" contenteditable="true">
+        <div id="multiCols" style="column-count:2;column-gap:22px;font-size:13px;line-height:1.72;text-align:justify;color:#27272a">
+          <p style="margin-top:0"><b>PRECISION TYPOGRAPHY.</b> Facing-page layouts balance negative space, optical margins, running headers, and crisp serif body copy across columns without widows or orphans.</p>
+          <p>Click anywhere inside these columns to write your brochure, magazine feature, annual report, or product catalog, replace the photography with any high-resolution local image, and export straight to print-ready vector PDF.</p>
+          <blockquote style="margin:14px 0;padding:10px 14px;border-left:3px solid #65a30d;font-family:Georgia,serif;font-style:italic;font-size:15px">“Great page design turns complex ideas into effortless reading.”</blockquote>
+          <p>Switch column counts dynamically between single book layout, twin magazine columns, and three-column broadsheet style.</p>
+        </div>
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #e4e4e7;display:flex;justify-content:space-between;font-size:11px;color:#71717a">
+          <span>DESIGNCRAFT STUDIO</span><span>FOLIO 02 — 03</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="ws-status">
+    <span>Facing-Page Spread · CMYK Print Safe Margins</span>
+    <span class="mono">420 × 297 mm Spread (A4 × 2)</span>
+  </div>
+</div>
+
+<script type="module">
+  import { PDFLib } from "../../vendor/pdf.bundle.js";
+  const sp = document.getElementById("spreadRoot");
+  document.getElementById("guidesBtn").onclick = (e) => { sp.classList.toggle("show-guides"); e.currentTarget.classList.toggle("active"); };
+  document.getElementById("bleedBtn").onclick = (e) => { sp.classList.toggle("crop-marks"); e.currentTarget.classList.toggle("active"); };
+  document.getElementById("colsSelect").onchange = (e) => { document.getElementById("multiCols").style.columnCount = e.target.value; };
+  document.getElementById("heroInput").onchange = (e) => {
+    const f = e.target.files[0];
+    if (f) document.getElementById("spreadImg").src = URL.createObjectURL(f);
+  };
+  document.getElementById("exportPrintPdf").onclick = async () => {
+    const doc = await PDFLib.PDFDocument.create();
+    const serif = await doc.embedFont(PDFLib.StandardFonts.TimesRomanBold);
+    const bodyFont = await doc.embedFont(PDFLib.StandardFonts.TimesRoman);
+    const p = doc.addPage([842, 595]);
+    const title = sp.querySelector("h1")?.innerText || "Editorial Spread";
+    const story = document.getElementById("multiCols").innerText;
+    p.drawText("ISSUE 14 · DESIGNCRAFT SPREAD EXPORT", { x: 48, y: 540, size: 10, font: bodyFont, color: PDFLib.rgb(0.35, 0.55, 0.1) });
+    p.drawText(title.slice(0, 48), { x: 48, y: 500, size: 24, font: serif, color: PDFLib.rgb(0.08, 0.08, 0.1) });
+    p.drawLine({ start: { x: 421, y: 40 }, end: { x: 421, y: 555 }, thickness: 0.6, color: PDFLib.rgb(0.8, 0.8, 0.82) });
+    p.drawText(story.slice(0, 900), { x: 445, y: 525, maxWidth: 350, lineHeight: 16, size: 11, font: bodyFont, color: PDFLib.rgb(0.15, 0.15, 0.18) });
+    const bytes = await doc.save();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+    a.download = "designcraft-spread.pdf";
+    a.click();
+  };
+</script>
+</body>
+</html>

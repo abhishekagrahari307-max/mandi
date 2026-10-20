@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VectorCraft — SVG Vector Illustration Studio</title>
+  <link rel="icon" href="../../assets/icons/vectorcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #e8573f; }
+    .vec-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 48px 1fr 250px; }
+    .vec-rail { background: var(--ui-panel); border-right: 1px solid var(--ui-line); display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 4px; }
+    .v-tool { width: 34px; height: 32px; border-radius: 7px; border: 0; background: transparent; color: #94a3b8; cursor: pointer; font-size: 14px; }
+    .v-tool.active { background: #e8573f; color: #fff; }
+    .vec-stage { display: grid; place-items: center; overflow: auto; background: #10131a; padding: 20px; }
+    #artboard { width: min(860px, 100%); height: auto; background: #0f172a; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 22px 60px rgba(0,0,0,0.65); touch-action: none; }
+    .vec-side { background: var(--ui-panel); border-left: 1px solid var(--ui-line); padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    @media (max-width: 820px) { .vec-body { grid-template-columns: 44px 1fr; } .vec-side { display: none; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/vectorcraft.png" alt=""> VectorCraft <small style="opacity:.6">SVG</small></span>
+    <label class="ws-btn">📂 Import .SVG <input id="openSvg" type="file" accept=".svg,image/svg+xml" hidden></label>
+    <button class="ws-btn primary" id="exportSvgBtn">💾 Export .SVG</button>
+    <button class="ws-btn" id="exportPngBtn">⬇ High-DPI .PNG</button>
+    <span class="ws-sep"></span>
+    <label style="display:flex;align-items:center;gap:4px">Fill <input type="color" id="fillCol" value="#fb7185"></label>
+    <label style="display:flex;align-items:center;gap:4px">Stroke <input type="color" id="strokeCol" value="#f8fafc"></label>
+    <label style="display:flex;align-items:center;gap:4px">Width <input type="range" id="strokeW" min="0" max="16" value="3" style="width:70px"></label>
+    <button class="ws-btn" id="delShapeBtn">🗑 Delete Selected</button>
+  </div>
+
+  <div class="vec-body">
+    <div class="vec-rail" id="vTools">
+      <button class="v-tool active" data-t="select" title="Select & Drag">↖</button>
+      <button class="v-tool" data-t="rect" title="Rectangle">▭</button>
+      <button class="v-tool" data-t="circle" title="Ellipse">◯</button>
+      <button class="v-tool" data-t="star" title="Star Polygon">★</button>
+      <button class="v-tool" data-t="pen" title="Freehand Vector Path">✒</button>
+      <button class="v-tool" data-t="text" title="Vector Text">𝐓</button>
+    </div>
+
+    <main class="vec-stage">
+      <svg id="artboard" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540">
+        <defs>
+          <linearGradient id="sunsetGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fb7185"/>
+            <stop offset="50%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#6366f1"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="860" height="540" fill="#0b1120" data-locked="1"/>
+        <circle cx="430" cy="245" r="145" fill="url(#sunsetGrad)" opacity="0.92"/>
+        <polygon points="150,430 330,210 470,350 580,235 740,430" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+        <text x="430" y="485" text-anchor="middle" fill="#f8fafc" font-size="30" font-weight="800" font-family="sans-serif">NEON VECTOR ARTBOARD</text>
+      </svg>
+    </main>
+
+    <aside class="vec-side">
+      <strong style="font-size:12px">SVG Vector Nodes</strong>
+      <div id="nodeList" style="display:flex;flex-direction:column;gap:5px"></div>
+    </aside>
+  </div>
+
+  <div class="ws-status">
+    <span id="vecStatus">Click & drag shapes to move, or choose Rectangle / Circle / Star / Pen tool</span>
+    <span class="mono">860 × 540 SVG</span>
+  </div>
+</div>
+
+<script type="module">
+  const svg = document.getElementById("artboard");
+  let tool = "select";
+  let selected = null;
+  let activeShape = null;
+  let sx = 0, sy = 0, dragDX = 0, dragDY = 0;
+
+  const pt = (e) => {
+    const r = svg.getBoundingClientRect();
+    return { x: Math.round(((e.clientX - r.left) / r.width) * 860), y: Math.round(((e.clientY - r.top) / r.height) * 540) };
+  };
+  const mk = (tag, attrs) => {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    svg.appendChild(el);
+    return el;
+  };
+
+  function refreshNodes() {
+    const els = Array.from(svg.children).filter((n) => n.tagName !== "defs" && !n.dataset.locked);
+    document.getElementById("nodeList").innerHTML = els.map((n, i) => `
+      <div class="ws-btn ${n === selected ? "active" : ""}" data-n="${i}" style="justify-content:space-between">
+        <span>&lt;${n.tagName}&gt;</span><span class="mono">#${i + 1}</span>
+      </div>`).join("");
+    document.getElementById("nodeList").querySelectorAll("[data-n]").forEach((b) => {
+      b.onclick = () => { selected = els[Number(b.dataset.n)]; refreshNodes(); };
+    });
+  }
+
+  svg.addEventListener("pointerdown", (e) => {
+    const p = pt(e); sx = p.x; sy = p.y;
+    const fill = document.getElementById("fillCol").value;
+    const stroke = document.getElementById("strokeCol").value;
+    const sw = document.getElementById("strokeW").value;
+
+    if (tool === "select") {
+      if (e.target !== svg && !e.target.dataset.locked) {
+        selected = e.target;
+        const tr = /translate\(([-\d.]+),\s*([-\d.]+)\)/.exec(selected.getAttribute("transform") || "");
+        dragDX = (tr ? Number(tr[1]) : 0) - p.x;
+        dragDY = (tr ? Number(tr[2]) : 0) - p.y;
+        activeShape = selected;
+        refreshNodes();
+      }
+      return;
+    }
+    if (tool === "rect") activeShape = mk("rect", { x: sx, y: sy, width: 1, height: 1, rx: 8, fill, stroke, "stroke-width": sw });
+    else if (tool === "circle") activeShape = mk("ellipse", { cx: sx, cy: sy, rx: 1, ry: 1, fill, stroke, "stroke-width": sw });
+    else if (tool === "pen") activeShape = mk("path", { d: `M ${sx} ${sy}`, fill: "none", stroke, "stroke-width": Math.max(2, sw), "stroke-linecap": "round" });
+    else if (tool === "star") {
+      const pts = Array.from({ length: 10 }, (_, i) => {
+        const rad = i % 2 === 0 ? 55 : 24, a = (i * Math.PI) / 5 - Math.PI / 2;
+        return `${Math.round(sx + Math.cos(a) * rad)},${Math.round(sy + Math.sin(a) * rad)}`;
+      }).join(" ");
+      selected = mk("polygon", { points: pts, fill, stroke, "stroke-width": sw });
+      refreshNodes();
+    } else if (tool === "text") {
+      const t = prompt("Enter vector text:", "STUDIO LABEL");
+      if (t) { selected = mk("text", { x: sx, y: sy, fill, "font-size": 28, "font-weight": 800, "font-family": "sans-serif" }); selected.textContent = t; refreshNodes(); }
+    }
+    svg.setPointerCapture(e.pointerId);
+  });
+
+  svg.addEventListener("pointermove", (e) => {
+    if (!activeShape) return;
+    const p = pt(e);
+    if (tool === "select") activeShape.setAttribute("transform", `translate(${p.x + dragDX}, ${p.y + dragDY})`);
+    else if (tool === "rect") {
+      activeShape.setAttribute("x", Math.min(sx, p.x)); activeShape.setAttribute("y", Math.min(sy, p.y));
+      activeShape.setAttribute("width", Math.abs(p.x - sx)); activeShape.setAttribute("height", Math.abs(p.y - sy));
+    } else if (tool === "circle") {
+      activeShape.setAttribute("rx", Math.abs(p.x - sx)); activeShape.setAttribute("ry", Math.abs(p.y - sy));
+    } else if (tool === "pen") {
+      activeShape.setAttribute("d", activeShape.getAttribute("d") + ` L ${p.x} ${p.y}`);
+    }
+  });
+
+  svg.addEventListener("pointerup", () => { if (activeShape) { selected = activeShape; activeShape = null; refreshNodes(); } });
+
+  document.getElementById("vTools").onclick = (e) => {
+    const b = e.target.closest("[data-t]");
+    if (!b) return;
+    tool = b.dataset.t;
+    document.querySelectorAll(".v-tool").forEach((el) => el.classList.toggle("active", el === b));
+  };
+  document.getElementById("fillCol").oninput = (e) => { if (selected) selected.setAttribute("fill", e.target.value); };
+  document.getElementById("strokeCol").oninput = (e) => { if (selected) selected.setAttribute("stroke", e.target.value); };
+  document.getElementById("delShapeBtn").onclick = () => { if (selected && !selected.dataset.locked) { selected.remove(); selected = null; refreshNodes(); } };
+
+  document.getElementById("openSvg").onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const doc = new DOMParser().parseFromString(await f.text(), "image/svg+xml");
+    if (doc.documentElement.tagName.toLowerCase() === "svg") {
+      svg.innerHTML = doc.documentElement.innerHTML;
+      refreshNodes();
+    }
+  };
+  document.getElementById("exportSvgBtn").onclick = () => {
+    const data = new XMLSerializer().serializeToString(svg);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: "image/svg+xml" }));
+    a.download = "vectorcraft-artwork.svg";
+    a.click();
+  };
+  document.getElementById("exportPngBtn").onclick = () => {
+    const data = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement("canvas"); cv.width = 1720; cv.height = 1080;
+      cv.getContext("2d").drawImage(img, 0, 0, 1720, 1080);
+      const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = "vectorcraft-2x.png"; a.click();
+    };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(data);
+  };
+  refreshNodes();
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WordCraft — Word Processor & DOCX Studio</title>
+  <link rel="icon" href="../../assets/icons/wordcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #3f5fe0; }
+    .word-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 210px 1fr; }
+    .word-outline { background: var(--ui-panel); border-right: 1px solid var(--ui-line); padding: 12px; overflow-y: auto; }
+    .word-stage { overflow-y: auto; background: #141822; padding: 28px 16px; display: flex; justify-content: center; }
+    .paper {
+      width: min(794px, 100%); min-height: 1050px; background: #ffffff; color: #111827;
+      padding: 64px 72px; border-radius: 3px; box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+      outline: none; font-size: 15px; line-height: 1.65;
+    }
+    .paper h1 { font-size: 28px; margin: 0 0 8px; color: #0f172a; }
+    .paper h2 { font-size: 20px; margin: 22px 0 8px; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+    .paper table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+    .paper td, .paper th { border: 1px solid #cbd5e1; padding: 8px 10px; }
+    .outline-link { display: block; padding: 5px 8px; border-radius: 6px; color: #cbd5e1; cursor: pointer; margin-bottom: 3px; font-size: 12px; }
+    .outline-link:hover { background: #232a3b; }
+    @media print { .ws-menubar, .word-outline, .ws-status { display: none !important; } .word-stage { padding: 0; background: #fff; } .paper { box-shadow: none; padding: 20px; } }
+    @media (max-width: 820px) { .word-body { grid-template-columns: 1fr; } .word-outline { display: none; } .paper { padding: 28px 22px; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/wordcraft.png" alt=""> WordCraft <small style="opacity:.6">DOCX</small></span>
+    <label class="ws-btn">📂 Open .DOCX / .TXT <input id="openDoc" type="file" accept=".docx,.txt,.md,.html" hidden></label>
+    <button class="ws-btn primary" id="saveDocxBtn">💾 Save .DOCX</button>
+    <button class="ws-btn" id="printPdfBtn">🖨 Export PDF</button>
+    <button class="ws-btn" id="saveMdBtn">⬇ .HTML</button>
+    <span class="ws-sep"></span>
+    <select id="blockFmt" class="ws-select">
+      <option value="P">Normal Text</option>
+      <option value="H1">Heading 1</option>
+      <option value="H2">Heading 2</option>
+      <option value="H3">Heading 3</option>
+      <option value="BLOCKQUOTE">Quote Callout</option>
+    </select>
+    <button class="ws-btn" data-cmd="bold"><b>B</b></button>
+    <button class="ws-btn" data-cmd="italic"><i>I</i></button>
+    <button class="ws-btn" data-cmd="underline"><u>U</u></button>
+    <button class="ws-btn" data-cmd="insertUnorderedList">• List</button>
+    <button class="ws-btn" data-cmd="insertOrderedList">1. List</button>
+    <button class="ws-btn" data-cmd="justifyLeft">⬅</button>
+    <button class="ws-btn" data-cmd="justifyCenter">↔</button>
+    <input type="color" id="txtColor" value="#1e3a8a" title="Text Highlight Color">
+    <button class="ws-btn" id="insertTableBtn">⊞ Table</button>
+  </div>
+
+  <div class="word-body">
+    <aside class="word-outline">
+      <div style="font-size:11px;font-weight:700;color:var(--ui-muted);text-transform:uppercase;margin-bottom:8px">Navigation Pane</div>
+      <div id="outlineList"></div>
+    </aside>
+    <main class="word-stage">
+      <article id="editor" class="paper" contenteditable="true" spellcheck="true">
+        <h1>Project Proposal &amp; Executive Report</h1>
+        <p style="color:#475569;margin-top:0">Prepared in WordCraft · Native .DOCX Read &amp; Write Engine</p>
+        <h2>1. Executive Overview</h2>
+        <p>Edit anywhere directly on this page, format headings, insert tables or images, open existing Microsoft Word <b>.docx</b> documents from your computer, and export clean <b>.docx</b> or print-ready PDF files offline.</p>
+        <h2>2. Milestone Schedule</h2>
+        <table>
+          <tr><th>Phase</th><th>Deliverable</th><th>Status</th></tr>
+          <tr><td>Phase 1</td><td>Architecture &amp; Core Design</td><td>Completed</td></tr>
+          <tr><td>Phase 2</td><td>Browser Deployment &amp; QA</td><td>Active</td></tr>
+        </table>
+        <h2>3. Next Steps</h2>
+        <ul>
+          <li>Open any local <code>.docx</code> file using the toolbar above.</li>
+          <li>Click <b>Save .DOCX</b> to download a real Word-compatible binary package.</li>
+        </ul>
+      </article>
+    </main>
+  </div>
+
+  <div class="ws-status">
+    <span id="docStatus">WordCraft Ready — Offline spelling & real .docx export enabled</span>
+    <span id="wordCount">Words: 0 · Characters: 0</span>
+  </div>
+</div>
+
+<script type="module">
+  import { mammoth, DOCX } from "../../vendor/office.bundle.js";
+  const ed = document.getElementById("editor");
+
+  function refreshStats() {
+    const text = ed.innerText.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    document.getElementById("wordCount").textContent = `Words: ${words} · Characters: ${text.length}`;
+    const headings = Array.from(ed.querySelectorAll("h1, h2, h3"));
+    document.getElementById("outlineList").innerHTML = headings
+      .map((h, i) => { h.id = "hd-" + i; return `<a class="outline-link" href="#hd-${i}">${h.textContent}</a>`; })
+      .join("");
+  }
+
+  document.querySelectorAll("[data-cmd]").forEach((b) => {
+    b.onclick = () => { document.execCommand(b.dataset.cmd, false, null); ed.focus(); refreshStats(); };
+  });
+  document.getElementById("blockFmt").onchange = (e) => { document.execCommand("formatBlock", false, e.target.value); ed.focus(); refreshStats(); };
+  document.getElementById("txtColor").oninput = (e) => { document.execCommand("foreColor", false, e.target.value); };
+  document.getElementById("insertTableBtn").onclick = () => {
+    document.execCommand("insertHTML", false,
+      "<table><tr><th>Column A</th><th>Column B</th><th>Column C</th></tr><tr><td>Data 1</td><td>Data 2</td><td>Data 3</td></tr></table><p></p>");
+    refreshStats();
+  };
+  ed.addEventListener("input", refreshStats);
+
+  document.getElementById("openDoc").onchange = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.name.toLowerCase().endsWith(".docx")) {
+      const res = await mammoth.convertToHtml({ arrayBuffer: await f.arrayBuffer() });
+      ed.innerHTML = res.value || "<p></p>";
+    } else {
+      const txt = await f.text();
+      ed.innerHTML = f.name.endsWith(".html") ? txt : txt.split("\n").map((l) => `<p>${l}</p>`).join("");
+    }
+    document.getElementById("docStatus").textContent = `Opened ${f.name}`;
+    refreshStats();
+  };
+
+  document.getElementById("saveDocxBtn").onclick = async () => {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = DOCX;
+    const paras = [];
+    Array.from(ed.children).forEach((node) => {
+      const tag = node.tagName;
+      const txt = node.innerText || "";
+      if (tag === "H1") paras.push(new Paragraph({ text: txt, heading: HeadingLevel.HEADING_1 }));
+      else if (tag === "H2") paras.push(new Paragraph({ text: txt, heading: HeadingLevel.HEADING_2 }));
+      else if (tag === "H3") paras.push(new Paragraph({ text: txt, heading: HeadingLevel.HEADING_3 }));
+      else paras.push(new Paragraph({ children: [new TextRun({ text: txt, size: 24 })] }));
+    });
+    const doc = new Document({ sections: [{ children: paras }] });
+    const blob = await Packer.toBlob(doc);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "wordcraft-document.docx";
+    a.click();
+    document.getElementById("docStatus").textContent = "Saved wordcraft-document.docx";
+  };
+
+  document.getElementById("printPdfBtn").onclick = () => window.print();
+  document.getElementById("saveMdBtn").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([`<!doctype html><meta charset="utf-8">${ed.innerHTML}`], { type: "text/html" }));
+    a.download = "wordcraft-document.html";
+    a.click();
+  };
+  refreshStats();
+</script>
+</body>
+</html>

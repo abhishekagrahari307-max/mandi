@@ -1,0 +1,153 @@
+@font-face {
+  font-family: "InterVar";
+  src: url("./fonts/Inter-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ArchivoVar";
+  src: url("./fonts/Archivo-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistMonoVar";
+  src: url("./fonts/GeistMono-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --ui-bg: #12151c;
+  --ui-panel: #191d27;
+  --ui-panel-2: #202634;
+  --ui-canvas: #0d1016;
+  --ui-line: rgba(255, 255, 255, 0.09);
+  --ui-line-2: rgba(255, 255, 255, 0.17);
+  --ui-ink: #f1f5f9;
+  --ui-soft: #cbd5e1;
+  --ui-muted: #8695ab;
+  --accent: #3b82f6;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ui-bg);
+  color: var(--ui-ink);
+  font-family: "InterVar", system-ui, -apple-system, sans-serif;
+  font-size: 12.5px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font-family: inherit; color: inherit; }
+
+.ws-app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100vw;
+}
+.ws-menubar {
+  min-height: 40px;
+  background: var(--ui-panel);
+  border-bottom: 1px solid var(--ui-line);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  flex-wrap: wrap;
+}
+.ws-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: "ArchivoVar", sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.ws-logo img { width: 22px; height: 22px; border-radius: 5px; }
+.ws-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--ui-line);
+  margin: 0 3px;
+}
+.ws-btn {
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-panel-2);
+  color: var(--ui-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.ws-btn:hover {
+  border-color: var(--ui-line-2);
+  color: #ffffff;
+  filter: brightness(1.08);
+}
+.ws-btn.active {
+  background: color-mix(in srgb, var(--accent) 28%, var(--ui-panel-2));
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.ws-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.ws-input, .ws-select {
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-line);
+  background: #10131a;
+  color: var(--ui-ink);
+  padding: 0 8px;
+  font-size: 12px;
+  outline: none;
+}
+.ws-input:focus, .ws-select:focus { border-color: var(--accent); }
+.ws-spacer { flex: 1; }
+.ws-status {
+  height: 25px;
+  background: #0e1118;
+  border-top: 1px solid var(--ui-line);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "GeistMonoVar", ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ui-muted);
+  gap: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.mono { font-family: "GeistMonoVar", ui-monospace, monospace; }
+input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-panel-2);
+  cursor: pointer;
+}
+input[type="range"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}

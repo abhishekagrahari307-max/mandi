@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FilmCraft — Nonlinear Video Editor & Color Studio</title>
+  <link rel="icon" href="../../assets/icons/filmcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #8b5cf6; }
+    .nle-top { flex: 1; min-height: 0; display: grid; grid-template-columns: 240px 1fr 260px; }
+    .media-bin, .color-panel { background: var(--ui-panel); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .media-bin { border-right: 1px solid var(--ui-line); }
+    .color-panel { border-left: 1px solid var(--ui-line); }
+    .monitor-wrap { display: grid; place-items: center; background: #090b10; padding: 14px; }
+    #programMonitor { width: min(760px, 100%); aspect-ratio: 16 / 9; background: #000; border-radius: 6px; border: 1px solid var(--ui-line-2); }
+    .timeline-dock { height: 175px; background: #141720; border-top: 1px solid var(--ui-line); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .track-row { display: flex; align-items: center; gap: 6px; height: 34px; background: #0f1219; border-radius: 6px; padding: 3px 8px; border: 1px solid var(--ui-line); overflow-x: auto; }
+    .clip-pill { height: 24px; padding: 0 12px; border-radius: 5px; background: #6d28d9; color: #fff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; cursor: pointer; white-space: nowrap; }
+    .clip-pill.active { outline: 2px solid #c4b5fd; }
+    @media (max-width: 860px) { .nle-top { grid-template-columns: 1fr; } .media-bin, .color-panel { display: none; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/filmcraft.png" alt=""> FilmCraft <small style="opacity:.6">NLE VIDEO</small></span>
+    <label class="ws-btn">📂 Import Video / Image Clip <input id="mediaInput" type="file" accept="video/*,image/*" multiple hidden></label>
+    <button class="ws-btn" id="playPauseBtn">▶ Play Timeline</button>
+    <button class="ws-btn primary" id="exportWebmBtn">🎬 Render .WebM Video</button>
+    <span class="ws-sep"></span>
+    <label>Title Overlay <input id="lowerThird" class="ws-input" value="FILMCRAFT 4K COLOR PIPELINE" style="width:210px"></label>
+  </div>
+
+  <div class="nle-top">
+    <aside class="media-bin" id="binList"></aside>
+    <main class="monitor-wrap"><canvas id="programMonitor" width="960" height="540"></canvas></main>
+    <aside class="color-panel">
+      <strong style="font-size:12px">Color Grading & Scopes</strong>
+      <canvas id="scopeCanvas" width="234" height="64" style="width:100%;background:#0a0d14;border-radius:6px;border:1px solid var(--ui-line)"></canvas>
+      <label>Exposure <input type="range" id="vBright" min="50" max="160" value="105" style="width:100%"></label>
+      <label>Contrast <input type="range" id="vCon" min="60" max="180" value="112" style="width:100%"></label>
+      <label>Saturation <input type="range" id="vSat" min="0" max="220" value="118" style="width:100%"></label>
+      <label>Cinema LUT Hue <input type="range" id="vHue" min="-60" max="60" value="0" style="width:100%"></label>
+    </aside>
+  </div>
+
+  <section class="timeline-dock">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="mono" id="tcReadout" style="color:#c4b5fd;font-weight:700">00:00:00:00</span>
+      <input type="range" id="scrubBar" min="0" max="1000" value="0" style="flex:1">
+    </div>
+    <div class="track-row" id="v1Track"></div>
+    <div class="track-row"><span class="mono" style="width:36px;color:#94a3b8">GFX</span><span class="clip-pill" style="background:#0ea5e9;flex:1">Lower-Third Title & Kinetic Safe Guide</span></div>
+  </section>
+
+  <div class="ws-status">
+    <span id="nleStatus">Ready — Spacebar or Play to preview · Click Render .WebM to export real video</span>
+    <span class="mono">960×540 · 30 fps</span>
+  </div>
+</div>
+
+<script type="module">
+  const mon = document.getElementById("programMonitor");
+  const mctx = mon.getContext("2d", { willReadFrequently: true });
+  let clips = [
+    { name: "Scene 01 — Color Suite", src: "../../assets/screenshots/filmcraft/color.jpg", dur: 3.0 },
+    { name: "Scene 02 — Edit Assembly", src: "../../assets/screenshots/filmcraft/assembly.jpg", dur: 3.0 },
+    { name: "Scene 03 — Keyframe FX", src: "../../assets/screenshots/filmcraft/keyframes.jpg", dur: 3.0 }
+  ];
+  let mediaEls = [];
+  let playing = false, t = 0, lastTs = 0, activeClip = 0;
+
+  async function loadClips() {
+    mediaEls = await Promise.all(clips.map((c) => new Promise((res) => {
+      if (c.isVideo) {
+        const v = document.createElement("video");
+        v.src = c.src; v.muted = true; v.loop = true; v.playsInline = true;
+        v.onloadeddata = () => res(v); v.onerror = () => res(v);
+      } else {
+        const im = new Image();
+        im.onload = () => res(im); im.onerror = () => res(im); im.src = c.src;
+      }
+    })));
+    renderTimeline();
+    drawFrame();
+  }
+
+  function totalDur() { return clips.reduce((a, c) => a + c.dur, 0); }
+
+  function renderTimeline() {
+    document.getElementById("binList").innerHTML =
+      `<strong style="font-size:12px">Project Media (${clips.length})</strong>` +
+      clips.map((c, i) => `<button class="ws-btn ${i === activeClip ? "active" : ""}" data-c="${i}" style="justify-content:space-between"><span>🎞 ${c.name.slice(0, 18)}</span><span class="mono">${c.dur}s</span></button>`).join("");
+    document.getElementById("v1Track").innerHTML =
+      `<span class="mono" style="width:36px;color:#94a3b8">V1</span>` +
+      clips.map((c, i) => `<span class="clip-pill ${i === activeClip ? "active" : ""}" data-c="${i}" style="flex:${c.dur}">${c.name} (${c.dur}s)</span>`).join("");
+  }
+
+  function drawFrame() {
+    const tot = totalDur();
+    let acc = 0, idx = 0, localT = 0;
+    for (let i = 0; i < clips.length; i++) {
+      if (t <= acc + clips[i].dur || i === clips.length - 1) { idx = i; localT = t - acc; break; }
+      acc += clips[i].dur;
+    }
+    activeClip = idx;
+    const el = mediaEls[idx];
+    const br = document.getElementById("vBright").value, co = document.getElementById("vCon").value;
+    const sa = document.getElementById("vSat").value, hu = document.getElementById("vHue").value;
+
+    mctx.save();
+    mctx.clearRect(0, 0, 960, 540);
+    mctx.filter = `brightness(${br}%) contrast(${co}%) saturate(${sa}%) hue-rotate(${hu}deg)`;
+    const zoom = 1 + (localT / clips[idx].dur) * 0.06; // subtle Ken Burns motion
+    if (el) {
+      mctx.translate(480, 270); mctx.scale(zoom, zoom);
+      mctx.drawImage(el, -480, -270, 960, 540);
+    }
+    mctx.restore();
+
+    const title = document.getElementById("lowerThird").value;
+    if (title) {
+      mctx.fillStyle = "rgba(9, 11, 16, 0.78)";
+      mctx.fillRect(42, 438, Math.min(876, title.length * 16 + 48), 58);
+      mctx.fillStyle = "#8b5cf6";
+      mctx.fillRect(42, 438, 5, 58);
+      mctx.fillStyle = "#f8fafc";
+      mctx.font = "800 22px sans-serif";
+      mctx.fillText(title, 62, 475);
+    }
+
+    const secs = Math.floor(t), fr = Math.floor((t % 1) * 30);
+    document.getElementById("tcReadout").textContent = `00:00:${String(secs).padStart(2, "0")}:${String(fr).padStart(2, "0")}`;
+    document.getElementById("scrubBar").value = Math.round((t / tot) * 1000);
+    drawScope();
+  }
+
+  function drawScope() {
+    const sc = document.getElementById("scopeCanvas");
+    const ctx = sc.getContext("2d");
+    ctx.fillStyle = "#0a0d14"; ctx.fillRect(0, 0, sc.width, sc.height);
+    const d = mctx.getImageData(0, 0, 960, 540).data;
+    ctx.fillStyle = "rgba(167, 139, 250, 0.45)";
+    for (let x = 0; x < 960; x += 8) {
+      for (let y = 0; y < 540; y += 36) {
+        const i = (y * 960 + x) * 4;
+        const luma = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) / 255;
+        ctx.fillRect((x / 960) * sc.width, sc.height - luma * (sc.height - 4), 2, 2);
+      }
+    }
+  }
+
+  function loop(ts) {
+    if (!playing) return;
+    if (!lastTs) lastTs = ts;
+    t += (ts - lastTs) / 1000;
+    lastTs = ts;
+    if (t >= totalDur()) t = 0;
+    drawFrame();
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById("playPauseBtn").onclick = (e) => {
+    playing = !playing; lastTs = 0;
+    e.currentTarget.textContent = playing ? "⏸ Pause" : "▶ Play Timeline";
+    if (playing) requestAnimationFrame(loop);
+  };
+  document.getElementById("scrubBar").oninput = (e) => { t = (Number(e.target.value) / 1000) * totalDur(); drawFrame(); };
+  ["vBright", "vCon", "vSat", "vHue", "lowerThird"].forEach((id) => { document.getElementById(id).oninput = drawFrame; });
+  document.addEventListener("click", (e) => {
+    const c = e.target.closest("[data-c]");
+    if (c) {
+      const idx = Number(c.dataset.c);
+      t = clips.slice(0, idx).reduce((a, x) => a + x.dur, 0);
+      renderTimeline(); drawFrame();
+    }
+  });
+  document.getElementById("mediaInput").onchange = async (e) => {
+    for (const f of e.target.files) {
+      clips.push({ name: f.name, src: URL.createObjectURL(f), dur: 3.5, isVideo: f.type.startsWith("video/") });
+    }
+    await loadClips();
+  };
+  document.getElementById("exportWebmBtn").onclick = () => {
+    const stream = mon.captureStream(30);
+    const rec = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm" });
+    const chunks = [];
+    rec.ondataavailable = (ev) => { if (ev.data.size) chunks.push(ev.data); };
+    rec.onstop = () => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
+      a.download = "filmcraft-export.webm";
+      a.click();
+      document.getElementById("nleStatus").textContent = "Rendered & downloaded filmcraft-export.webm!";
+    };
+    t = 0; playing = true; lastTs = 0;
+    document.getElementById("nleStatus").textContent = "Rendering timeline to .WebM in real time…";
+    rec.start();
+    requestAnimationFrame(loop);
+    setTimeout(() => { playing = false; rec.stop(); }, Math.min(6000, totalDur() * 1000));
+  };
+
+  loadClips();
+</script>
+</body>
+</html>

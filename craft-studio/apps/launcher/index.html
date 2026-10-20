@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Craft Suite Manager — Native & Web Release Matrix</title>
+  <link rel="icon" href="../../assets/icons/launcher.svg">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    .mgr-wrap { flex: 1; overflow: auto; padding: 20px; max-width: 1200px; width: 100%; margin: 0 auto; }
+    table.rel-table { width: 100%; border-collapse: collapse; background: var(--ui-panel); border-radius: 12px; overflow: hidden; border: 1px solid var(--ui-line); }
+    table.rel-table th, table.rel-table td { padding: 11px 14px; border-bottom: 1px solid var(--ui-line); text-align: left; }
+    table.rel-table th { background: #131722; color: var(--ui-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/launcher.svg" alt=""> Craft Suite Release Manager</span>
+    <span class="ws-spacer"></span>
+    <a class="ws-btn primary" href="../../">← Back to Full Suite Hub</a>
+  </div>
+  <main class="mgr-wrap">
+    <h2 style="margin:0 0 6px;font-family:ArchivoVar,sans-serif">All 14 Suite Applications — Live Browser & Native Installers</h2>
+    <p style="margin:0 0 16px;color:var(--ui-muted)">Launch any web studio directly in your browser, or grab the verified native desktop installer for Windows, macOS, or Linux.</p>
+    <table class="rel-table">
+      <thead>
+        <tr><th>App</th><th>Workflow</th><th>Upstream Version</th><th>Browser App</th><th>Desktop Installers</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+  <div class="ws-status">
+    <span>Dual-licensed Open Source (MIT / Apache-2.0)</span>
+    <span class="mono">Windows · macOS · Linux · FreeBSD · Web</span>
+  </div>
+</div>
+
+<script type="module">
+  import { APPS } from "../../assets/catalog.js";
+  (async () => {
+    const rels = await fetch("../../assets/releases.json").then((r) => r.json()).catch(() => ({}));
+    document.getElementById("rows").innerHTML = APPS.map((a) => {
+      const r = rels[a.id] || {};
+      const d = r.downloads || {};
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:9px"><img src="../../${a.icon.replace(/^\.\//, "")}" width="26" height="26" style="border-radius:6px"><strong>${a.name}</strong></div></td>
+        <td style="color:#cbd5e1">${a.role}</td>
+        <td class="mono" style="color:#6ee7b7">${r.tag || a.defaultVersion}</td>
+        <td><a class="ws-btn primary" href="../${a.id}/" style="--accent:${a.color}">▶ Open Web</a></td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          ${d.windows_msi ? `<a class="ws-btn" href="${d.windows_msi}" target="_blank" rel="noopener">Win .MSI</a>` : ""}
+          ${d.macos_dmg ? `<a class="ws-btn" href="${d.macos_dmg}" target="_blank" rel="noopener">macOS .DMG</a>` : ""}
+          ${d.linux_appimage ? `<a class="ws-btn" href="${d.linux_appimage}" target="_blank" rel="noopener">Linux AppImage</a>` : ""}
+          <a class="ws-btn" href="https://github.com/${a.repo}" target="_blank" rel="noopener">Source ↗</a>
+        </td>
+      </tr>`;
+    }).join("");
+  })();
+</script>
+</body>
+</html>

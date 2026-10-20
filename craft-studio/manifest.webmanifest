@@ -1,0 +1,23 @@
+{
+  "name": "Craft Studio — Excel, Photo, PDF & Complete Rust WebAssembly Suite",
+  "short_name": "Craft Studio",
+  "description": "Run Excel (GridCraft), Photo Editor (PhotoCraft), PDF Workbench (PdfCraft), Word, Slides, Vector, Video, Audio, UI & CAD natively in your browser via Rust + WebAssembly.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "icons": [
+    {
+      "src": "./assets/icons/launcher.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/photocraft.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}
