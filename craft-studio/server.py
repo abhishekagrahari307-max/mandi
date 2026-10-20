@@ -78,7 +78,14 @@ def main() -> None:
     args = parser.parse_args()
 
     here = Path(__file__).resolve().parent
-    root = Path(args.dir) if args.dir else (here / "_site" if (here / "_site").is_dir() else here / "public")
+    if args.dir:
+        root = Path(args.dir)
+    elif (here / "_site").is_dir():
+        root = here / "_site"
+    elif (here / "public").is_dir():
+        root = here / "public"
+    else:
+        root = here
     handler = functools.partial(StudioRequestHandler, directory=str(root))
     server = http.server.ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Serving Craft Studio from {root} at http://{args.host}:{args.port}/", flush=True)
