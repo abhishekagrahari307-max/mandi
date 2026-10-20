@@ -2459,6 +2459,13 @@
             if (checkedEl) checkedEl.innerText = formatIst(checkedAt) || '—';
             if (nextEl) nextEl.innerText = nextRefreshLabel(slots) || '—';
             if (slotsEl) slotsEl.innerText = slots.join(' • ');
+            const navUpdateEl = document.getElementById('nav-update-time');
+            if (navUpdateEl) {
+                const displayStamp = formatIst(updatedAt || checkedAt);
+                navUpdateEl.innerText = displayStamp
+                    ? `${currentLang === 'hi' ? 'अंतिम अपडेट' : 'Last Update'}: ${displayStamp}`
+                    : (currentLang === 'hi' ? 'अंतिम अपडेट: --' : 'Last Update: --');
+            }
         }
 
         function updateDataStatus(latest) {
@@ -2991,7 +2998,7 @@
 
             // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
             const fetchLatest = isLocal
-                ? fetch(`${host}/api/v2/rates?limit=500`)
+                ? fetch(`${host}/api/v2/rates?limit=2500`)
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();
@@ -3753,12 +3760,15 @@
             return !s || s === 'Uttar Pradesh' || s === 'UP' || s === 'U.P.';
         }
         function isOutlier(r) {
-            // Common Rice/Paddy with modal_price > 8000 is almost always a data entry error
             const c = String(r.commodity || '').toLowerCase();
             const v = String(r.variety || '').toLowerCase();
             const p = Number(r.modal_price) || 0;
-            const isRiceCommon = (c.includes('rice') || c.includes('paddy') || c.includes('chawal')) && v.includes('common');
-            return isRiceCommon && p > 8000;
+            if (c.includes('mentha') && p > 150000) return true;
+            if (c.includes('rice') || c.includes('paddy') || c.includes('chawal')) {
+                if (v.includes('basmati') || c.includes('basmati')) return p > 6500;
+                return p > 4500;
+            }
+            return false;
         }
         function getAllPriceRecords() {
             const verified = (Array.isArray(latestData) ? latestData : []).filter(r => isUPRecord(r) && !isOutlier(r));

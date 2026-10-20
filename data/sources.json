@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-08-08T18:28:05.106301+05:30",
+  "last_checked_at": "2026-10-20T18:37:53.266257+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -10,54 +10,62 @@
   "sources": [
     {
       "name": "data.gov.in",
-      "status": "error",
-      "message": "DATA_GOV_IN_API_KEY is not configured"
+      "status": "ok",
+      "records": 1571,
+      "url": "https://data.gov.in/",
+      "message": "Verified 1571 UP mandi records across 75 districts"
     },
     {
       "name": "AGMARKNET portal",
-      "status": "error",
+      "status": "ok",
+      "records": 1571,
       "url": "https://agmarknet.gov.in/home",
-      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
+      "message": "Cross-verified 1571 UP commodity price records"
     },
     {
       "name": "AGMARKNET",
-      "status": "error",
-      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
+      "status": "ok",
+      "records": 1571,
+      "url": "https://agmarknet.gov.in/home",
+      "message": "Active (20/10/2026)"
+    },
+    {
+      "name": "UP Mandi Parishad directory",
+      "status": "ok",
+      "records": 291,
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+      "message": "291 notified APMC mandis across 18 divisions"
+    },
+    {
+      "name": "UP Krishi Vipran state benchmark",
+      "status": "ok",
+      "records": 12,
+      "url": "https://www.upkrishivipran.in/Default.aspx",
+      "message": "Published 12 state-level benchmark commodities (20/10/2026)"
     },
     {
       "name": "e-NAM trade feed",
       "status": "not_configured",
-      "records": 0
+      "records": 0,
+      "url": "https://www.enam.gov.in/web/"
     },
     {
       "name": "UP e-Mandi trade feed",
       "status": "not_configured",
-      "records": 0
+      "records": 0,
+      "url": "https://emandi.up.gov.in/"
     },
     {
       "name": "UP e-Mandi contacts",
-      "status": "unavailable",
-      "records": 0,
-      "url": null
-    },
-    {
-      "name": "UP Mandi Parishad directory",
-      "status": "error",
+      "status": "ok",
       "records": 9,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
-    },
-    {
-      "name": "UP Krishi Vipran state benchmark",
-      "status": "error",
-      "records": 0,
-      "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx"
     },
     {
       "name": "e-NAM authorised auction feed",
       "status": "not_configured",
-      "records": 0
+      "records": 0,
+      "url": "https://www.enam.gov.in/web/"
     }
   ],
   "official_portals": [
