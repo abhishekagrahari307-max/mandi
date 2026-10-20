@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Craft Studio — Excel, Photo, PDF & Complete Rust WebAssembly Suite</title>
+  <meta name="description" content="Run Excel (GridCraft), Photo Editor (PhotoCraft), PDF Workbench (PdfCraft), Word, PowerPoint, Vector, Video, VFX, Audio DAW, UI & AutoCAD DWG directly in your browser via pure Rust + WebAssembly.">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/launcher.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <div class="ambient-backdrop" aria-hidden="true"></div>
+
+  <!-- Sticky Navigation Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="brand" id="brandHomeBtn" type="button">
+        <img src="./assets/icons/launcher.svg" alt="Craft Studio">
+        <span>
+          <span class="brand-title">Craft Studio</span>
+          <span class="brand-sub">EXCEL · PHOTO · PDF · +11 RUST APPS</span>
+        </span>
+      </button>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <input id="searchInput" class="search-input" type="search" autocomplete="off"
+          placeholder="Search apps or formats: Excel, Photo, PDF, PSD, XLSX, DOCX, Video, CAD...">
+        <span class="search-kbd">⌘K</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="resumeStudioBtn" class="chip-btn running-indicator" type="button" hidden></button>
+        <button id="pwaInstallBtn" class="chip-btn" type="button" hidden>⬇ Install App</button>
+        <button id="langBtn" class="chip-btn" type="button">हिंदी</button>
+        <button id="themeBtn" class="chip-btn" type="button">☀ Light</button>
+        <a class="chip-btn hide-mobile" href="https://github.com/storytold/photocraft" target="_blank" rel="noopener">
+          ★ Upstream Rust
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hub Landing Content -->
+  <main class="hub-main">
+    <section class="hero-strip">
+      <div>
+        <div class="hero-eyebrow" id="heroEyebrow">
+          14 PURE RUST + WEBASSEMBLY APPS · ZERO CLOUD UPLOAD · MIT / APACHE-2.0
+        </div>
+        <h1 class="hero-title" id="heroTitle">
+          Excel, Photo, PDF &amp; Complete Pro Suite — Live in Your Browser
+        </h1>
+        <p class="hero-sub" id="heroSub">
+          Run GridCraft (Excel .xlsx), PhotoCraft (Photoshop .psd), PdfCraft (PDF Workbench), Word, Slides, Vector, Video, VFX, Audio DAW, UI &amp; DWG CAD instantly in WebAssembly — or download native apps.
+        </p>
+      </div>
+      <div class="hero-stats hide-mobile">
+        <div class="stat-pill">
+          <strong>14 Apps</strong>
+          <span>Excel · Photo · PDF · Office · Creative</span>
+        </div>
+        <div class="stat-pill">
+          <strong>100% Local</strong>
+          <span>Files never leave your device</span>
+        </div>
+        <div class="stat-pill">
+          <strong>Rust → WASM</strong>
+          <span>WebGPU &amp; WebGL2 accelerated</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Priority Top Row: Excel · Photo · PDF -->
+    <section aria-label="Featured Priority Apps" id="spotlightGrid" class="spotlight-grid"></section>
+
+    <!-- All 14 Apps Filter + Grid -->
+    <section>
+      <div class="section-bar">
+        <h2 class="section-heading" id="sectionHeading">
+          Complete 14-App Suite (Excel, Photo, PDF &amp; All Crafting Tools)
+        </h2>
+        <div class="filter-tabs" id="filterTabs" role="tablist"></div>
+      </div>
+      <div class="suite-grid" id="suiteGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>Craft Studio Web Portal</strong> — Powered by open-source Rust + WebAssembly builds from
+      <a href="https://github.com/storytold" target="_blank" rel="noopener">github.com/storytold</a>
+      (Dual-licensed <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT</a> /
+      <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache-2.0</a>).
+      All files open &amp; save locally in your browser.
+    </div>
+    <div>
+      Direct routes:
+      <a href="./excel/">/excel</a> ·
+      <a href="./photo/">/photo</a> ·
+      <a href="./pdf/">/pdf</a> ·
+      <a href="./word/">/word</a> ·
+      <a href="./slides/">/slides</a> ·
+      <a href="./vector/">/vector</a> ·
+      <a href="./video/">/video</a> ·
+      <a href="./cad/">/cad</a>
+    </div>
+  </footer>
+
+  <!-- Fullscreen Multi-Tab + Split-Screen WebAssembly Studio Shell -->
+  <section id="studioShell" class="studio-shell" hidden>
+    <div class="studio-topbar">
+      <button id="studioBackBtn" class="studio-home-btn" type="button" title="Minimize to Suite Hub (keeps open apps alive)">
+        ← Hub
+      </button>
+
+      <div id="studioTabs" class="studio-tabs"></div>
+
+      <select id="quickOpenSelect" class="studio-add-select" aria-label="Open another app in tab"></select>
+      <select id="splitAppSelect" class="studio-add-select hide-mobile" aria-label="Split screen second app"></select>
+
+      <select id="rendererSelect" class="studio-renderer-select" title="Graphics Renderer Backend">
+        <option value="">GPU: Auto (WebGPU / WebGL2)</option>
+        <option value="?webgl">Compat: Force WebGL2</option>
+        <option value="?cpu">Safe Mode: CPU Canvas</option>
+      </select>
+
+      <button id="toggleKeysBtn" class="studio-tool-btn" type="button" title="Toggle Quick Shortcut Bar">⌨ Keys</button>
+      <button id="reloadAppBtn" class="studio-tool-btn" type="button" title="Reload Current App">↻</button>
+      <a id="standaloneLink" class="studio-tool-btn" href="./apps/photocraft/" target="_blank" rel="noopener" title="Open Standalone Tab">↗</a>
+      <button id="collapseBarBtn" class="studio-tool-btn hide-mobile" type="button" title="Hide Top Bar">▲</button>
+      <button id="fullscreenBtn" class="studio-tool-btn hide-mobile" type="button" title="Toggle Fullscreen">⛶</button>
+    </div>
+
+    <div id="touchKeybar" class="touch-keybar" hidden>
+      <button class="key-btn" data-key-cmd="open" type="button">Ctrl+O Open</button>
+      <button class="key-btn" data-key-cmd="save" type="button">Ctrl+S Save</button>
+      <button class="key-btn" data-key-cmd="undo" type="button">↶ Undo</button>
+      <button class="key-btn" data-key-cmd="redo" type="button">↷ Redo</button>
+      <button class="key-btn" data-key-cmd="zoomin" type="button">＋ Zoom</button>
+      <button class="key-btn" data-key-cmd="zoomout" type="button">－ Zoom</button>
+      <button class="key-btn" data-key-cmd="esc" type="button">Esc</button>
+    </div>
+
+    <button id="expandBarBtn" class="floating-expand-btn" type="button">▼ Studio Bar</button>
+    <div id="studioStage" class="studio-stage"></div>
+  </section>
+
+  <!-- Interactive App Details & Desktop Downloads Modal -->
+  <div id="detailsModal" class="modal-backdrop" hidden>
+    <div class="modal-card" id="modalBody"></div>
+  </div>
+
+  <script type="module" src="./assets/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

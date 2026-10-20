@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LightCraft — RAW & Color Grading Studio</title>
+  <link rel="icon" href="../../assets/icons/lightcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #f2a516; }
+    .lr-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 195px 1fr 290px; }
+    .presets-col { background: var(--ui-panel); border-right: 1px solid var(--ui-line); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    .preset-btn { padding: 8px 10px; border-radius: 7px; border: 1px solid var(--ui-line); background: #131722; text-align: left; cursor: pointer; font-weight: 600; }
+    .preset-btn:hover, .preset-btn.active { border-color: #f2a516; background: rgba(242, 165, 22, 0.15); }
+    .lr-stage { display: grid; place-items: center; padding: 20px; background: #0e1015; overflow: auto; }
+    #rawCanvas { max-width: 100%; max-height: calc(100dvh - 115px); border-radius: 6px; box-shadow: 0 22px 60px rgba(0,0,0,0.7); }
+    .develop-col { background: var(--ui-panel); border-left: 1px solid var(--ui-line); padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .dev-row { display: grid; grid-template-columns: 78px 1fr 38px; align-items: center; gap: 6px; font-size: 11.5px; }
+    @media (max-width: 860px) { .lr-body { grid-template-columns: 1fr; } .presets-col { flex-direction: row; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/lightcraft.png" alt=""> LightCraft <small style="opacity:.6">DEVELOP</small></span>
+    <label class="ws-btn">📂 Open Photo <input id="openImg" type="file" accept="image/*" hidden></label>
+    <button class="ws-btn primary" id="exportJpg">💾 Export Graded .JPG</button>
+    <button class="ws-btn" id="beforeAfterBtn">◫ Hold Before/After</button>
+    <button class="ws-btn" id="resetBtn">↺ Reset All</button>
+  </div>
+
+  <div class="lr-body">
+    <aside class="presets-col" id="presetList"></aside>
+    <main class="lr-stage"><canvas id="rawCanvas" width="960" height="600"></canvas></main>
+    <aside class="develop-col">
+      <strong style="font-size:12px">RGB Histogram</strong>
+      <canvas id="lrHist" width="260" height="62" style="width:100%;background:#0e1118;border-radius:6px;border:1px solid var(--ui-line)"></canvas>
+      <strong style="font-size:12px;margin-top:4px">Light & Tone Pipeline</strong>
+      <div id="sliderMount"></div>
+    </aside>
+  </div>
+
+  <div class="ws-status">
+    <span>Non-destructive per-pixel grading pipeline</span>
+    <span id="gradeStats" class="mono">EV +0.00 · Temp 0 · Contrast 0</span>
+  </div>
+</div>
+
+<script type="module">
+  const PRESETS = [
+    ["Original Neutral", { exp: 0, con: 0, hi: 0, sh: 0, temp: 0, tint: 0, sat: 0, vig: 0 }],
+    ["Kodak Gold 200", { exp: 12, con: 14, hi: -10, sh: 18, temp: 28, tint: 6, sat: 18, vig: 22 }],
+    ["Cinema Teal & Orange", { exp: 4, con: 24, hi: -18, sh: 12, temp: 18, tint: -12, sat: 15, vig: 35 }],
+    ["Nordic Matte Slate", { exp: -4, con: -8, hi: -24, sh: 26, temp: -22, tint: -4, sat: -26, vig: 28 }],
+    ["Silver Ilford B&W", { exp: 8, con: 38, hi: -15, sh: 15, temp: 0, tint: 0, sat: -100, vig: 40 }],
+    ["Vivid Landscape HDR", { exp: 10, con: 18, hi: -30, sh: 34, temp: 10, tint: 4, sat: 32, vig: 12 }]
+  ];
+  const SLIDERS = [
+    ["exp", "Exposure"], ["con", "Contrast"], ["hi", "Highlights"], ["sh", "Shadows"],
+    ["temp", "Warmth"], ["tint", "Tint"], ["sat", "Vibrance"], ["vig", "Vignette"]
+  ];
+
+  let params = { ...PRESETS[0][1] };
+  let showOriginal = false;
+  const srcCanvas = document.createElement("canvas");
+  const out = document.getElementById("rawCanvas");
+  const octx = out.getContext("2d", { willReadFrequently: true });
+
+  document.getElementById("presetList").innerHTML =
+    `<div style="font-size:11px;font-weight:700;color:var(--ui-muted);text-transform:uppercase">Film Look Presets</div>` +
+    PRESETS.map(([name], i) => `<button class="preset-btn" data-p="${i}">${name}</button>`).join("");
+
+  document.getElementById("sliderMount").innerHTML = SLIDERS.map(([k, label]) => `
+    <div class="dev-row"><span>${label}</span><input type="range" id="sl-${k}" min="-100" max="100" value="0"><span class="mono" id="vl-${k}">0</span></div>
+  `).join("");
+
+  function loadImageElement(img) {
+    const w = Math.min(1100, img.naturalWidth || 960);
+    const h = Math.round((w / (img.naturalWidth || 960)) * (img.naturalHeight || 600));
+    srcCanvas.width = out.width = w;
+    srcCanvas.height = out.height = h;
+    srcCanvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    processPixels();
+  }
+
+  function processPixels() {
+    const w = srcCanvas.width, h = srcCanvas.height;
+    const src = srcCanvas.getContext("2d").getImageData(0, 0, w, h);
+    if (showOriginal) { octx.putImageData(src, 0, 0); return; }
+
+    const dst = octx.createImageData(w, h);
+    const s = src.data, d = dst.data;
+    const expGain = Math.pow(2, params.exp / 65);
+    const conF = (259 * (params.con * 1.4 + 255)) / (255 * (259 - params.con * 1.4));
+    const satF = 1 + params.sat / 100;
+    const rHist = new Uint32Array(64), gHist = new Uint32Array(64), bHist = new Uint32Array(64);
+
+    for (let y = 0; y < h; y++) {
+      const ny = (y / h - 0.5) * 2;
+      for (let x = 0; x < w; x++) {
+        const nx = (x / w - 0.5) * 2;
+        const i = (y * w + x) * 4;
+        let r = s[i] * expGain, g = s[i + 1] * expGain, b = s[i + 2] * expGain;
+
+        // Warmth & Tint
+        r += params.temp * 0.65; b -= params.temp * 0.65;
+        g -= params.tint * 0.45;
+
+        // Shadows & Highlights recovery
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const shLift = (1 - lum) * (1 - lum) * params.sh * 0.7;
+        const hiPull = lum * lum * params.hi * 0.7;
+        r += shLift + hiPull; g += shLift + hiPull; b += shLift + hiPull;
+
+        // Contrast
+        r = conF * (r - 128) + 128; g = conF * (g - 128) + 128; b = conF * (b - 128) + 128;
+
+        // Saturation
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = gray + (r - gray) * satF; g = gray + (g - gray) * satF; b = gray + (b - gray) * satF;
+
+        // Vignette
+        if (params.vig !== 0) {
+          const dist = (nx * nx + ny * ny) * 0.5;
+          const vf = Math.max(0.15, 1 - dist * (params.vig / 85));
+          r *= vf; g *= vf; b *= vf;
+        }
+
+        d[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+        d[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+        d[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+        d[i + 3] = s[i + 3];
+        if ((i & 63) === 0) { rHist[d[i] >> 2]++; gHist[d[i + 1] >> 2]++; bHist[d[i + 2] >> 2]++; }
+      }
+    }
+    octx.putImageData(dst, 0, 0);
+    drawHist(rHist, gHist, bHist);
+    document.getElementById("gradeStats").textContent = `EV ${(params.exp / 50).toFixed(2)} · Temp ${params.temp} · Contrast ${params.con}`;
+  }
+
+  function drawHist(rH, gH, bH) {
+    const hc = document.getElementById("lrHist");
+    const ctx = hc.getContext("2d");
+    ctx.clearRect(0, 0, hc.width, hc.height);
+    const maxV = Math.max(...rH, ...gH, ...bH, 1);
+    ctx.globalCompositeOperation = "screen";
+    [[rH, "rgba(239,68,68,.8)"], [gH, "rgba(34,197,94,.8)"], [bH, "rgba(59,130,246,.85)"]].forEach(([bins, col]) => {
+      ctx.fillStyle = col;
+      for (let x = 0; x < 64; x++) {
+        const h = (bins[x] / maxV) * (hc.height - 6);
+        ctx.fillRect(x * (hc.width / 64), hc.height - h, hc.width / 64, h);
+      }
+    });
+  }
+
+  function syncSliders() {
+    SLIDERS.forEach(([k]) => {
+      document.getElementById("sl-" + k).value = params[k];
+      document.getElementById("vl-" + k).textContent = params[k];
+    });
+  }
+
+  SLIDERS.forEach(([k]) => {
+    document.getElementById("sl-" + k).oninput = (e) => {
+      params[k] = Number(e.target.value);
+      document.getElementById("vl-" + k).textContent = params[k];
+      processPixels();
+    };
+  });
+  document.getElementById("presetList").onclick = (e) => {
+    const b = e.target.closest("[data-p]");
+    if (!b) return;
+    params = { ...PRESETS[Number(b.dataset.p)][1] };
+    syncSliders(); processPixels();
+  };
+  const ba = document.getElementById("beforeAfterBtn");
+  ba.onpointerdown = () => { showOriginal = true; processPixels(); };
+  window.addEventListener("pointerup", () => { if (showOriginal) { showOriginal = false; processPixels(); } });
+  document.getElementById("resetBtn").onclick = () => { params = { ...PRESETS[0][1] }; syncSliders(); processPixels(); };
+  document.getElementById("openImg").onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const im = new Image(); im.onload = () => loadImageElement(im); im.src = URL.createObjectURL(f);
+  };
+  document.getElementById("exportJpg").onclick = () => {
+    const a = document.createElement("a");
+    a.href = out.toDataURL("image/jpeg", 0.94);
+    a.download = "lightcraft-graded.jpg";
+    a.click();
+  };
+
+  const demo = new Image();
+  demo.onload = () => { params = { ...PRESETS[1][1] }; syncSliders(); loadImageElement(demo); };
+  demo.src = "../../assets/screenshots/lightcraft/hero.jpg";
+</script>
+</body>
+</html>

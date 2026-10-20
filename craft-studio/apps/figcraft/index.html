@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FigCraft — UI Design, Auto-Layout & Code Handoff</title>
+  <link rel="icon" href="../../assets/icons/figcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #02da96; }
+    .fig-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 205px 1fr 310px; }
+    .fig-left { background: var(--ui-panel); border-right: 1px solid var(--ui-line); padding: 10px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .fig-stage { display: grid; place-items: center; overflow: auto; padding: 24px; background: #0d1017; }
+    .device-frame {
+      background: #111827; border: 2px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 24px;
+      display: flex; flex-direction: column; gap: 14px; transition: width 0.2s; box-shadow: 0 24px 60px rgba(0,0,0,0.65);
+    }
+    .ui-comp { padding: 14px 16px; border-radius: 12px; cursor: pointer; outline: 2px solid transparent; }
+    .ui-comp.active { outline-color: #02da96; }
+    .fig-code { background: var(--ui-panel); border-left: 1px solid var(--ui-line); padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    pre.code-out { background: #0b0e14; padding: 10px; border-radius: 8px; border: 1px solid var(--ui-line); overflow-x: auto; font-size: 11px; color: #6ee7b7; margin: 0; white-space: pre-wrap; }
+    @media (max-width: 860px) { .fig-body { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/figcraft.png" alt=""> FigCraft <small style="opacity:.6">UI + CODE</small></span>
+    <select id="frameSize" class="ws-select">
+      <option value="390">Device: Mobile (390px)</option>
+      <option value="680">Device: Tablet (680px)</option>
+      <option value="900">Device: Desktop Web (900px)</option>
+    </select>
+    <button class="ws-btn" data-add="card">+ Card</button>
+    <button class="ws-btn" data-add="button">+ CTA Button</button>
+    <button class="ws-btn" data-add="input">+ Input Field</button>
+    <button class="ws-btn" data-add="stats">+ Metric Row</button>
+    <button class="ws-btn" id="delComp">🗑 Delete</button>
+    <span class="ws-spacer"></span>
+    <button class="ws-btn primary" id="copyHtmlBtn">📋 Copy HTML + CSS</button>
+    <button class="ws-btn" id="dlHtmlBtn">💾 Export .HTML</button>
+  </div>
+
+  <div class="fig-body">
+    <aside class="fig-left" id="layerTree"></aside>
+    <main class="fig-stage">
+      <div class="device-frame" id="frameRoot" style="width:390px"></div>
+    </main>
+    <aside class="fig-code">
+      <strong style="font-size:12px">Component Properties</strong>
+      <label>Label / Text <input id="propText" class="ws-input" style="width:100%;margin-top:4px"></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label style="flex:1">Fill <input type="color" id="propBg" value="#1e293b"></label>
+        <label style="flex:1">Radius <input type="range" id="propRad" min="0" max="32" value="14" style="width:100%"></label>
+      </div>
+      <strong style="font-size:12px">Live Dev Mode Inspect (JSX / HTML)</strong>
+      <pre class="code-out mono" id="codeOut"></pre>
+    </aside>
+  </div>
+
+  <div class="ws-status">
+    <span id="figMsg">Auto-Layout Stack active — select any component to inspect & generate clean production code</span>
+    <span class="mono">Gap: 14px · Flex Column</span>
+  </div>
+</div>
+
+<script type="module">
+  let items = [
+    { type: "card", text: "Welcome back, Designer 👋\nTrack revenue, sprints & shipments live.", bg: "#1e293b", radius: 16 },
+    { type: "stats", text: "₹4.82L Revenue · +28.4% MoM", bg: "#0f3d2e", radius: 14 },
+    { type: "input", text: "Search workspaces, tokens or components…", bg: "#0f172a", radius: 10 },
+    { type: "button", text: "Launch Production Build →", bg: "#059669", radius: 12 }
+  ];
+  let sel = 0;
+
+  function render() {
+    const frame = document.getElementById("frameRoot");
+    frame.style.width = document.getElementById("frameSize").value + "px";
+    frame.innerHTML = items.map((it, i) => {
+      const style = `background:${it.bg};border-radius:${it.radius}px;border:1px solid rgba(255,255,255,0.1);color:#f8fafc`;
+      if (it.type === "button")
+        return `<div class="ui-comp ${i === sel ? "active" : ""}" data-i="${i}" style="${style};text-align:center;font-weight:700">${it.text}</div>`;
+      if (it.type === "input")
+        return `<div class="ui-comp ${i === sel ? "active" : ""}" data-i="${i}" style="${style};color:#94a3b8;font-size:13px">🔍 ${it.text}</div>`;
+      return `<div class="ui-comp ${i === sel ? "active" : ""}" data-i="${i}" style="${style};white-space:pre-line;line-height:1.5">${it.text}</div>`;
+    }).join("");
+
+    document.getElementById("layerTree").innerHTML =
+      `<div style="font-size:11px;font-weight:700;color:var(--ui-muted)">AUTO-LAYOUT LAYERS</div>` +
+      items.map((it, i) => `<button class="ws-btn ${i === sel ? "active" : ""}" data-i="${i}" style="justify-content:flex-start">❖ ${it.type.toUpperCase()} — ${it.text.slice(0, 16)}</button>`).join("");
+
+    const cur = items[sel];
+    if (cur) {
+      document.getElementById("propText").value = cur.text;
+      document.getElementById("propBg").value = cur.bg;
+      document.getElementById("propRad").value = cur.radius;
+    }
+
+    const htmlCode = `<section style="display:flex;flex-direction:column;gap:14px;max-width:${document.getElementById("frameSize").value}px;padding:24px;background:#111827;border-radius:24px">\n` +
+      items.map((it) => `  <div style="background:${it.bg};border-radius:${it.radius}px;padding:14px 16px;color:#f8fafc">${it.text.replace(/\n/g, "<br>")}</div>`).join("\n") +
+      `\n</section>`;
+    document.getElementById("codeOut").textContent = htmlCode;
+  }
+
+  document.addEventListener("click", (e) => {
+    const pick = e.target.closest("[data-i]");
+    if (pick) { sel = Number(pick.dataset.i); render(); }
+    const add = e.target.closest("[data-add]");
+    if (add) {
+      const t = add.dataset.add;
+      items.push({ type: t, text: t === "button" ? "Primary Action" : "New Auto-Layout Block", bg: t === "button" ? "#2563eb" : "#1e293b", radius: 12 });
+      sel = items.length - 1; render();
+    }
+  });
+  document.getElementById("frameSize").onchange = render;
+  document.getElementById("propText").oninput = (e) => { if (items[sel]) { items[sel].text = e.target.value; render(); } };
+  document.getElementById("propBg").oninput = (e) => { if (items[sel]) { items[sel].bg = e.target.value; render(); } };
+  document.getElementById("propRad").oninput = (e) => { if (items[sel]) { items[sel].radius = Number(e.target.value); render(); } };
+  document.getElementById("delComp").onclick = () => { if (items.length > 1) { items.splice(sel, 1); sel = Math.max(0, sel - 1); render(); } };
+  document.getElementById("copyHtmlBtn").onclick = async () => {
+    await navigator.clipboard?.writeText(document.getElementById("codeOut").textContent);
+    document.getElementById("figMsg").textContent = "Copied production HTML + CSS to clipboard!";
+  };
+  document.getElementById("dlHtmlBtn").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([`<!doctype html><meta charset="utf-8"><body style="background:#090d16;display:grid;place-items:center;min-height:100vh;font-family:system-ui">${document.getElementById("codeOut").textContent}</body>`], { type: "text/html" }));
+    a.download = "figcraft-prototype.html";
+    a.click();
+  };
+  render();
+</script>
+</body>
+</html>

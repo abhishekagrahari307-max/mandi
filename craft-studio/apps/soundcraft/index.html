@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SoundCraft — Multitrack DAW, Synth & WAV Studio</title>
+  <link rel="icon" href="../../assets/icons/soundcraft.png">
+  <link rel="stylesheet" href="../../assets/studio-common.css">
+  <style>
+    :root { --accent: #1fa5c9; }
+    .daw-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 14px; gap: 14px; overflow-y: auto; }
+    .seq-card, .mixer-card, .piano-card { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 12px; }
+    .step-row { display: grid; grid-template-columns: 115px repeat(16, 1fr); gap: 4px; align-items: center; margin-bottom: 6px; }
+    .step-cell { height: 26px; border-radius: 5px; border: 1px solid var(--ui-line); background: #111520; cursor: pointer; }
+    .step-cell.on { background: #1fa5c9; border-color: #67e8f9; }
+    .step-cell.playhead { outline: 2px solid #facc15; }
+    .mixer-strips { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .strip { background: #121620; border: 1px solid var(--ui-line); border-radius: 9px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .keys { display: flex; gap: 5px; overflow-x: auto; padding-top: 6px; }
+    .piano-key { min-width: 44px; height: 92px; border-radius: 0 0 7px 7px; border: 1px solid #475569; background: #f8fafc; color: #0f172a; font-weight: 800; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; cursor: pointer; }
+    .piano-key:active { background: #38bdf8; }
+  </style>
+</head>
+<body>
+<div class="ws-app">
+  <div class="ws-menubar">
+    <span class="ws-logo"><img src="../../assets/icons/soundcraft.png" alt=""> SoundCraft <small style="opacity:.6">DAW</small></span>
+    <button class="ws-btn primary" id="playSeqBtn">▶ Play Session</button>
+    <label style="display:flex;align-items:center;gap:6px">BPM <input type="number" id="bpmInput" class="ws-input mono" value="122" min="60" max="200" style="width:66px"></label>
+    <label class="ws-btn">📂 Load Audio Track <input id="audioFile" type="file" accept="audio/*" hidden></label>
+    <button class="ws-btn" id="bounceWavBtn">💾 Bounce 16-bit .WAV</button>
+    <span class="ws-spacer"></span>
+    <canvas id="vuMeter" width="160" height="24" style="background:#0c1018;border-radius:5px;border:1px solid var(--ui-line)"></canvas>
+  </div>
+
+  <main class="daw-body">
+    <section class="seq-card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <strong>16-Step Arrangement & Drum/Synth Matrix</strong>
+        <span class="mono" style="color:#67e8f9" id="stepCounter">Step 01 / 16</span>
+      </div>
+      <div id="matrixMount"></div>
+    </section>
+
+    <section class="mixer-card">
+      <strong style="display:block;margin-bottom:8px">Mixing Console (Gain & Stereo Pan)</strong>
+      <div class="mixer-strips" id="mixerMount"></div>
+    </section>
+
+    <section class="piano-card">
+      <strong>Polyphonic WebAudio Synth Keyboard (Click or Touch Notes)</strong>
+      <div class="keys" id="pianoKeys"></div>
+    </section>
+  </main>
+
+  <div class="ws-status">
+    <span id="dawStatus">WebAudio Engine Ready — Click ▶ Play Session or play synth keys below</span>
+    <span class="mono">44.1 kHz · 32-bit Float DSP</span>
+  </div>
+</div>
+
+<script type="module">
+  const TRACKS = [
+    { name: "Kick Sub", freq: 58, type: "sine", vol: 0.9, pan: 0, steps: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,1,0] },
+    { name: "Crispy Snare", freq: 210, type: "triangle", vol: 0.75, pan: 0, steps: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0] },
+    { name: "Hi-Hat Pulse", freq: 920, type: "square", vol: 0.45, pan: 0.25, steps: [1,0,1,0, 1,0,1,1, 1,0,1,0, 1,0,1,1] },
+    { name: "Analog Bass", freq: 110, type: "sawtooth", vol: 0.65, pan: -0.2, steps: [1,0,0,1, 0,0,1,0, 1,0,0,1, 0,1,0,0] }
+  ];
+  const NOTES = [["C4",261.63],["D4",293.66],["E4",329.63],["F4",349.23],["G4",392.00],["A4",440.00],["B4",493.88],["C5",523.25],["D5",587.33],["E5",659.25]];
+
+  let actx = null;
+  let customBuffer = null;
+  let playing = false, step = 0, timer = null;
+
+  function ensureAudio() {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    return actx;
+  }
+
+  function triggerVoice(ctx, tr, when) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const pan = ctx.createStereoPanner();
+    osc.type = tr.type;
+    osc.frequency.setValueAtTime(tr.freq * (tr.name.includes("Bass") && step % 6 === 0 ? 1.5 : 1), when);
+    if (tr.name.includes("Kick")) osc.frequency.exponentialRampToValueAtTime(28, when + 0.16);
+    gain.gain.setValueAtTime(Math.max(0.001, tr.vol * 0.45), when);
+    gain.gain.exponentialRampToValueAtTime(0.0008, when + 0.19);
+    pan.pan.value = tr.pan;
+    osc.connect(gain).connect(pan).connect(ctx.destination);
+    osc.start(when);
+    osc.stop(when + 0.2);
+  }
+
+  function renderUI() {
+    document.getElementById("matrixMount").innerHTML = TRACKS.map((tr, ti) => `
+      <div class="step-row">
+        <strong style="font-size:12px">${tr.name}</strong>
+        ${tr.steps.map((on, si) => `<button class="step-cell ${on ? "on" : ""} ${playing && si === step ? "playhead" : ""}" data-t="${ti}" data-s="${si}"></button>`).join("")}
+      </div>`).join("");
+
+    document.getElementById("mixerMount").innerHTML = TRACKS.map((tr, ti) => `
+      <div class="strip">
+        <strong>${tr.name}</strong>
+        <label>Gain <input type="range" min="0" max="100" value="${Math.round(tr.vol * 100)}" data-vol="${ti}" style="width:100%"></label>
+        <label>Pan <input type="range" min="-100" max="100" value="${Math.round(tr.pan * 100)}" data-pan="${ti}" style="width:100%"></label>
+      </div>`).join("");
+  }
+
+  document.getElementById("pianoKeys").innerHTML = NOTES.map(([n, f]) => `<button class="piano-key" data-freq="${f}">${n}</button>`).join("");
+
+  document.addEventListener("click", (e) => {
+    const sc = e.target.closest("[data-s]");
+    if (sc) {
+      const ti = Number(sc.dataset.t), si = Number(sc.dataset.s);
+      TRACKS[ti].steps[si] = TRACKS[ti].steps[si] ? 0 : 1;
+      renderUI();
+    }
+    const pk = e.target.closest("[data-freq]");
+    if (pk) {
+      const ctx = ensureAudio();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "triangle"; o.frequency.value = Number(pk.dataset.freq);
+      g.gain.setValueAtTime(0.35, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+      o.connect(g).connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.56);
+      flashMeter(0.85);
+    }
+  });
+
+  document.addEventListener("input", (e) => {
+    if (e.target.dataset.vol !== undefined) TRACKS[Number(e.target.dataset.vol)].vol = Number(e.target.value) / 100;
+    if (e.target.dataset.pan !== undefined) TRACKS[Number(e.target.dataset.pan)].pan = Number(e.target.value) / 100;
+  });
+
+  function flashMeter(level) {
+    const cv = document.getElementById("vuMeter");
+    const c = cv.getContext("2d");
+    c.fillStyle = "#0c1018"; c.fillRect(0, 0, cv.width, cv.height);
+    const w = level * (cv.width - 8);
+    const g = c.createLinearGradient(0, 0, cv.width, 0);
+    g.addColorStop(0, "#22c55e"); g.addColorStop(0.75, "#eab308"); g.addColorStop(1, "#ef4444");
+    c.fillStyle = g;
+    c.fillRect(4, 4, w, 7);
+    c.fillRect(4, 13, w * 0.92, 7);
+  }
+
+  document.getElementById("playSeqBtn").onclick = (e) => {
+    const ctx = ensureAudio();
+    playing = !playing;
+    e.currentTarget.textContent = playing ? "⏹ Stop Session" : "▶ Play Session";
+    clearInterval(timer);
+    if (playing) {
+      const tickMs = () => (60 / Number(document.getElementById("bpmInput").value) / 4) * 1000;
+      timer = setInterval(() => {
+        let activeHits = 0;
+        TRACKS.forEach((tr) => { if (tr.steps[step]) { triggerVoice(ctx, tr, ctx.currentTime); activeHits++; } });
+        flashMeter(Math.min(1, activeHits * 0.32));
+        document.getElementById("stepCounter").textContent = `Step ${String(step + 1).padStart(2, "0")} / 16`;
+        renderUI();
+        step = (step + 1) % 16;
+      }, tickMs());
+    }
+  };
+
+  document.getElementById("audioFile").onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const ctx = ensureAudio();
+    customBuffer = await ctx.decodeAudioData(await f.arrayBuffer());
+    const src = ctx.createBufferSource(); src.buffer = customBuffer; src.connect(ctx.destination); src.start();
+    document.getElementById("dawStatus").textContent = `Playing imported audio stem: ${f.name} (${customBuffer.duration.toFixed(1)}s)`;
+  };
+
+  // Offline render 2 bars to real 16-bit PCM .WAV file!
+  document.getElementById("bounceWavBtn").onclick = async () => {
+    const bpm = Number(document.getElementById("bpmInput").value) || 122;
+    const stepSec = 60 / bpm / 4;
+    const dur = stepSec * 32;
+    const sr = 44100;
+    const off = new OfflineAudioContext(2, Math.ceil(dur * sr), sr);
+    for (let s = 0; s < 32; s++) {
+      TRACKS.forEach((tr) => { if (tr.steps[s % 16]) triggerVoice(off, tr, s * stepSec); });
+    }
+    const rendered = await off.startRendering();
+    const wavBlob = audioBufferToWav(rendered);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(wavBlob);
+    a.download = "soundcraft-mixdown.wav";
+    a.click();
+    document.getElementById("dawStatus").textContent = "Bounced stereo 16-bit PCM soundcraft-mixdown.wav!";
+  };
+
+  function audioBufferToWav(buffer) {
+    const numCh = buffer.numberOfChannels, len = buffer.length * numCh * 2 + 44;
+    const ab = new ArrayBuffer(len), view = new DataView(ab);
+    const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+    writeStr(0, "RIFF"); view.setUint32(4, len - 8, true); writeStr(8, "WAVEfmt ");
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numCh, true);
+    view.setUint32(24, buffer.sampleRate, true); view.setUint32(28, buffer.sampleRate * numCh * 2, true);
+    view.setUint16(32, numCh * 2, true); view.setUint16(34, 16, true); writeStr(36, "data");
+    view.setUint32(40, len - 44, true);
+    let offset = 44;
+    for (let i = 0; i < buffer.length; i++) {
+      for (let ch = 0; ch < numCh; ch++) {
+        const s = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        offset += 2;
+      }
+    }
+    return new Blob([ab], { type: "audio/wav" });
+  }
+
+  renderUI();
+</script>
+</body>
+</html>
