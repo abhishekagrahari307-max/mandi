@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-08T18:28:05.956322+05:30",
+  "updated_at": "2026-10-20T18:37:53.266257+05:30",
   "source": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
   "directory_sources": [
     "https://dashboard.mandiprojects.in/MandiDetails.aspx"
@@ -34,10 +34,11 @@
       ],
       "commodities": [
         "Green Chilli",
-        "Tomato"
+        "Tomato",
+        "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1400,
       "maximum_modal_price": 3500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -66,16 +67,18 @@
         "Black Gram Dal(Urd Dal)",
         "Gram Raw(Chholia)",
         "Green Chilli",
+        "Green Gram(Moong)(Whole)",
         "Onion",
         "Pegeon Pea(Arhar Fali)",
         "Potato",
         "Rice",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 10,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 501,
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 10081,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -99,11 +102,12 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Bajra(Pearl Millet/Cumbu)"
+        "Bajra(Pearl Millet/Cumbu)",
+        "Potato"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1997,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 1997,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -127,13 +131,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Green Chilli",
         "Tomato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2483,
-      "maximum_modal_price": 2800,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1500,
+      "maximum_modal_price": 2530,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Fatehpur+Sikri+APMC%2C+Agra%2C+Uttar+Pradesh"
@@ -157,11 +162,14 @@
       ],
       "commodities": [
         "Gram Raw(Chholia)",
+        "Green Chilli",
+        "Onion",
+        "Tomato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2427,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1200,
       "maximum_modal_price": 5000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -186,11 +194,12 @@
       ],
       "commodities": [
         "Firewood",
+        "Potato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -214,14 +223,20 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
+        "Green Chilli",
+        "Green Gram(Moong)(Whole)",
         "Lemon",
         "Mustard",
+        "Onion",
+        "Potato",
+        "Tomato",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
-      "maximum_modal_price": 7644,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Khairagarh+APMC%2C+Agra%2C+Uttar+Pradesh"
@@ -249,7 +264,7 @@
         "Potato"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 1900,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -274,15 +289,20 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Capsicum",
+        "Green Chilli",
+        "Lemon",
         "Maize",
+        "Onion",
         "Potato",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 2600,
+      "maximum_modal_price": 4100,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Aligarh+APMC%2C+Aligarh%2C+Uttar+Pradesh"
@@ -305,14 +325,21 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bhindi(Ladies Finger)",
+        "Bottle gourd",
+        "Brinjal",
+        "Cucumbar(Kheera)",
+        "Guava",
         "Maize",
         "Mustard",
         "Onion",
+        "Pumpkin",
+        "Sponge gourd",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1800,
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 950,
       "maximum_modal_price": 7600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -336,6 +363,7 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
         "Green Chilli",
         "Maize",
         "Onion",
@@ -343,8 +371,8 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 559,
       "maximum_modal_price": 5000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -369,14 +397,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
         "Maize",
         "Paddy(Common)",
+        "Potato",
         "Tomato",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1710,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 3411,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -401,12 +431,14 @@
       ],
       "commodities": [
         "Masur Dal",
+        "Rice",
         "Tobacco",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2450,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 265,
       "maximum_modal_price": 7000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -432,12 +464,13 @@
       "commodities": [
         "Mentha Oil",
         "Rice",
+        "Tobacco",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2400,
-      "maximum_modal_price": 132500,
+      "maximum_modal_price": 135000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Tanda+Akbarpur+APMC%2C+Ambedkar+Nagar%2C+Uttar+Pradesh"
@@ -466,7 +499,7 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 492,
       "maximum_modal_price": 2759,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -491,15 +524,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gram Raw(Chholia)",
         "Paddy(Common)",
         "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 477,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 369,
       "maximum_modal_price": 6975,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -523,14 +557,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gur(Jaggery)",
+        "Potato",
         "Rab/Liquid Jaggery/Molasses",
-        "Tomato"
+        "Tomato",
+        "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1700,
-      "maximum_modal_price": 4300,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 3877,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Amroha+APMC%2C+Amroha%2C+Uttar+Pradesh"
@@ -554,15 +591,17 @@
       ],
       "commodities": [
         "Bottle gourd",
+        "Brinjal",
         "Cauliflower",
         "Colacasia",
         "Cucumbar(Kheera)",
         "Papaya(Raw)",
         "Sponge gourd",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1500,
       "maximum_modal_price": 5059,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -597,15 +636,18 @@
         "Cauliflower",
         "Colacasia",
         "Cucumbar(Kheera)",
+        "Firewood",
         "Lemon",
+        "Maize",
         "Ridgeguard(Tori)",
         "Spinach",
         "Sponge gourd",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 15,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 467,
+      "commodity_count": 18,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 4010,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -635,7 +677,7 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 5049,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -664,16 +706,18 @@
         "Fish",
         "Green Chilli",
         "Green Gram(Moong)(Whole)",
+        "Maize",
         "Mustard",
+        "Peas(Dry)",
         "Potato",
         "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 9,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 480,
-      "maximum_modal_price": 7474,
+      "maximum_modal_price": 7450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Auraiya+APMC%2C+Auraiya%2C+Uttar+Pradesh"
@@ -697,12 +741,13 @@
       ],
       "commodities": [
         "Paddy(Common)",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
-      "maximum_modal_price": 2400,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 359,
+      "maximum_modal_price": 2459,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Dibiapur+APMC%2C+Auraiya%2C+Uttar+Pradesh"
@@ -726,12 +771,13 @@
       ],
       "commodities": [
         "Firewood",
+        "Paddy(Common)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 447,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 364,
       "maximum_modal_price": 2600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -755,14 +801,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Mustard",
         "Onion",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 474,
-      "maximum_modal_price": 3640,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 477,
+      "maximum_modal_price": 6600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Rudauli+APMC%2C+Ayodhya%2C+Uttar+Pradesh"
@@ -789,12 +836,13 @@
         "Paddy(Common)",
         "Pegeon Pea(Arhar Fali)",
         "Rice",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
-      "maximum_modal_price": 11565,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 287,
+      "maximum_modal_price": 11433,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Azamgarh+APMC%2C+Azamgarh%2C+Uttar+Pradesh"
@@ -850,7 +898,7 @@
         "Wheat"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1800,
       "maximum_modal_price": 6000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -877,13 +925,17 @@
       "commodities": [
         "Bhindi(Ladies Finger)",
         "Bottle gourd",
+        "Green Chilli",
+        "Onion",
+        "Potato",
         "Pumpkin",
         "Sponge gourd",
+        "Tomato",
         "Wheat"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 700,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 800,
       "maximum_modal_price": 2600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -935,15 +987,21 @@
       "commodities": [
         "Broken Rice",
         "Coriander(Leaves)",
+        "Firewood",
+        "Maize",
+        "Masur Dal",
+        "Onion",
         "Paddy(Common)",
         "Peas(Dry)",
         "Pegeon Pea(Arhar Fali)",
+        "Tomato",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 532,
-      "maximum_modal_price": 8000,
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 413,
+      "maximum_modal_price": 10100,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bahraich+APMC%2C+Bahraich%2C+Uttar+Pradesh"
@@ -969,9 +1027,9 @@
         "Wheat"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2400,
-      "maximum_modal_price": 2400,
+      "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Mihipurwa+APMC%2C+Bahraich%2C+Uttar+Pradesh"
@@ -994,13 +1052,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 548,
-      "maximum_modal_price": 2400,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 598,
+      "maximum_modal_price": 2476,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Naanpara+APMC%2C+Bahraich%2C+Uttar+Pradesh"
@@ -1028,9 +1087,9 @@
         "Wood"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 493,
-      "maximum_modal_price": 2330,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 480,
+      "maximum_modal_price": 2550,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Risia+APMC%2C+Bahraich%2C+Uttar+Pradesh"
@@ -1054,12 +1113,14 @@
       ],
       "commodities": [
         "Firewood",
+        "Paddy(Common)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 550,
-      "maximum_modal_price": 575,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 502,
+      "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Rupaidiha+APMC%2C+Bahraich%2C+Uttar+Pradesh"
@@ -1081,11 +1142,14 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Broken Rice",
+        "Rice"
+      ],
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1000,
+      "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Ballia+Mandi%2C+Ballia%2C+Uttar+Pradesh"
@@ -1136,12 +1200,14 @@
       "commodities": [
         "Bengal Gram Dal(Chana Dal)",
         "Firewood",
+        "Onion",
+        "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 511,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 7350,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -1165,11 +1231,12 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Masur Dal"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 6500,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2100,
       "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -1195,12 +1262,13 @@
       "commodities": [
         "Apple",
         "Brinjal",
+        "Masur Dal",
         "Pumpkin"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1630,
-      "maximum_modal_price": 8130,
+      "maximum_modal_price": 8492,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Tulsipur+APMC%2C+Balrampur%2C+Uttar+Pradesh"
@@ -1224,13 +1292,14 @@
       ],
       "commodities": [
         "Paddy(Common)",
+        "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
-      "maximum_modal_price": 2405,
+      "maximum_modal_price": 2410,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Utraula+APMC%2C+Balrampur%2C+Uttar+Pradesh"
@@ -1254,15 +1323,17 @@
       ],
       "commodities": [
         "Firewood",
+        "Gram Raw(Chholia)",
         "Peas(Dry)",
+        "Red gram/Arhar/Tur(whole)",
         "Wheat",
         "Wood",
         "gulli"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
-      "maximum_modal_price": 4900,
+      "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Atarra+APMC%2C+Banda%2C+Uttar+Pradesh"
@@ -1286,10 +1357,11 @@
       ],
       "commodities": [
         "Firewood",
-        "Gram Raw(Chholia)"
+        "Gram Raw(Chholia)",
+        "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 5300,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -1314,14 +1386,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gram Raw(Chholia)",
         "Green Gram(Moong)(Whole)",
+        "Masur Dal",
         "Peas(Dry)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 500,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 430,
       "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -1372,8 +1447,10 @@
       ],
       "commodities": [
         "Capsicum",
+        "Firewood",
         "Green Chilli",
         "Lemon",
+        "Maize",
         "Mentha Oil",
         "Onion",
         "Potato",
@@ -1382,10 +1459,10 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 10,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 512,
-      "maximum_modal_price": 134146,
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 442,
+      "maximum_modal_price": 134471,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Barabanki+APMC%2C+Barabanki%2C+Uttar+Pradesh"
@@ -1434,15 +1511,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Mentha Oil",
+        "Onion",
         "Paddy(Common)",
         "Potato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 441,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 406,
       "maximum_modal_price": 132810,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -1494,11 +1573,13 @@
       "commodities": [
         "Bottle gourd",
         "Mustard",
+        "Onion",
+        "Potato",
         "Ridgeguard(Tori)"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1200,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 600,
       "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -1548,12 +1629,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Rab/Liquid Jaggery/Molasses",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 539,
-      "maximum_modal_price": 539,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 433,
+      "maximum_modal_price": 3850,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Baheri+APMC%2C+Bareilly%2C+Uttar+Pradesh"
@@ -1578,6 +1662,7 @@
       "commodities": [
         "Bengal Gram Dal(Chana Dal)",
         "Chili Red",
+        "Coriander(Leaves)",
         "Firewood",
         "Gram Raw(Chholia)",
         "Green Chilli",
@@ -1586,16 +1671,15 @@
         "Gur(Jaggery)",
         "Maize",
         "Masur Dal",
-        "Mentha Oil",
         "Potato",
         "Rice",
         "Wheat",
         "Wood"
       ],
       "commodity_count": 15,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 439,
-      "maximum_modal_price": 370000,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 490,
+      "maximum_modal_price": 11200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bareilly+APMC%2C+Bareilly%2C+Uttar+Pradesh"
@@ -1644,14 +1728,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Paddy(Common)",
+        "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 484,
-      "maximum_modal_price": 2603,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 428,
+      "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Basti+APMC%2C+Basti%2C+Uttar+Pradesh"
@@ -1700,13 +1786,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Gur(Jaggery)",
         "Onion",
-        "Potato"
+        "Potato",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
-      "maximum_modal_price": 1500,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 4000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Dhampur+APMC%2C+Bijnor%2C+Uttar+Pradesh"
@@ -1731,12 +1820,13 @@
       "commodities": [
         "Green Chilli",
         "Gur(Jaggery)",
+        "Potato",
         "Tomato"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2500,
-      "maximum_modal_price": 3733,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 800,
+      "maximum_modal_price": 4000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kiratpur+APMC%2C+Bijnor%2C+Uttar+Pradesh"
@@ -1758,11 +1848,14 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Rice",
+        "Wheat"
+      ],
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2605,
+      "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Nagina+Mandi%2C+Bijnor%2C+Uttar+Pradesh"
@@ -1812,12 +1905,14 @@
       ],
       "commodities": [
         "Maize",
-        "Potato"
+        "Potato",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 590,
-      "maximum_modal_price": 1990,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 540,
+      "maximum_modal_price": 2600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Babrala+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -1842,13 +1937,17 @@
       "commodities": [
         "Firewood",
         "Green Chilli",
+        "Green Gram(Moong)(Whole)",
         "Maize",
+        "Onion",
+        "Potato",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 460,
-      "maximum_modal_price": 3000,
+      "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Badayoun+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -1876,7 +1975,7 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 700,
       "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -1928,12 +2027,13 @@
       ],
       "commodities": [
         "Maize",
-        "Potato"
+        "Potato",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
-      "maximum_modal_price": 1900,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 407,
+      "maximum_modal_price": 1901,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bisoli+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -1957,11 +2057,13 @@
       ],
       "commodities": [
         "Maize",
-        "Rice"
+        "Paddy(Common)",
+        "Rice",
+        "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1979,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2000,
       "maximum_modal_price": 3045,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2011,12 +2113,13 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Maize"
+        "Maize",
+        "Potato"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1868,
-      "maximum_modal_price": 1868,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 550,
+      "maximum_modal_price": 1850,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Islam+Nagar+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -2065,15 +2168,21 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Apple",
+        "Banana",
+        "Brinjal",
         "Firewood",
         "Maize",
+        "Mango",
+        "Papaya",
         "Potato",
+        "Pumpkin",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 460,
-      "maximum_modal_price": 1910,
+      "maximum_modal_price": 9000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shahaswan+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -2095,11 +2204,15 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Maize",
+        "Paddy(Common)",
+        "Wheat"
+      ],
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1950,
+      "maximum_modal_price": 3001,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sikarpur+Mandi%2C+Budaun%2C+Uttar+Pradesh"
@@ -2122,13 +2235,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
+        "Groundnut",
         "Maize",
-        "Turmeric"
+        "Potato",
+        "Turmeric",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1200,
-      "maximum_modal_price": 1986,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 7000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Ujhani+APMC%2C+Budaun%2C+Uttar+Pradesh"
@@ -2176,11 +2294,14 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Maize",
+        "Potato"
+      ],
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 605,
+      "maximum_modal_price": 1909,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Wazirganj+Mandi%2C+Budaun%2C+Uttar+Pradesh"
@@ -2205,11 +2326,12 @@
       "commodities": [
         "Green Gram(Moong)(Whole)",
         "Maize",
+        "Potato",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 879,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2259,17 +2381,20 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Green Chilli",
         "Maize",
+        "Mustard",
         "Paddy(Common)",
         "Potato",
         "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 550,
-      "maximum_modal_price": 3706,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 6200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Buland+Shahr+APMC%2C+Bulandshahr%2C+Uttar+Pradesh"
@@ -2344,13 +2469,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Maize",
         "Mustard",
         "Potato",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 6800,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -2402,16 +2528,21 @@
       ],
       "commodities": [
         "Bhindi(Ladies Finger)",
+        "Bitter gourd",
         "Bottle gourd",
+        "Brinjal",
         "Cauliflower",
         "Colacasia",
         "Cucumbar(Kheera)",
+        "Firewood",
         "Lemon",
-        "Maize"
+        "Maize",
+        "Sponge gourd",
+        "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1600,
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 410,
       "maximum_modal_price": 9100,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2435,14 +2566,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
         "Maize",
         "Paddy(Common)",
-        "Potato"
+        "Potato",
+        "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 740,
-      "maximum_modal_price": 3602,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 700,
+      "maximum_modal_price": 3712,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Jahangirabad+APMC%2C+Bulandshahr%2C+Uttar+Pradesh"
@@ -2466,14 +2599,15 @@
       ],
       "commodities": [
         "Firewood",
+        "Lemon",
         "Maize",
         "Potato",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 520,
-      "maximum_modal_price": 2452,
+      "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Khurja+APMC%2C+Bulandshahr%2C+Uttar+Pradesh"
@@ -2549,15 +2683,17 @@
       ],
       "commodities": [
         "Ginger(Green)",
+        "Green Chilli",
         "Lemon",
+        "Onion",
         "Paddy(Common)",
         "Potato",
         "Tomato",
         "Wheat"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 881,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 848,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2612,9 +2748,9 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2013,
-      "maximum_modal_price": 3568,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1950,
+      "maximum_modal_price": 3001,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sikarpur+APMC%2C+Bulandshahr%2C+Uttar+Pradesh"
@@ -2642,7 +2778,7 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 2550,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -2745,15 +2881,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
         "Firewood",
         "Gram Raw(Chholia)",
+        "Mustard",
         "Onion",
         "Red gram/Arhar/Tur(whole)",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 506,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 344,
       "maximum_modal_price": 6600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2780,9 +2919,9 @@
         "Wheat"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2305,
-      "maximum_modal_price": 2400,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2300,
+      "maximum_modal_price": 2472,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Mau%28Chitrakut%29+APMC%2C+Chitrakoot%2C+Uttar+Pradesh"
@@ -2857,14 +2996,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Onion",
         "Paddy(Common)",
         "Rice",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2276,
-      "maximum_modal_price": 2714,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 200,
+      "maximum_modal_price": 2706,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Devariya+APMC%2C+Deoria%2C+Uttar+Pradesh"
@@ -2887,14 +3028,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Maize",
         "Tobacco",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 510,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 340,
       "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2918,14 +3060,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Green Chilli",
         "Maize",
         "Onion",
         "Tomato"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1200,
-      "maximum_modal_price": 1800,
+      "maximum_modal_price": 3500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Awagarh+APMC%2C+Etah%2C+Uttar+Pradesh"
@@ -2948,15 +3091,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Chicory(Chikori/Kasni)",
         "Ginger(Green)",
+        "Green Gram(Moong)(Whole)",
         "Groundnut",
         "Lemon",
         "Maize",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1800,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 790,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -2979,11 +3125,19 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Chicory(Chikori/Kasni)",
+        "Firewood",
+        "Garlic",
+        "Maize",
+        "Tobacco",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Ganj+Dundwara+Mandi%2C+Etah%2C+Uttar+Pradesh"
@@ -3005,11 +3159,18 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Bajra(Pearl Millet/Cumbu)",
+        "Firewood",
+        "Groundnut",
+        "Maize",
+        "Potato",
+        "Wheat"
+      ],
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
+      "maximum_modal_price": 6513,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kasganj+Mandi%2C+Etah%2C+Uttar+Pradesh"
@@ -3034,14 +3195,15 @@
       "commodities": [
         "Black Gram Dal(Urd Dal)",
         "Firewood",
+        "Maize",
         "Potato",
         "Rice",
         "Wheat"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 7240,
+      "maximum_modal_price": 7200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bharthna+APMC%2C+Etawah%2C+Uttar+Pradesh"
@@ -3064,14 +3226,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Garlic",
+        "Green Chilli",
         "Maize",
         "Potato",
+        "Rice",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 2553,
+      "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Etawah+APMC%2C+Etawah%2C+Uttar+Pradesh"
@@ -3097,7 +3262,9 @@
         "Bhindi(Ladies Finger)",
         "Bitter gourd",
         "Bottle gourd",
+        "Brinjal",
         "Cabbage",
+        "Capsicum",
         "Green Chilli",
         "Maize",
         "Onion",
@@ -3105,10 +3272,10 @@
         "Potato",
         "Tomato"
       ],
-      "commodity_count": 10,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 3550,
+      "maximum_modal_price": 4820,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Jasvantnagar+APMC%2C+Etawah%2C+Uttar+Pradesh"
@@ -3183,13 +3350,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Groundnut",
+        "Maize",
         "Potato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 444,
-      "maximum_modal_price": 2605,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 423,
+      "maximum_modal_price": 7000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Farukhabad+APMC%2C+Farrukhabad%2C+Uttar+Pradesh"
@@ -3212,12 +3381,13 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Potato"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 459,
-      "maximum_modal_price": 459,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 2050,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kamlaganj+APMC%2C+Farrukhabad%2C+Uttar+Pradesh"
@@ -3240,13 +3410,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Potato",
         "Tobacco"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
-      "maximum_modal_price": 1392,
+      "maximum_modal_price": 2000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kayamganj+APMC%2C+Farrukhabad%2C+Uttar+Pradesh"
@@ -3275,8 +3446,8 @@
         "Wheat"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 494,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 440,
       "maximum_modal_price": 2410,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -3302,12 +3473,13 @@
       "commodities": [
         "Broken Rice",
         "Firewood",
+        "Paddy(Common)",
         "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 430,
       "maximum_modal_price": 2641,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3333,13 +3505,15 @@
       ],
       "commodities": [
         "Black Gram Dal(Urd Dal)",
+        "Green Chilli",
         "Onion",
         "Potato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 807,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 7500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -3367,7 +3541,7 @@
         "Wood"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3398,10 +3572,11 @@
         "Potato",
         "Rice",
         "Wheat",
+        "Wood",
         "gulli"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 6520,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3426,11 +3601,12 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Potato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 2575,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3460,9 +3636,9 @@
         "Potato"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 1999,
+      "maximum_modal_price": 2012,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shikohabad+APMC%2C+Firozabad%2C+Uttar+Pradesh"
@@ -3492,9 +3668,9 @@
         "Potato"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 9000,
+      "maximum_modal_price": 8360,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sirsaganj+APMC%2C+Firozabad%2C+Uttar+Pradesh"
@@ -3518,13 +3694,15 @@
       ],
       "commodities": [
         "Bajra(Pearl Millet/Cumbu)",
+        "Black Gram Dal(Urd Dal)",
+        "Maize",
         "Potato",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 2580,
+      "maximum_modal_price": 8054,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Tundla+APMC%2C+Firozabad%2C+Uttar+Pradesh"
@@ -3550,7 +3728,7 @@
         "Mustard"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 6350,
       "maximum_modal_price": 6350,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3578,7 +3756,7 @@
         "Wheat"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2450,
       "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3606,7 +3784,7 @@
         "Wheat"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2533,
       "maximum_modal_price": 2707,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3630,11 +3808,14 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Onion",
+        "Wood"
+      ],
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2205,
+      "maximum_modal_price": 4687,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Noida+Mandi%2C+Gautam+Buddha+Nagar%2C+Uttar+Pradesh"
@@ -3656,11 +3837,20 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Firewood",
+        "Green Chilli",
+        "Maize",
+        "Paddy(Common)",
+        "Potato",
+        "Rice",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 772,
+      "maximum_modal_price": 3591,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Hapur+Mandi%2C+Gaziabad%2C+Uttar+Pradesh"
@@ -3709,13 +3899,26 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Arecanut(Betelnut/Supari)",
+        "Black Gram Dal(Urd Dal)",
+        "Capsicum",
         "Chili Red",
+        "Garlic",
+        "Ginger(Green)",
+        "Gond",
+        "Green Chilli",
+        "Lemon",
+        "Makhana(Foxnut)",
+        "Onion",
+        "Potato",
+        "Tomato",
+        "Turmeric",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2119,
-      "maximum_modal_price": 8300,
+      "commodity_count": 15,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1009,
+      "maximum_modal_price": 46000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Ghaziabad+APMC%2C+Ghaziabad%2C+Uttar+Pradesh"
@@ -3748,9 +3951,9 @@
         "Wood"
       ],
       "commodity_count": 8,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 633,
-      "maximum_modal_price": 3500,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 772,
+      "maximum_modal_price": 3591,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Hapur+APMC%2C+Ghaziabad%2C+Uttar+Pradesh"
@@ -3773,12 +3976,13 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Onion"
+        "Onion",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2200,
-      "maximum_modal_price": 2200,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2205,
+      "maximum_modal_price": 4687,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Noida+APMC%2C+Ghaziabad%2C+Uttar+Pradesh"
@@ -3834,7 +4038,7 @@
         "Wood"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 6000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3864,7 +4068,7 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2430,
       "maximum_modal_price": 2800,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -3915,11 +4119,13 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Wheat"
+        "Firewood",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2584,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 250,
       "maximum_modal_price": 2584,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -3943,14 +4149,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Gram Raw(Chholia)",
         "Paddy(Common)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 450,
-      "maximum_modal_price": 2710,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 300,
+      "maximum_modal_price": 7025,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Gonda+APMC%2C+Gonda%2C+Uttar+Pradesh"
@@ -3973,17 +4181,22 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Ginger(Green)",
         "Green Chilli",
         "Lemon",
+        "Maize",
+        "Mustard",
         "Potato",
+        "Rice",
         "Tobacco",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 700,
-      "maximum_modal_price": 6000,
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Nawabganj+APMC%2C+Gonda%2C+Uttar+Pradesh"
@@ -4005,11 +4218,15 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Firewood",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 2502,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Payagpur+Mandi%2C+Gonda%2C+Uttar+Pradesh"
@@ -4031,11 +4248,16 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Paddy(Common)",
+        "Rice",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
+      "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Anandnagar+Mandi%2C+Gorakhpur%2C+Uttar+Pradesh"
@@ -4062,7 +4284,7 @@
         "Wood"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4090,16 +4312,18 @@
         "Bengal Gram Dal(Chana Dal)",
         "Chili Red",
         "Coriander(Leaves)",
+        "Fish",
         "Gram Raw(Chholia)",
         "Green Chilli",
         "Groundnut",
         "Makhana(Foxnut)",
+        "Onion",
         "Sweet Saag",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 10,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 40677,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4123,11 +4347,14 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 700,
+      "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Nautnava+Mandi%2C+Gorakhpur%2C+Uttar+Pradesh"
@@ -4149,11 +4376,16 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Paddy(Common)",
+        "Rice",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
+      "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Partaval+Mandi%2C+Gorakhpur%2C+Uttar+Pradesh"
@@ -4176,13 +4408,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Rice",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2228,
-      "maximum_modal_price": 2625,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 2000,
+      "maximum_modal_price": 2734,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sehjanwa+APMC%2C+Gorakhpur%2C+Uttar+Pradesh"
@@ -4214,9 +4447,9 @@
         "Wood"
       ],
       "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 430,
-      "maximum_modal_price": 7200,
+      "maximum_modal_price": 7259,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bharuasumerpur+APMC%2C+Hamirpur%2C+Uttar+Pradesh"
@@ -4265,11 +4498,12 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Peas(Dry)"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 3500,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 3500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -4293,14 +4527,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Gram Raw(Chholia)",
         "Masur Dal",
         "Mustard",
+        "Paddy(Common)",
+        "Peas(Dry)",
         "Rice",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2330,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 430,
       "maximum_modal_price": 7000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -4324,11 +4562,12 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Wheat"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2350,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 2350,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -4352,14 +4591,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Gram Raw(Chholia)",
         "Peas(Dry)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 510,
-      "maximum_modal_price": 3473,
+      "maximum_modal_price": 5418,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Raath+APMC%2C+Hamirpur%2C+Uttar+Pradesh"
@@ -4381,11 +4621,20 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Firewood",
+        "Green Chilli",
+        "Maize",
+        "Paddy(Common)",
+        "Potato",
+        "Rice",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 772,
+      "maximum_modal_price": 3591,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Hapur+Mandi%2C+Hapur%2C+Uttar+Pradesh"
@@ -4413,13 +4662,14 @@
         "Maize",
         "Paddy(Common)",
         "Potato",
+        "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 523,
-      "maximum_modal_price": 7843,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 520,
+      "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Hardoi+APMC%2C+Hardoi%2C+Uttar+Pradesh"
@@ -4449,9 +4699,9 @@
         "Wood"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 545,
-      "maximum_modal_price": 6404,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 503,
+      "maximum_modal_price": 6000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Madhoganj+APMC%2C+Hardoi%2C+Uttar+Pradesh"
@@ -4479,7 +4729,7 @@
         "Wood"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4504,12 +4754,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Maize",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 536,
-      "maximum_modal_price": 536,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 380,
+      "maximum_modal_price": 2504,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sandila+APMC%2C+Hardoi%2C+Uttar+Pradesh"
@@ -4558,6 +4811,7 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Black Gram Dal(Urd Dal)",
         "Firewood",
         "Maize",
         "Potato",
@@ -4565,10 +4819,10 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 443,
-      "maximum_modal_price": 2412,
+      "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shahabad%28New+Mandi%29+APMC%2C+Hardoi%2C+Uttar+Pradesh"
@@ -4603,9 +4857,9 @@
         "Wheat"
       ],
       "commodity_count": 10,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 6392,
+      "maximum_modal_price": 6243,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Haathras+APMC%2C+Hathras%2C+Uttar+Pradesh"
@@ -4682,11 +4936,12 @@
       "commodities": [
         "Bajra(Pearl Millet/Cumbu)",
         "Bottle gourd",
+        "Brinjal",
         "Potato",
         "Pumpkin"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 1900,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4718,7 +4973,7 @@
         "Wheat"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 6500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4746,14 +5001,17 @@
         "Bhindi(Ladies Finger)",
         "Cauliflower",
         "Colacasia",
+        "Firewood",
+        "Peas(Dry)",
         "Raddish",
         "Ridgeguard(Tori)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 2000,
+      "maximum_modal_price": 3200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Jalaun+APMC%2C+Jalaun%2C+Uttar+Pradesh"
@@ -4780,7 +5038,7 @@
         "Wheat"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2350,
       "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4805,14 +5063,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Peas(Dry)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
-      "maximum_modal_price": 3400,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 3800,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kalpi+APMC%2C+Jalaun%2C+Uttar+Pradesh"
@@ -4840,9 +5099,9 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1800,
-      "maximum_modal_price": 3110,
+      "maximum_modal_price": 3175,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Konch+APMC%2C+Jalaun%2C+Uttar+Pradesh"
@@ -4871,7 +5130,7 @@
         "Wheat"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2420,
       "maximum_modal_price": 7200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -4896,13 +5155,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Capsicum",
+        "Green Gram(Moong)(Whole)",
         "Peas(Dry)",
+        "Tomato",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2470,
-      "maximum_modal_price": 2781,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1600,
+      "maximum_modal_price": 7262,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Orai+APMC%2C+Jalaun%2C+Uttar+Pradesh"
@@ -4925,6 +5187,7 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Ginger(Green)",
         "Green Chilli",
         "Onion",
@@ -4935,9 +5198,9 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 9,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 564,
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 10429,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -4967,9 +5230,9 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
-      "maximum_modal_price": 2570,
+      "maximum_modal_price": 1500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Mugrabaadshahpur+APMC%2C+Jaunpur%2C+Uttar+Pradesh"
@@ -4998,9 +5261,9 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 2550,
+      "maximum_modal_price": 2541,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shahganj+APMC%2C+Jaunpur%2C+Uttar+Pradesh"
@@ -5024,12 +5287,13 @@
       ],
       "commodities": [
         "Firewood",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 500,
+      "maximum_modal_price": 2464,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Chirgaon+APMC%2C+Jhansi%2C+Uttar+Pradesh"
@@ -5081,10 +5345,11 @@
         "Firewood",
         "Gram Raw(Chholia)",
         "Green Gram(Moong)(Whole)",
+        "Masur Dal",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
       "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -5112,15 +5377,18 @@
         "Fish",
         "Green Chilli",
         "Green Gram(Moong)(Whole)",
+        "Groundnut",
+        "Lemon",
         "Mahua Seed(Hippe seed)",
         "Mustard",
+        "Onion",
         "Peas(Dry)",
         "Tomato",
         "Wheat"
       ],
-      "commodity_count": 8,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1800,
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1500,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5144,12 +5412,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Barley(Jau)",
+        "Firewood",
+        "Gram Raw(Chholia)",
         "Green Gram(Moong)(Whole)",
+        "Groundnut",
+        "Peas(Dry)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 350,
       "maximum_modal_price": 8768,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5177,9 +5451,9 @@
         "Wheat"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2423,
-      "maximum_modal_price": 6502,
+      "maximum_modal_price": 5482,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Moth+APMC%2C+Jhansi%2C+Uttar+Pradesh"
@@ -5203,12 +5477,14 @@
       ],
       "commodities": [
         "Groundnut",
+        "Maize",
+        "Potato",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 500,
-      "maximum_modal_price": 6976,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 452,
+      "maximum_modal_price": 6729,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Chhibramau+APMC%2C+Kannauj%2C+Uttar+Pradesh"
@@ -5238,9 +5514,9 @@
         "Wood"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 464,
-      "maximum_modal_price": 2506,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
+      "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kannauj+APMC%2C+Kannauj%2C+Uttar+Pradesh"
@@ -5262,11 +5538,17 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Masur Dal",
+        "Rice",
+        "Tobacco",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 265,
+      "maximum_modal_price": 7000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Akbarpur+Mandi%2C+Kanpur+Dehat%2C+Uttar+Pradesh"
@@ -5291,11 +5573,13 @@
       "commodities": [
         "Black Gram Dal(Urd Dal)",
         "Firewood",
+        "Green Gram(Moong)(Whole)",
+        "Mustard",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 440,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -5320,12 +5604,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Gram Raw(Chholia)",
+        "Green Gram(Moong)(Whole)",
         "Mustard",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2528,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 600,
       "maximum_modal_price": 7595,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5349,13 +5636,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Green Gram(Moong)(Whole)",
         "Mustard",
         "Potato",
+        "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 550,
       "maximum_modal_price": 7500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -5384,9 +5673,9 @@
         "Wood"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 519,
-      "maximum_modal_price": 2510,
+      "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Baripaal+APMC%2C+Kanpur+Nagar%2C+Uttar+Pradesh"
@@ -5411,12 +5700,13 @@
       "commodities": [
         "Paddy(Common)",
         "Potato",
+        "Turmeric",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
-      "maximum_modal_price": 2400,
+      "maximum_modal_price": 15000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Choubepur+APMC%2C+Kanpur+Nagar%2C+Uttar+Pradesh"
@@ -5465,19 +5755,23 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Arecanut(Betelnut/Supari)",
         "Chili Red",
         "Garlic",
         "Jowar(Sorghum)",
         "Makhana(Foxnut)",
+        "Mustard",
         "Onion",
+        "Potato",
+        "Rambans(Agave /Century plant)",
         "Tomato",
         "Turmeric",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 9,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1800,
+      "commodity_count": 13,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 40245,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5501,11 +5795,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
+        "Paddy(Common)",
+        "Potato",
         "Wheat"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 600,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5529,14 +5826,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Chicory(Chikori/Kasni)",
+        "Firewood",
         "Garlic",
         "Maize",
         "Tobacco",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1904,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5563,12 +5863,14 @@
         "Bajra(Pearl Millet/Cumbu)",
         "Firewood",
         "Groundnut",
+        "Maize",
+        "Potato",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
-      "maximum_modal_price": 6634,
+      "maximum_modal_price": 6513,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kasganj+APMC%2C+Kasganj%2C+Uttar+Pradesh"
@@ -5617,11 +5919,12 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 420,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5646,11 +5949,13 @@
       ],
       "commodities": [
         "Gur(Jaggery)",
-        "Paddy(Common)"
+        "Paddy(Common)",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2300,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 420,
       "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -5701,13 +6006,16 @@
       ],
       "commodities": [
         "Gur(Jaggery)",
+        "Khandsari(Desi Khand)",
+        "Onion",
         "Paddy(Common)",
+        "Potato",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1852,
-      "maximum_modal_price": 4200,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 900,
+      "maximum_modal_price": 4650,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Golagokarnath+APMC%2C+Lakhimpur+Kheri%2C+Uttar+Pradesh"
@@ -5731,15 +6039,19 @@
       ],
       "commodities": [
         "Gur(Jaggery)",
+        "Khandsari(Desi Khand)",
+        "Lemon",
         "Mustard",
+        "Onion",
         "Potato",
         "Tomato",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 616,
-      "maximum_modal_price": 7742,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 600,
+      "maximum_modal_price": 7319,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Lakhimpur+APMC%2C+Lakhimpur+Kheri%2C+Uttar+Pradesh"
@@ -5762,6 +6074,7 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Banana - Green",
         "Bhindi(Ladies Finger)",
         "Bottle gourd",
         "Brinjal",
@@ -5774,10 +6087,10 @@
         "Ridgeguard(Tori)",
         "Wheat"
       ],
-      "commodity_count": 11,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 810,
-      "maximum_modal_price": 2537,
+      "commodity_count": 12,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 800,
+      "maximum_modal_price": 2602,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Maigalganj+APMC%2C+Lakhimpur+Kheri%2C+Uttar+Pradesh"
@@ -5801,10 +6114,11 @@
       ],
       "commodities": [
         "Firewood",
+        "Paddy(Common)",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -5835,12 +6149,15 @@
         "Brinjal",
         "Cucumbar(Kheera)",
         "Lemon",
-        "Pumpkin"
+        "Pumpkin",
+        "Rab/Liquid Jaggery/Molasses",
+        "Tinda",
+        "Wheat"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1230,
-      "maximum_modal_price": 4550,
+      "maximum_modal_price": 4260,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Tikonia+APMC%2C+Lakhimpur+Kheri%2C+Uttar+Pradesh"
@@ -5864,17 +6181,20 @@
       ],
       "commodities": [
         "Gram Raw(Chholia)",
+        "Green Gram(Moong)(Whole)",
+        "Groundnut",
         "Lemon",
         "Masur Dal",
         "Mustard",
         "Peas(Dry)",
         "Soyabean",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2353,
-      "maximum_modal_price": 8091,
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
+      "maximum_modal_price": 7775,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Lalitpur+APMC%2C+Lalitpur%2C+Uttar+Pradesh"
@@ -5902,7 +6222,7 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2200,
       "maximum_modal_price": 4000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -5927,14 +6247,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Maize",
         "Paddy(Common)",
         "Rice",
         "Wheat"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2500,
-      "maximum_modal_price": 4432,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 4200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Banthara+APMC%2C+Lucknow%2C+Uttar+Pradesh"
@@ -5961,8 +6283,10 @@
         "Bengal Gram Dal(Chana Dal)",
         "Black Gram Dal(Urd Dal)",
         "Dal Mix",
+        "Firewood",
         "Gram Raw(Chholia)",
         "Green Gram Dal(Moong Dal)",
+        "Makhana(Foxnut)",
         "Masur Dal",
         "Mentha Oil",
         "Mustard",
@@ -5970,14 +6294,13 @@
         "Peas(Dry)",
         "Pegeon Pea(Arhar Fali)",
         "Potato",
-        "Rice",
         "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 17,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 500,
+      "commodity_count": 18,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 386,
       "maximum_modal_price": 134500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6002,13 +6325,14 @@
       ],
       "commodities": [
         "Paddy(Common)",
+        "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
-      "maximum_modal_price": 2402,
+      "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Anandnagar+APMC%2C+Maharajganj%2C+Uttar+Pradesh"
@@ -6034,7 +6358,7 @@
         "Onion"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1500,
       "maximum_modal_price": 1500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6085,11 +6409,12 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2400,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 700,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6119,9 +6444,9 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
-      "maximum_modal_price": 2500,
+      "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Partaval+APMC%2C+Maharajganj%2C+Uttar+Pradesh"
@@ -6145,11 +6470,13 @@
       ],
       "commodities": [
         "Barley(Jau)",
+        "Firewood",
+        "Rice",
         "Wheat"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2350,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6173,6 +6500,7 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gram Raw(Chholia)",
         "Green Gram(Moong)(Whole)",
         "Groundnut",
@@ -6181,9 +6509,9 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 9360,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6233,14 +6561,15 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Garlic",
         "Groundnut",
         "Maize",
         "Potato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 550,
       "maximum_modal_price": 6573,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6266,10 +6595,11 @@
       ],
       "commodities": [
         "Firewood",
-        "Garlic"
+        "Garlic",
+        "Maize"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 450,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6297,11 +6627,12 @@
         "Garlic",
         "Groundnut",
         "Maize",
+        "Potato",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1988,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6342,8 +6673,8 @@
         "Wheat"
       ],
       "commodity_count": 15,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 800,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 733,
       "maximum_modal_price": 4500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6368,16 +6699,20 @@
       ],
       "commodities": [
         "Bajra(Pearl Millet/Cumbu)",
+        "Garlic",
         "Ginger(Green)",
         "Green Chilli",
         "Green Gram(Moong)(Whole)",
+        "Lemon",
+        "Onion",
         "Potato",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 590,
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 515,
       "maximum_modal_price": 12000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6405,7 +6740,7 @@
         "Paddy(Common)"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2300,
       "maximum_modal_price": 5066,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6438,15 +6773,19 @@
         "Brinjal",
         "Cauliflower",
         "Cucumbar(Kheera)",
+        "Gram Raw(Chholia)",
         "Guava",
         "Mango",
         "Paddy(Common)",
-        "Wheat"
+        "Pegeon Pea(Arhar Fali)",
+        "Pumpkin",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 12,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1280,
-      "maximum_modal_price": 8900,
+      "commodity_count": 16,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
+      "maximum_modal_price": 11200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kopaganj+APMC%2C+Mau%2C+Uttar+Pradesh"
@@ -6502,7 +6841,7 @@
         "Tomato"
       ],
       "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 650,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6528,12 +6867,13 @@
       ],
       "commodities": [
         "Firewood",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
-      "maximum_modal_price": 620,
+      "maximum_modal_price": 2650,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Meerut+APMC%2C+Meerut%2C+Uttar+Pradesh"
@@ -6608,13 +6948,23 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bhindi(Ladies Finger)",
+        "Brinjal",
+        "Cabbage",
+        "Cauliflower",
+        "Cowpea(Veg)",
         "Gram Raw(Chholia)",
         "Green Chilli",
-        "Rice"
+        "Little gourd(Kundru)",
+        "Pointed gourd(Parval)",
+        "Pumpkin",
+        "Raddish",
+        "Rice",
+        "Sponge gourd"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2000,
+      "commodity_count": 13,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 900,
       "maximum_modal_price": 6600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6638,11 +6988,12 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Mustard"
+        "Mustard",
+        "Pea Pod/Pea Cod/हरी मटर"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 5400,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 4425,
       "maximum_modal_price": 5400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6665,11 +7016,18 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Banana",
+        "Firewood",
+        "Maize",
+        "Paddy(Common)",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 360,
+      "maximum_modal_price": 2749,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bilaspur+Mandi%2C+Moradabad%2C+Uttar+Pradesh"
@@ -6691,11 +7049,22 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Firewood",
+        "Garlic",
+        "Ginger(Green)",
+        "Green Chilli",
+        "Gur(Jaggery)",
+        "Lemon",
+        "Maize",
+        "Onion",
+        "Potato",
+        "Tomato"
+      ],
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 604,
+      "maximum_modal_price": 6174,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Chandausi+Mandi%2C+Moradabad%2C+Uttar+Pradesh"
@@ -6748,6 +7117,7 @@
         "Banana",
         "Bhindi(Ladies Finger)",
         "Cabbage",
+        "Ginger(Green)",
         "Green Chilli",
         "Mango",
         "Mousambi(Sweet Lime)",
@@ -6757,8 +7127,8 @@
         "Tomato",
         "Wood"
       ],
-      "commodity_count": 12,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 13,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 600,
       "maximum_modal_price": 15000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -6840,8 +7210,8 @@
         "Wood"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 497,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 430,
       "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6871,8 +7241,8 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 591,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
       "maximum_modal_price": 8020,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -6897,13 +7267,15 @@
       ],
       "commodities": [
         "Firewood",
+        "Maize",
         "Paddy(Common)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 503,
-      "maximum_modal_price": 2147,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 505,
+      "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Puranpur+APMC%2C+Pilibhit%2C+Uttar+Pradesh"
@@ -6926,15 +7298,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Paddy(Common)",
         "Potato",
         "Rice",
+        "Wheat",
         "Wood",
         "dried mango"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 469,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 350,
       "maximum_modal_price": 6000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7010,12 +7384,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Potato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 500,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 2585,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7039,18 +7415,24 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Fish",
         "Green Chilli",
         "Mahua",
         "Onion",
+        "Paddy(Common)",
         "Potato",
+        "Rice",
+        "Sesamum(Sesame,Gingelly,Til)",
+        "Sweet Saag",
+        "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 450,
-      "maximum_modal_price": 4010,
+      "commodity_count": 13,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 300,
+      "maximum_modal_price": 15770,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Prayagraj+APMC%2C+Prayagraj%2C+Uttar+Pradesh"
@@ -7073,14 +7455,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Fish",
         "Onion",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1850,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 350,
       "maximum_modal_price": 3200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7108,9 +7492,9 @@
         "Wheat"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2500,
-      "maximum_modal_price": 3148,
+      "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bachranwa+APMC%2C+Raebareli%2C+Uttar+Pradesh"
@@ -7133,12 +7517,14 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Wheat"
+        "Rice",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2485,
-      "maximum_modal_price": 2485,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 600,
+      "maximum_modal_price": 2570,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Jayas+APMC%2C+Raebareli%2C+Uttar+Pradesh"
@@ -7163,6 +7549,7 @@
       "commodities": [
         "Bhindi(Ladies Finger)",
         "Bottle gourd",
+        "Firewood",
         "Paddy(Common)",
         "Pointed gourd(Parval)",
         "Potato",
@@ -7170,10 +7557,10 @@
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 8,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 450,
-      "maximum_modal_price": 3225,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 350,
+      "maximum_modal_price": 2951,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Lalganj+APMC%2C+Raebareli%2C+Uttar+Pradesh"
@@ -7196,15 +7583,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Onion",
         "Paddy(Common)",
         "Rice",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2000,
-      "maximum_modal_price": 2473,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 413,
+      "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Raibareilly+APMC%2C+Raebareli%2C+Uttar+Pradesh"
@@ -7233,8 +7622,8 @@
         "Wood"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 474,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 450,
       "maximum_modal_price": 133500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7258,13 +7647,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Banana",
+        "Firewood",
+        "Maize",
         "Paddy(Common)",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2348,
-      "maximum_modal_price": 2762,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 360,
+      "maximum_modal_price": 2749,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bilaspur+APMC%2C+Rampur%2C+Uttar+Pradesh"
@@ -7287,12 +7680,13 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Maize",
         "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 533,
-      "maximum_modal_price": 685,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 659,
+      "maximum_modal_price": 1730,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Milak+APMC%2C+Rampur%2C+Uttar+Pradesh"
@@ -7315,14 +7709,19 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Gram Raw(Chholia)",
         "Maize",
+        "Masur Dal",
         "Onion",
+        "Peas(Dry)",
+        "Pegeon Pea(Arhar Fali)",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 669,
-      "maximum_modal_price": 1808,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 476,
+      "maximum_modal_price": 8850,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Rampur+APMC%2C+Rampur%2C+Uttar+Pradesh"
@@ -7348,9 +7747,9 @@
         "Wood"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 585,
-      "maximum_modal_price": 585,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shahabad+APMC%2C+Rampur%2C+Uttar+Pradesh"
@@ -7373,12 +7772,14 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Chili Red"
+        "Chili Red",
+        "Garlic",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 9000,
-      "maximum_modal_price": 9000,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 870,
+      "maximum_modal_price": 10000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Tanda%28Rampur%29+APMC%2C+Rampur%2C+Uttar+Pradesh"
@@ -7408,6 +7809,8 @@
         "Cauliflower",
         "Colacasia",
         "Cucumbar(Kheera)",
+        "Ginger(Green)",
+        "Green Chilli",
         "Lemon",
         "Mango(Raw-Ripe)",
         "Potato",
@@ -7417,10 +7820,10 @@
         "Spinach",
         "Tomato"
       ],
-      "commodity_count": 15,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 17,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 700,
-      "maximum_modal_price": 2853,
+      "maximum_modal_price": 4300,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Chutmalpur+APMC%2C+Saharanpur%2C+Uttar+Pradesh"
@@ -7446,7 +7849,7 @@
         "Onion"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1600,
       "maximum_modal_price": 1600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -7474,9 +7877,9 @@
         "Paddy(Common)"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 3388,
-      "maximum_modal_price": 3388,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 3465,
+      "maximum_modal_price": 3467,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Gangoh+APMC%2C+Saharanpur%2C+Uttar+Pradesh"
@@ -7502,7 +7905,7 @@
         "Paddy(Common)"
       ],
       "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 3600,
       "maximum_modal_price": 3600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -7559,7 +7962,7 @@
         "Onion"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1100,
       "maximum_modal_price": 2400,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -7584,15 +7987,19 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Capsicum",
         "Garlic",
         "Ginger(Green)",
+        "Green Chilli",
+        "Lemon",
+        "Onion",
         "Potato",
         "Tobacco",
         "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 642,
+      "commodity_count": 9,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 636,
       "maximum_modal_price": 6475,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7617,16 +8024,20 @@
       ],
       "commodities": [
         "Firewood",
+        "Garlic",
+        "Ginger(Green)",
         "Green Chilli",
+        "Gur(Jaggery)",
+        "Lemon",
         "Maize",
         "Onion",
         "Potato",
         "Tomato"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 600,
-      "maximum_modal_price": 5581,
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 604,
+      "maximum_modal_price": 6174,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Chandausi+APMC%2C+Sambhal%2C+Uttar+Pradesh"
@@ -7650,16 +8061,18 @@
       ],
       "commodities": [
         "Bengal Gram(Gram)(Whole)",
+        "Firewood",
         "Green Chilli",
+        "Mentha Oil",
         "Paddy(Common)",
         "Potato",
         "Tomato",
         "Wheat"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 700,
-      "maximum_modal_price": 8672,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 130000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Muradabad+APMC%2C+Sambhal%2C+Uttar+Pradesh"
@@ -7682,13 +8095,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Apple",
+        "Brinjal",
+        "Cauliflower",
+        "Maize",
         "Potato",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 460,
-      "maximum_modal_price": 600,
+      "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sambhal+APMC%2C+Sambhal%2C+Uttar+Pradesh"
@@ -7711,17 +8128,21 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Banana - Green",
         "Bhindi(Ladies Finger)",
         "Bitter gourd",
         "Bottle gourd",
         "Brinjal",
+        "Cauliflower",
+        "Cucumbar(Kheera)",
         "Pumpkin",
+        "Rice",
         "Wheat"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1150,
-      "maximum_modal_price": 2533,
+      "maximum_modal_price": 3200,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Khalilabad+APMC%2C+Sant+Kabir+Nagar%2C+Uttar+Pradesh"
@@ -7748,7 +8169,7 @@
         "Rice"
       ],
       "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2300,
       "maximum_modal_price": 2500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -7799,14 +8220,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Groundnut",
         "Maize",
+        "Mentha Oil",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 500,
-      "maximum_modal_price": 2469,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 852,
+      "maximum_modal_price": 107994,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Jalalabad+APMC%2C+Shahjahanpur%2C+Uttar+Pradesh"
@@ -7831,11 +8254,12 @@
       "commodities": [
         "Onion",
         "Potato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 550,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 2440,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7861,12 +8285,15 @@
       "commodities": [
         "Maize",
         "Paddy(Common)",
+        "Potato",
+        "Rab/Liquid Jaggery/Molasses",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 525,
-      "maximum_modal_price": 1942,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 3600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Powayan+APMC%2C+Shahjahanpur%2C+Uttar+Pradesh"
@@ -7889,15 +8316,19 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Bengal Gram Dal(Chana Dal)",
         "Broken Rice",
+        "Firewood",
+        "Green Gram Dal(Moong Dal)",
         "Maize",
         "Paddy(Common)",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1500,
-      "maximum_modal_price": 2475,
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 540,
+      "maximum_modal_price": 8371,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Shahjahanpur+APMC%2C+Shahjahanpur%2C+Uttar+Pradesh"
@@ -7923,11 +8354,12 @@
         "Firewood",
         "Groundnut",
         "Paddy(Common)",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 460,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 400,
       "maximum_modal_price": 5210,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -7951,20 +8383,26 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Apple",
         "Bhindi(Ladies Finger)",
+        "Bitter gourd",
         "Bottle gourd",
         "Brinjal",
         "Cabbage",
         "Cucumbar(Kheera)",
         "Green Chilli",
+        "Guava",
         "Lemon",
+        "Onion",
         "Potato",
-        "Pumpkin"
+        "Pumpkin",
+        "Raddish",
+        "Tomato"
       ],
-      "commodity_count": 9,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 15,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 800,
-      "maximum_modal_price": 3950,
+      "maximum_modal_price": 6650,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Kairana+APMC%2C+Shamli%2C+Uttar+Pradesh"
@@ -7988,18 +8426,27 @@
       ],
       "commodities": [
         "Bhindi(Ladies Finger)",
+        "Bitter gourd",
         "Bottle gourd",
         "Brinjal",
         "Cabbage",
+        "Cucumbar(Kheera)",
+        "Garlic",
         "Grapes",
+        "Green Chilli",
         "Guava",
         "Lemon",
-        "Papaya"
+        "Mango",
+        "Papaya",
+        "Potato",
+        "Ridgeguard(Tori)",
+        "Sponge gourd",
+        "Tomato"
       ],
-      "commodity_count": 8,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 520,
-      "maximum_modal_price": 4350,
+      "commodity_count": 17,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 420,
+      "maximum_modal_price": 5000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Khandhla+APMC%2C+Shamli%2C+Uttar+Pradesh"
@@ -8036,7 +8483,7 @@
         "Tomato"
       ],
       "commodity_count": 12,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1128,
       "maximum_modal_price": 8000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -8067,7 +8514,7 @@
         "Tomato"
       ],
       "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 800,
       "maximum_modal_price": 3800,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -8092,12 +8539,14 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Firewood"
+        "Firewood",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 465,
-      "maximum_modal_price": 465,
+      "maximum_modal_price": 2450,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bhinga+APMC%2C+Shravasti%2C+Uttar+Pradesh"
@@ -8121,12 +8570,13 @@
       ],
       "commodities": [
         "Firewood",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 507,
+      "maximum_modal_price": 2502,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Payagpur+APMC%2C+Shravasti%2C+Uttar+Pradesh"
@@ -8154,7 +8604,7 @@
         "Wheat"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 2500,
       "maximum_modal_price": 3000,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -8180,12 +8630,14 @@
       ],
       "commodities": [
         "Broken Rice",
+        "Rice",
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 738,
-      "maximum_modal_price": 2100,
+      "maximum_modal_price": 2521,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Naugarh+APMC%2C+Siddharthnagar%2C+Uttar+Pradesh"
@@ -8209,13 +8661,14 @@
       ],
       "commodities": [
         "Broken Rice",
+        "Firewood",
         "Paddy(Common)",
         "Rice",
         "Wheat"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2050,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 410,
       "maximum_modal_price": 2956,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -8244,7 +8697,7 @@
         "Wood"
       ],
       "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 1000,
       "maximum_modal_price": 3500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
@@ -8269,13 +8722,14 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gur(Jaggery)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 531,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 300,
       "maximum_modal_price": 4500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -8299,12 +8753,13 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Wheat",
         "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 662,
-      "maximum_modal_price": 662,
+      "commodity_count": 2,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 500,
+      "maximum_modal_price": 2630,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Maholi+APMC%2C+Sitapur%2C+Uttar+Pradesh"
@@ -8336,9 +8791,9 @@
         "Wood"
       ],
       "commodity_count": 7,
-      "latest_price_date": "03/08/2026",
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 465,
-      "maximum_modal_price": 131944,
+      "maximum_modal_price": 129973,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Mehmoodabad+APMC%2C+Sitapur%2C+Uttar+Pradesh"
@@ -8361,12 +8816,13 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Mustard",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 558,
+      "commodity_count": 3,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 322,
       "maximum_modal_price": 6700,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
@@ -8390,14 +8846,17 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Gur(Jaggery)",
+        "Onion",
         "Tobacco",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 3,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 454,
-      "maximum_modal_price": 3400,
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 360,
+      "maximum_modal_price": 3500,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sidhauli+APMC%2C+Sitapur%2C+Uttar+Pradesh"
@@ -8420,16 +8879,21 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Cowpea(Lobia/Karamani)",
+        "Firewood",
+        "Gond",
         "Mustard",
         "Paddy(Common)",
         "Rice",
+        "Sugar",
         "Tomato",
-        "Wheat"
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 5,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1500,
-      "maximum_modal_price": 6739,
+      "commodity_count": 10,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 395,
+      "maximum_modal_price": 6800,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sitapur+APMC%2C+Sitapur%2C+Uttar+Pradesh"
@@ -8452,15 +8916,18 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
         "Gur(Jaggery)",
         "Maize",
+        "Mustard",
+        "Paddy(Common)",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 4,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 664,
-      "maximum_modal_price": 3000,
+      "commodity_count": 7,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 300,
+      "maximum_modal_price": 6173,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Viswan+APMC%2C+Sitapur%2C+Uttar+Pradesh"
@@ -8482,11 +8949,25 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Bhindi(Ladies Finger)",
+        "Bitter gourd",
+        "Bottle gourd",
+        "Brinjal",
+        "Cabbage",
+        "Colacasia",
+        "Cowpea(Veg)",
+        "Cucumbar(Kheera)",
+        "Ginger(Green)",
+        "Pointed gourd(Parval)",
+        "Raddish",
+        "Sponge gourd",
+        "Tomato"
+      ],
+      "commodity_count": 13,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 1000,
+      "maximum_modal_price": 9600,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Dudhi+Mandi%2C+Sonbhadra%2C+Uttar+Pradesh"
@@ -8510,16 +8991,18 @@
       ],
       "commodities": [
         "Barley(Jau)",
+        "Black Gram Dal(Urd Dal)",
         "Green Chilli",
+        "Mustard",
         "Paddy(Common)",
         "Rice",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
+      "commodity_count": 8,
+      "latest_price_date": "20/10/2026",
       "minimum_modal_price": 500,
-      "maximum_modal_price": 4300,
+      "maximum_modal_price": 7848,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Robertsganj+APMC%2C+Sonbhadra%2C+Uttar+Pradesh"
@@ -8541,11 +9024,18 @@
         "+91-8765957686",
         "+91-8765958630"
       ],
-      "commodities": [],
-      "commodity_count": 0,
-      "latest_price_date": null,
-      "minimum_modal_price": null,
-      "maximum_modal_price": null,
+      "commodities": [
+        "Firewood",
+        "Gram Raw(Chholia)",
+        "Paddy(Common)",
+        "Rice",
+        "Wheat",
+        "Wood"
+      ],
+      "commodity_count": 6,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 369,
+      "maximum_modal_price": 6975,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Sultanpur+Mandi%2C+Sultanpur%2C+Uttar+Pradesh"
@@ -8576,9 +9066,9 @@
         "Wood"
       ],
       "commodity_count": 6,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 482,
-      "maximum_modal_price": 2562,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 495,
+      "maximum_modal_price": 2570,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Bangarmau+APMC%2C+Unnao%2C+Uttar+Pradesh"
@@ -8601,12 +9091,15 @@
         "+91-8765958630"
       ],
       "commodities": [
-        "Rice"
+        "Firewood",
+        "Rice",
+        "Wheat",
+        "Wood"
       ],
-      "commodity_count": 1,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 2300,
-      "maximum_modal_price": 2300,
+      "commodity_count": 4,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 530,
+      "maximum_modal_price": 2471,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Purwa+APMC%2C+Unnao%2C+Uttar+Pradesh"
@@ -8629,13 +9122,16 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Firewood",
+        "Rice",
+        "Tomato",
         "Wheat",
         "Wood"
       ],
-      "commodity_count": 2,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 474,
-      "maximum_modal_price": 2550,
+      "commodity_count": 5,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 488,
+      "maximum_modal_price": 2585,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Unnao+APMC%2C+Unnao%2C+Uttar+Pradesh"
@@ -8684,19 +9180,22 @@
         "+91-8765958630"
       ],
       "commodities": [
+        "Chili Red",
         "Fish",
         "Garlic",
+        "Ginger(Green)",
         "Green Chilli",
         "Onion",
+        "Potato",
         "Rice",
         "Tobacco",
         "Tomato",
         "Turmeric"
       ],
-      "commodity_count": 8,
-      "latest_price_date": "03/08/2026",
-      "minimum_modal_price": 1500,
-      "maximum_modal_price": 8600,
+      "commodity_count": 11,
+      "latest_price_date": "20/10/2026",
+      "minimum_modal_price": 800,
+      "maximum_modal_price": 11924,
       "official_contact_url": "https://emandi.up.gov.in/MandiHome/Contactus",
       "enam_portal_url": "https://www.enam.gov.in/web/",
       "map_url": "https://www.google.com/maps/search/?api=1&query=Varanasi+APMC%2C+Varanasi%2C+Uttar+Pradesh"

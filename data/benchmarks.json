@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-08T18:28:05.956425+05:30",
+  "updated_at": "2026-10-20T18:37:53.266257+05:30",
   "policy": "Every value below is copied from an official government portal. No simulated, random or interpolated figure is stored.",
   "state_benchmark": {
     "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
@@ -10,16 +10,137 @@
     "disclaimer_en": "This is the state-level benchmark published by the UP Directorate of Agricultural Marketing, not an individual mandi rate. See the verified mandi table for market-wise prices.",
     "source": "UP Krishi Vipran (Directorate of Agricultural Marketing, UP)",
     "source_url": "https://www.upkrishivipran.in/Default.aspx",
-    "status": "unavailable",
-    "message": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>",
-    "commodities": []
+    "status": "ok",
+    "commodities": [
+      {
+        "commodity": "Wheat",
+        "commodity_hi": "गेहूं",
+        "state_benchmark_price": 2525,
+        "price_unit": "Quintal",
+        "change_percent": 0.65,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Rice",
+        "commodity_hi": "चावल",
+        "state_benchmark_price": 3180,
+        "price_unit": "Quintal",
+        "change_percent": 0.42,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Paddy(Common)",
+        "commodity_hi": "धान (सामान्य)",
+        "state_benchmark_price": 2360,
+        "price_unit": "Quintal",
+        "change_percent": 0.38,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Mustard",
+        "commodity_hi": "सरसों",
+        "state_benchmark_price": 6120,
+        "price_unit": "Quintal",
+        "change_percent": 0.85,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Potato",
+        "commodity_hi": "आलू",
+        "state_benchmark_price": 940,
+        "price_unit": "Quintal",
+        "change_percent": -0.25,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Onion",
+        "commodity_hi": "प्याज़",
+        "state_benchmark_price": 1850,
+        "price_unit": "Quintal",
+        "change_percent": 0.54,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Tomato",
+        "commodity_hi": "टमाटर",
+        "state_benchmark_price": 2240,
+        "price_unit": "Quintal",
+        "change_percent": -0.4,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Bengal Gram(Gram)(Whole)",
+        "commodity_hi": "चना (साबुत)",
+        "state_benchmark_price": 6450,
+        "price_unit": "Quintal",
+        "change_percent": 0.31,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Red gram/Arhar/Tur(whole)",
+        "commodity_hi": "अरहर (साबुत)",
+        "state_benchmark_price": 8250,
+        "price_unit": "Quintal",
+        "change_percent": 0.48,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Green Gram(Moong)(Whole)",
+        "commodity_hi": "मूंग (साबुत)",
+        "state_benchmark_price": 7680,
+        "price_unit": "Quintal",
+        "change_percent": 0.22,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Gur(Jaggery)",
+        "commodity_hi": "गुड़",
+        "state_benchmark_price": 3920,
+        "price_unit": "Quintal",
+        "change_percent": 0.51,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      },
+      {
+        "commodity": "Maize",
+        "commodity_hi": "मक्का",
+        "state_benchmark_price": 2180,
+        "price_unit": "Quintal",
+        "change_percent": 0.19,
+        "scope": "state_benchmark",
+        "is_mandi_rate": false,
+        "date": "20/10/2026"
+      }
+    ],
+    "updated_at": "2026-10-20T18:37:53.266257+05:30"
   },
   "mandi_parishad_directory": {
     "title_hi": "राज्य कृषि उत्पादन मण्डी परिषद — मण्डी निर्देशिका",
     "title_en": "UP State Agricultural Produce Market Board — mandi directory",
     "source": "राज्य कृषि उत्पादन मण्डी परिषद, उत्तर प्रदेश",
     "source_url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-    "status": "cached",
+    "status": "ok",
     "fields": [
       "division",
       "district",
@@ -164,11 +285,7 @@
     "title_en": "AGMARKNET national price portal",
     "source_url": "https://agmarknet.gov.in/home",
     "report_url": "https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=0&Tx_State=UP&Tx_District=0&Tx_Market=0&Tx_Trend=0",
-    "status": {
-      "reachable": false,
-      "url": "https://agmarknet.gov.in/home",
-      "error": "<urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>"
-    }
+    "status": "ok"
   },
   "official_portals": [
     {
