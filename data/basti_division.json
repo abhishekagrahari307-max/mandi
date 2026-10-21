@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T07:31:18.899285+05:30",
+  "generated_at": "2026-10-21T07:43:54.965950+05:30",
   "division": "Basti Division + Lucknow + Highest Price District",
   "division_hi": "बस्ती मंडल + लखनऊ + सबसे अधिक भाव वाला जिला",
   "focus_districts": [
@@ -96,7 +96,7 @@
       "mandis_active": [
         "Basti APMC"
       ],
-      "total_records": 38,
+      "total_records": 44,
       "wheat": {
         "count": 4,
         "lowest_price": 2450,
@@ -365,7 +365,7 @@
         "Shohratgarh APMC",
         "Wansi APMC"
       ],
-      "total_records": 78,
+      "total_records": 99,
       "wheat": {
         "count": 10,
         "lowest_price": 2430,
@@ -1008,7 +1008,7 @@
       "mandis_active": [
         "Khalilabad APMC"
       ],
-      "total_records": 32,
+      "total_records": 44,
       "wheat": {
         "count": 3,
         "lowest_price": 2450,
@@ -1198,7 +1198,7 @@
         "Lucknow APMC",
         "Lucknow Main APMC"
       ],
-      "total_records": 74,
+      "total_records": 95,
       "wheat": {
         "count": 6,
         "lowest_price": 1926,
@@ -1845,5 +1845,5 @@
       "fca_fci": null
     }
   ],
-  "total_up_records_used": 6389
+  "total_up_records_used": 8321
 }
