@@ -2597,12 +2597,46 @@
             }
         }
 
-        function tryFetchLiveDataGovBrowser(slotMeta) {
-            const url = 'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=300&filters%5Bstate.keyword%5D=Uttar%20Pradesh';
+        const GOV_DATA_API_TOKENS = [
+            '579b464db66ec23bdd0000012f71f627d3ca4fac4963e4a1ffdc87ef',
+            '579b464db66ec23bdd0000017704f08e67e4414747189afb9ef2d662',
+            '579b464db66ec23bdd0000018f6d2aeef8304ec27142be2cf3ef3688',
+            '579b464db66ec23bdd000001a52cfa0cf9df446369ab0b90dbcd0df1',
+            '579b464db66ec23bdd000001c43ef34767ce496343897dfb1893102b',
+            '579b464db66ec23bdd000001ccc5a88319d2459f7a6636ac3d094690',
+            '579b464db66ec23bdd000001f436e980073b4bdd6780e17e5677bcf6',
+            '579b464db66ec23bdd0000011a3d34ba831d462471750c44dc8751a1',
+            '579b464db66ec23bdd0000012a392a566362485c4e95c88c71108314',
+            '579b464db66ec23bdd0000019caa65074d924b6d6b8473dc337b0bca',
+            '579b464db66ec23bdd000001b2514d41372b43dc72bd9f48789a2d05',
+            '579b464db66ec23bdd000001c5a31678fab4415f47f01852437363c0',
+            '579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645',
+            '579b464db66ec23bdd000001ee885840c47c49684f34c042ddbf9f24',
+            '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b'
+        ];
+        const GOV_DATA_RESOURCE_IDS = [
+            '9ef84268-d588-465a-a308-a864a43d0070',
+            '35985678-0d79-46b4-9ed6-6f13308a1d24',
+            '6141ea17-a69d-4713-b600-0a43c8fd9a6c'
+        ];
+
+        function tryFetchLiveDataGovBrowser(slotMeta, tokenIndex = 0, resourceIndex = 0) {
+            if (tokenIndex >= GOV_DATA_API_TOKENS.length || resourceIndex >= GOV_DATA_RESOURCE_IDS.length) return;
+            const apiKey = GOV_DATA_API_TOKENS[tokenIndex];
+            const resId = GOV_DATA_RESOURCE_IDS[resourceIndex];
+            const url = `https://api.data.gov.in/resource/${resId}?api-key=${apiKey}&format=json&limit=500&filters%5Bstate.keyword%5D=Uttar%20Pradesh`;
             fetch(url)
-                .then(res => res.ok ? res.json() : null)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
                 .then(payload => {
-                    if (!payload || !Array.isArray(payload.records) || !payload.records.length) return;
+                    if (!payload || !Array.isArray(payload.records) || !payload.records.length) {
+                        if (tokenIndex + 1 < Math.min(4, GOV_DATA_API_TOKENS.length)) {
+                            tryFetchLiveDataGovBrowser(slotMeta, tokenIndex + 1, resourceIndex);
+                        }
+                        return;
+                    }
                     let mergedCount = 0;
                     const byKey = new Map();
                     latestData.forEach((r, idx) => {
@@ -2635,7 +2669,11 @@
                         renderPriceRanking();
                     }
                 })
-                .catch(() => {});
+                .catch(() => {
+                    if (tokenIndex + 1 < Math.min(4, GOV_DATA_API_TOKENS.length)) {
+                        tryFetchLiveDataGovBrowser(slotMeta, tokenIndex + 1, resourceIndex);
+                    }
+                });
         }
 
         function startFourDailySlotWatcher() {
@@ -3180,7 +3218,7 @@
 
             // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
             const fetchLatest = isLocal
-                ? fetch(`${host}/api/v2/rates?limit=5000`)
+                ? fetch(`${host}/api/v2/rates?limit=10000`)
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();

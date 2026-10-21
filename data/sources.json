@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-10-21T07:10:51.522469+05:30",
+  "last_checked_at": "2026-10-21T07:31:18.899285+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -11,21 +11,21 @@
     {
       "name": "data.gov.in",
       "status": "ok",
-      "records": 3437,
+      "records": 6389,
       "url": "https://data.gov.in/",
-      "message": "Verified 3437 UP mandi records across 75 districts (21/10/2026 • 06:30 IST)"
+      "message": "Verified 6389 UP mandi records across 75 districts (21/10/2026 • 06:30 IST)"
     },
     {
       "name": "AGMARKNET portal",
       "status": "ok",
-      "records": 3437,
+      "records": 6389,
       "url": "https://agmarknet.gov.in/home",
-      "message": "Cross-verified 3437 UP commodity price records (21/10/2026)"
+      "message": "Cross-verified 6389 UP commodity price records (21/10/2026)"
     },
     {
       "name": "AGMARKNET",
       "status": "ok",
-      "records": 3437,
+      "records": 6389,
       "url": "https://agmarknet.gov.in/home",
       "message": "Active (21/10/2026 • 06:30 IST)"
     },
