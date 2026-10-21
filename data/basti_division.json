@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T07:10:51.522469+05:30",
+  "generated_at": "2026-10-21T07:31:18.899285+05:30",
   "division": "Basti Division + Lucknow + Highest Price District",
   "division_hi": "बस्ती मंडल + लखनऊ + सबसे अधिक भाव वाला जिला",
   "focus_districts": [
@@ -96,7 +96,7 @@
       "mandis_active": [
         "Basti APMC"
       ],
-      "total_records": 21,
+      "total_records": 38,
       "wheat": {
         "count": 4,
         "lowest_price": 2450,
@@ -304,10 +304,10 @@
         }
       ],
       "rice_common": {
-        "count": 2,
+        "count": 3,
         "lowest_price": 2500,
-        "highest_price": 3000,
-        "modal_average": 2750,
+        "highest_price": 3280,
+        "modal_average": 2910,
         "records": [
           {
             "mandi": "Basti APMC",
@@ -319,6 +319,20 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Basti APMC",
+            "district": "Basti",
+            "district_hi": "बस्ती",
+            "commodity": "Rice",
+            "variety": "III",
+            "grade": "FAQ",
+            "min_price": 3180,
+            "max_price": 3280,
+            "modal_price": 3230,
             "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
@@ -348,9 +362,10 @@
         "Bansi APMC",
         "Naugarh APMC",
         "Sahiyapur APMC",
-        "Shohratgarh APMC"
+        "Shohratgarh APMC",
+        "Wansi APMC"
       ],
-      "total_records": 48,
+      "total_records": 78,
       "wheat": {
         "count": 10,
         "lowest_price": 2430,
@@ -852,10 +867,10 @@
         }
       ],
       "rice_common": {
-        "count": 7,
+        "count": 9,
         "lowest_price": 2000,
         "highest_price": 3850,
-        "modal_average": 2777,
+        "modal_average": 2883,
         "records": [
           {
             "mandi": "Bansi APMC",
@@ -900,6 +915,20 @@
             "source_url": "https://data.gov.in/"
           },
           {
+            "mandi": "Naugarh APMC",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "commodity": "Rice",
+            "variety": "III",
+            "grade": "FAQ",
+            "min_price": 3200,
+            "max_price": 3300,
+            "modal_price": 3250,
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
             "mandi": "Sahiyapur APMC",
             "district": "Siddharthnagar",
             "district_hi": "सिद्धार्थनगर",
@@ -909,6 +938,20 @@
             "min_price": 2496,
             "max_price": 2496,
             "modal_price": 2496,
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Sahiyapur APMC",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "commodity": "Rice",
+            "variety": "III",
+            "grade": "FAQ",
+            "min_price": 3210,
+            "max_price": 3310,
+            "modal_price": 3260,
             "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
@@ -965,7 +1008,7 @@
       "mandis_active": [
         "Khalilabad APMC"
       ],
-      "total_records": 25,
+      "total_records": 32,
       "wheat": {
         "count": 3,
         "lowest_price": 2450,
@@ -1152,14 +1195,15 @@
       "district_hi": "लखनऊ",
       "mandis_active": [
         "Banthara APMC",
-        "Lucknow APMC"
+        "Lucknow APMC",
+        "Lucknow Main APMC"
       ],
-      "total_records": 39,
+      "total_records": 74,
       "wheat": {
-        "count": 5,
-        "lowest_price": 2400,
+        "count": 6,
+        "lowest_price": 1926,
         "highest_price": 2670,
-        "modal_average": 2482,
+        "modal_average": 2417,
         "records": [
           {
             "mandi": "Banthara APMC",
@@ -1227,6 +1271,20 @@
             "min_price": 2400,
             "max_price": 2400,
             "modal_price": 2400,
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Lucknow Main APMC",
+            "district": "Lucknow",
+            "district_hi": "लखनऊ",
+            "commodity": "Wheat",
+            "variety": "FAQ",
+            "grade": "FAQ",
+            "min_price": 1926,
+            "max_price": 2261,
+            "modal_price": 2094,
             "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
@@ -1408,13 +1466,48 @@
           "multi_source_verified": true,
           "three_source_verified": false,
           "verification_level": "multi_source"
+        },
+        {
+          "state": "Uttar Pradesh",
+          "district": "Lucknow",
+          "district_hi": "लखनऊ",
+          "district_reported": "Lucknow",
+          "mandi": "Lucknow Main APMC",
+          "mandi_hi": "Lucknow Main मंडी",
+          "commodity": "Wheat",
+          "commodity_hi": "गेहूं",
+          "variety": "FAQ",
+          "variety_hi": "सामान्य (FAQ)",
+          "grade": "FAQ",
+          "grade_hi": "FAQ",
+          "arrivals": null,
+          "arrivals_unit": null,
+          "arrivals_unit_hi": null,
+          "min_price": 1926,
+          "max_price": 2261,
+          "modal_price": 2094,
+          "price_unit": "Quintal",
+          "arrival_date": "21/10/2026",
+          "source": "data.gov.in, AGMARKNET",
+          "verified": true,
+          "source_id": "data_gov_in",
+          "source_reported": true,
+          "verification_sources": [
+            "data.gov.in",
+            "AGMARKNET"
+          ],
+          "verification_count": 2,
+          "cross_verified": true,
+          "multi_source_verified": true,
+          "three_source_verified": false,
+          "verification_level": "multi_source"
         }
       ],
       "rice_common": {
-        "count": 3,
-        "lowest_price": 2650,
+        "count": 4,
+        "lowest_price": 2043,
         "highest_price": 4200,
-        "modal_average": 3179,
+        "modal_average": 2940,
         "records": [
           {
             "mandi": "Banthara APMC",
@@ -1454,6 +1547,20 @@
             "min_price": 2654,
             "max_price": 2684,
             "modal_price": 2671,
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Lucknow Main APMC",
+            "district": "Lucknow",
+            "district_hi": "लखनऊ",
+            "commodity": "Rice",
+            "variety": "FAQ",
+            "grade": "FAQ",
+            "min_price": 2043,
+            "max_price": 2398,
+            "modal_price": 2221,
             "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
@@ -1738,5 +1845,5 @@
       "fca_fci": null
     }
   ],
-  "total_up_records_used": 3437
+  "total_up_records_used": 6389
 }

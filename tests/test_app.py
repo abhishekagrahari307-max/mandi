@@ -250,9 +250,16 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(body["status"], "active")
         self.assertTrue(body["auto_update_enabled"])
         self.assertEqual(body["update_slots_ist"], ["06:30", "12:30", "16:30", "20:30"])
-        self.assertGreaterEqual(body["total_records"], 3000)
+        self.assertEqual(body["government_api_tokens_configured"], 15)
+        self.assertGreaterEqual(body["total_records"], 6000)
         self.assertEqual(body["total_districts"], 75)
-        self.assertGreaterEqual(body["total_mandis"], 285)
+        self.assertGreaterEqual(body["total_mandis"], 350)
+
+        tok_resp = self.client.get("/api/v2/tokens/status")
+        self.assertEqual(tok_resp.status_code, 200)
+        tok_body = tok_resp.json()
+        self.assertEqual(tok_body["total_tokens"], 15)
+        self.assertEqual(len(tok_body["resource_ids"]), 3)
 
 
 if __name__ == "__main__":

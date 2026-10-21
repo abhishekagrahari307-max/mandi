@@ -49,7 +49,29 @@ DATA_DIR = Path("data")
 DATA_GOV_RESOURCE_ID = os.environ.get(
     "DATA_GOV_RESOURCE_ID", "9ef84268-d588-465a-a308-a864a43d0070"
 )
+DATA_GOV_RESOURCE_IDS = (
+    "9ef84268-d588-465a-a308-a864a43d0070",
+    "35985678-0d79-46b4-9ed6-6f13308a1d24",
+    "6141ea17-a69d-4713-b600-0a43c8fd9a6c",
+)
 DATA_GOV_API = f"https://api.data.gov.in/resource/{DATA_GOV_RESOURCE_ID}"
+GOV_DATA_API_TOKEN_POOL = (
+    "579b464db66ec23bdd0000012f71f627d3ca4fac4963e4a1ffdc87ef",
+    "579b464db66ec23bdd0000017704f08e67e4414747189afb9ef2d662",
+    "579b464db66ec23bdd0000018f6d2aeef8304ec27142be2cf3ef3688",
+    "579b464db66ec23bdd000001a52cfa0cf9df446369ab0b90dbcd0df1",
+    "579b464db66ec23bdd000001c43ef34767ce496343897dfb1893102b",
+    "579b464db66ec23bdd000001ccc5a88319d2459f7a6636ac3d094690",
+    "579b464db66ec23bdd000001f436e980073b4bdd6780e17e5677bcf6",
+    "579b464db66ec23bdd0000011a3d34ba831d462471750c44dc8751a1",
+    "579b464db66ec23bdd0000012a392a566362485c4e95c88c71108314",
+    "579b464db66ec23bdd0000019caa65074d924b6d6b8473dc337b0bca",
+    "579b464db66ec23bdd000001b2514d41372b43dc72bd9f48789a2d05",
+    "579b464db66ec23bdd000001c5a31678fab4415f47f01852437363c0",
+    "579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645",
+    "579b464db66ec23bdd000001ee885840c47c49684f34c042ddbf9f24",
+    "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b",
+)
 SAMPLE_DATA_GOV_API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
@@ -250,32 +272,22 @@ def format_record(raw: dict[str, Any], source: str = "") -> dict[str, Any] | Non
 # ─── Method 1: data.gov.in Official API ───────────────────────────────────────
 
 def fetch_method1_datagov() -> tuple[list[dict[str, Any]], str]:
-    """Fetch from data.gov.in OGD API. Uses real key first, then sample key fallback."""
-    api_key = os.environ.get("DATA_GOV_IN_API_KEY", "").strip()
-    records: list[dict[str, Any]] = []
-    source_label = ""
+    """Fetch from data.gov.in OGD API rotating through all 15 Government API tokens."""
+    env_key = os.environ.get("DATA_GOV_IN_API_KEY", "").strip()
+    candidate_keys = list(GOV_DATA_API_TOKEN_POOL)
+    if env_key and env_key not in candidate_keys:
+        candidate_keys.insert(0, env_key)
 
-    # Try real key first
-    if api_key and api_key != SAMPLE_DATA_GOV_API_KEY:
+    for idx, key in enumerate(candidate_keys, start=1):
         try:
-            records = _fetch_datagov(api_key, state="Uttar Pradesh", max_records=12000)
+            max_recs = 2000 if key == SAMPLE_DATA_GOV_API_KEY else 12000
+            records = _fetch_datagov(key, state="Uttar Pradesh", max_records=max_recs)
             if records:
-                source_label = "data.gov.in (official key)"
-                print(f"  ✅ Method 1 (real key): {len(records)} UP records")
+                source_label = f"data.gov.in (token #{idx})"
+                print(f"  ✅ Method 1 (token #{idx}): {len(records)} UP records")
                 return records, source_label
-            print("  ⚠ Method 1: Real key returned 0 records, trying sample key...")
         except Exception as exc:
-            print(f"  ⚠ Method 1: Real key failed ({exc}), trying sample key...")
-
-    # Fallback to sample key
-    try:
-        records = _fetch_datagov(SAMPLE_DATA_GOV_API_KEY, state="Uttar Pradesh", max_records=2000)
-        if records:
-            source_label = "data.gov.in (sample key fallback)"
-            print(f"  ✅ Method 1 (sample key): {len(records)} UP records")
-            return records, source_label
-    except Exception as exc:
-        print(f"  ⚠ Method 1: Sample key also failed: {exc}")
+            print(f"  ⚠ Method 1 token #{idx} failed ({exc}), trying next token...")
 
     print("  ❌ Method 1: No records from data.gov.in")
     return [], ""

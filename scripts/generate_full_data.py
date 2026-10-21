@@ -159,7 +159,9 @@ def get_slot_schedule_info(now: datetime | None = None) -> dict:
 def is_outlier_record(comm: str, var: str, modal: float, max_p: float) -> bool:
     c = comm.lower()
     v = var.lower()
-    if modal <= 0:
+    if modal < 100 or modal > 150000:
+        return True
+    if max_p > modal * 2.5:
         return True
     if "mentha" in c and modal > 150000:
         return True
@@ -172,38 +174,75 @@ def is_outlier_record(comm: str, var: str, modal: float, max_p: float) -> bool:
                 return True
     if c == "wheat" and (modal < 2000 or modal > 3200):
         return True
+    if "mustard oil" in c and modal < 10000:
+        return True
+    if c == "mustard" and (modal < 4500 or modal > 7500):
+        return True
+    if "barley" in c and modal < 1800:
+        return True
+    if ("masur" in c or "lentil" in c) and modal < 4800:
+        return True
+    if c == "sugar" and (modal < 3400 or modal > 5200):
+        return True
+    if "gur" in c or "jaggery" in c:
+        if modal < 2800 or modal > 5500:
+            return True
+    if "peas(dry)" in c and modal < 3200:
+        return True
+    if c == "garlic" and modal < 3500:
+        return True
+    if c == "maize" and modal < 1650:
+        return True
+    if "bajra" in c and modal < 1750:
+        return True
+    if "sesamum" in c and modal < 7500:
+        return True
+    if c == "turmeric" and modal < 6000:
+        return True
     return False
 
 
 def try_fetch_live_datagov(today_str: str) -> list[dict]:
-    """Attempt a live fetch from api.data.gov.in if outbound network permits."""
-    api_key = os.environ.get("DATA_GOV_IN_API_KEY", "").strip() or SAMPLE_API_KEY
-    params = urllib.parse.urlencode({
-        "api-key": api_key,
-        "format": "json",
-        "limit": "500",
-        "offset": "0",
-        "filters[state]": "Uttar Pradesh",
-    })
-    url = f"{DATA_GOV_API}?{params}"
-    req = urllib.request.Request(url, headers={"User-Agent": "UP-Mandi-Dashboard/4.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-            raw_list = payload.get("records", [])
-            live_recs = []
-            for r in raw_list:
-                rec = update_data.format_record(r)
-                if rec:
-                    rec["arrival_date"] = today_str
-                    live_recs.append(rec)
-            return live_recs
-    except Exception:
-        return []
+    """Attempt live multi-token, multi-resource fetch from api.data.gov.in."""
+    env_key = os.environ.get("DATA_GOV_IN_API_KEY", "").strip()
+    token_pool = list(getattr(update_data, "GOV_DATA_API_TOKEN_POOL", (SAMPLE_API_KEY,)))
+    if env_key and env_key not in token_pool:
+        token_pool.insert(0, env_key)
+    resource_ids = list(getattr(update_data, "DATA_GOV_RESOURCE_IDS", (DATA_GOV_RESOURCE_ID,)))
+
+    live_recs: list[dict] = []
+    for res_id in resource_ids[:2]:
+        for api_key in token_pool[:3]:
+            params = urllib.parse.urlencode({
+                "api-key": api_key,
+                "format": "json",
+                "limit": "500",
+                "offset": "0",
+                "filters[state]": "Uttar Pradesh",
+            })
+            url = f"https://api.data.gov.in/resource/{res_id}?{params}"
+            req = urllib.request.Request(url, headers={"User-Agent": "UP-Mandi-Dashboard/4.0"})
+            try:
+                with urllib.request.urlopen(req, timeout=3) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+                    raw_list = payload.get("records", [])
+                    if raw_list:
+                        for r in raw_list:
+                            rec = update_data.format_record(r)
+                            if rec:
+                                rec["arrival_date"] = today_str
+                                live_recs.append(rec)
+                        break
+            except Exception:
+                break
+        if not live_recs:
+            break
+    return live_recs
 
 
 def collect_clean_records(today_str: str) -> list[dict]:
     raw_sources = [
+        DATA_DIR / "datagov_raw_records.json",
         DATA_DIR / "latest.json",
         DATA_DIR / "source_prices.json.bak",
         DATA_DIR / "source_prices.json",
@@ -281,11 +320,15 @@ def collect_clean_records(today_str: str) -> list[dict]:
             d = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             continue
-        recs = d.get("records", []) or [
-            r for fd in d.get("feeds", []) for r in fd.get("records", [])
-        ]
+        if isinstance(d, list):
+            recs = d
+        else:
+            recs = d.get("records", []) or [
+                r for fd in d.get("feeds", []) for r in fd.get("records", [])
+            ]
         for r in recs:
-            _ingest_record(r)
+            if isinstance(r, dict):
+                _ingest_record(r)
 
     # Also ingest any live records from api.data.gov.in if reachable
     for r in try_fetch_live_datagov(today_str):
@@ -450,6 +493,8 @@ def refresh_all_snapshots(now: datetime | None = None) -> dict:
         "connected_price_sources": ["data.gov.in", "AGMARKNET"],
         "connected_price_source_count": 2,
         "minimum_price_source_matches": 2,
+        "government_api_tokens_configured": len(getattr(update_data, "GOV_DATA_API_TOKEN_POOL", ())),
+        "ogd_resource_ids": list(getattr(update_data, "DATA_GOV_RESOURCE_IDS", ())),
         "cross_verified_record_count": len(latest_records),
         "multi_source_verified_record_count": len(latest_records),
         "three_source_verified_record_count": 0,

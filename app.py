@@ -1566,12 +1566,32 @@ if os.environ.get("ENVIRONMENT") != "production" and not _SCHEDULER_STARTED:
 def get_auto_update_status():
     """Return live status of the 4-time daily automatic update engine (06:30, 12:30, 16:30, 20:30 IST)."""
     status_info = sync_snapshots_and_db(force=False)
+    token_pool = list(getattr(daily_snapshot_engine.update_data, "GOV_DATA_API_TOKEN_POOL", ()))
+    resource_ids = list(getattr(daily_snapshot_engine.update_data, "DATA_GOV_RESOURCE_IDS", ()))
     return {
         "status": "active",
         "auto_update_enabled": True,
         "update_frequency": "4 times daily",
         "update_slots_ist": daily_snapshot_engine.UPDATE_SLOTS_IST,
+        "government_api_tokens_configured": len(token_pool),
+        "ogd_resource_ids": resource_ids,
         **status_info,
+    }
+
+
+@app.get("/api/v2/tokens/status")
+def get_government_tokens_status():
+    """Return status of configured Government of India OGD API tokens and resources."""
+    token_pool = list(getattr(daily_snapshot_engine.update_data, "GOV_DATA_API_TOKEN_POOL", ()))
+    resource_ids = list(getattr(daily_snapshot_engine.update_data, "DATA_GOV_RESOURCE_IDS", ()))
+    masked_tokens = [f"{t[:10]}...{t[-6:]}" for t in token_pool]
+    return {
+        "status": "active",
+        "provider": "Open Government Data (data.gov.in) & AGMARKNET",
+        "total_tokens": len(token_pool),
+        "masked_tokens": masked_tokens,
+        "resource_ids": resource_ids,
+        "rotation_mode": "automatic_failover",
     }
 
 
