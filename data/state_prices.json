@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-10-21T07:31:18.899285+05:30",
+  "updated_at": "2026-10-21T07:43:54.965950+05:30",
   "source": "Cross-verified OGD (data.gov.in) & AGMARKNET",
   "verified": true,
   "states": [
     {
       "state": "Uttar Pradesh",
       "district_count": 75,
-      "mandi_count": 370,
-      "record_count": 6389,
-      "average_modal_price": 3875,
+      "mandi_count": 372,
+      "record_count": 8321,
+      "average_modal_price": 3555,
       "minimum_price": 10,
       "maximum_price": 135500,
       "top_commodity": "Wheat",
