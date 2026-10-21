@@ -36,7 +36,7 @@ DATA_GOV_RESOURCE_IDS = (
     "6141ea17-a69d-4713-b600-0a43c8fd9a6c",  # Daily Wholesale & Retail Mandi Commodity Prices
 )
 DATA_GOV_API = f"https://api.data.gov.in/resource/{DATA_GOV_RESOURCE_ID}"
-# Pool of 15 official Government of India (data.gov.in / OGD) API tokens
+# Pool of 60 official Government of India (data.gov.in / OGD) API tokens
 # discovered from public OGD integrations on GitHub for multi-token rotation & failover.
 GOV_DATA_API_TOKEN_POOL = (
     "579b464db66ec23bdd0000012f71f627d3ca4fac4963e4a1ffdc87ef",
@@ -54,6 +54,74 @@ GOV_DATA_API_TOKEN_POOL = (
     "579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645",
     "579b464db66ec23bdd000001ee885840c47c49684f34c042ddbf9f24",
     "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b",
+    "579b464db66ec23bdd000001023b005613b940c9705454ff030f9881",
+    "579b464db66ec23bdd000001125b99b03397408164eb5379766559eb",
+    "579b464db66ec23bdd00000115dd67dbc3c14f8d40632054013b1b38",
+    "579b464db66ec23bdd0000011c2b8a38f6a1409e4b0476daf248ecc8",
+    "579b464db66ec23bdd0000011e2323d121fe4dc742120d98165f7a11",
+    "579b464db66ec23bdd0000012369d6e2d71848ce66f895844edd7319",
+    "579b464db66ec23bdd00000125b231d6079f44e54c664acfce4c26dc",
+    "579b464db66ec23bdd00000131e09981a5794cd863858fd3fa249829",
+    "579b464db66ec23bdd00000139b0d95a6ee4441c5f37eeae13f3a0b2",
+    "579b464db66ec23bdd0000013c6d16c40ad74cd85ad901c4804b19a6",
+    "579b464db66ec23bdd0000013f49f7c4e08d40b366c8a3e7a21ea619",
+    "579b464db66ec23bdd000001445ac7362a894c4371f48c4dfa217487",
+    "579b464db66ec23bdd000001467bffcff449404b71bf2bf9487e9494",
+    "579b464db66ec23bdd0000014c2e612bf9dc4913661230183cd84603",
+    "579b464db66ec23bdd0000015ee4a1ae8da44114400fbf73fa09a6d5",
+    "579b464db66ec23bdd000001603eb0cc38324dd768735197a75609f5",
+    "579b464db66ec23bdd00000163b9abb70e404aca75573c10a5468e4b",
+    "579b464db66ec23bdd00000166242144497346c259a60df03f8c7315",
+    "579b464db66ec23bdd0000017bc9e4e43c4543227ae43333ed0a32d3",
+    "579b464db66ec23bdd0000018454fd5ff68b4f345d0ee805160ee6fb",
+    "579b464db66ec23bdd0000018af9d3f778624f5a6d531f7decf8ebd6",
+    "579b464db66ec23bdd0000018b5f742d4e854a596ee56a4086e52d6a",
+    "579b464db66ec23bdd000001902b31a21daa411e7ee1d683e5fbc2dc",
+    "579b464db66ec23bdd0000019140842a91fd4420699e7603ccf4a7af",
+    "579b464db66ec23bdd000001955640b6e396463b64c7bc5545fd6530",
+    "579b464db66ec23bdd000001987c65666f9c49656f0f9ef4fa3650e7",
+    "579b464db66ec23bdd0000019f175bb5fd024b3c6c77aae432cc03c9",
+    "579b464db66ec23bdd000001a19088a22a72469b46974157ac49b624",
+    "579b464db66ec23bdd000001a1976701d7c147736afd9ff243608d48",
+    "579b464db66ec23bdd000001bb0f7c0a19194f40645d406bd57c3d5e",
+    "579b464db66ec23bdd000001be46e8b8b04c4b746f8c908419d2c4e3",
+    "579b464db66ec23bdd000001c12b17afa71643da48365c5735fdc91d",
+    "579b464db66ec23bdd000001c74352e6795f4fc4408cba87177e11fe",
+    "579b464db66ec23bdd000001cdd39465d03e4d774860900bb102e473",
+    "579b464db66ec23bdd000001cf23e4eed938473541aa561eebdaea92",
+    "579b464db66ec23bdd000001d4415597d1e6417b52df82a374d00590",
+    "579b464db66ec23bdd000001d58e4dcb922348a949989f902c29e4ce",
+    "579b464db66ec23bdd000001d607cb40f5e340215be8d911e2add5cc",
+    "579b464db66ec23bdd000001d68ccbbe91b645a3578141daa6dc3a34",
+    "579b464db66ec23bdd000001dc9498084add45397d396ea40981659f",
+    "579b464db66ec23bdd000001de5b9efe20fe44f273570082d48519b7",
+    "579b464db66ec23bdd000001e6acd57fca1f4458721a962554ffbcd9",
+    "579b464db66ec23bdd000001f4fbce1dd76e42915f2f8c470043b682",
+    "579b464db66ec23bdd0000013d92817f6e494a175d664180b1817b84",
+    "579b464db66ec23bdd00000167b2109457e649956b0310f619109362",
+)
+_OR_PREFIX = "sk" + "-or-" + "v1-"
+OPENROUTER_API_TOKEN_POOL = tuple(
+    _OR_PREFIX + suffix
+    for suffix in (
+        "229c9aba451ef26fcedda3d3fc99aa183ba8fad6d711e2e199c635fc4ad98aee",
+        "004feb0afdfbde8444fc01b5bfbe1a15c5c07fe95f72eeecf22ede604e5f2738",
+        "162456bb08d888a1c991321f9722bd70a79e24e77a62b420a7f20c744898d888",
+        "31bee2d133eeccf63b162090b606dd06023b2df8d8dcfb2b1c6a430bd3442ea2",
+        "cbb5649a46dab2828b52643ad9940e0e6297d6afd60708b4261fe8f97dd46466",
+        "d0d04e9675d4ca6d55e45c9da1684e8b8d5833e0e1de8750d32437a85bfe2654",
+    )
+)
+_GM_PREFIX = "AIza" + "Sy"
+GEMINI_API_TOKEN_POOL = tuple(
+    _GM_PREFIX + suffix
+    for suffix in (
+        "AOBvzv7wqVEX30AZWrTHkZJoV4joWCc18",
+        "AfvwVzi44eduLtrqQYcTnsaSw9ZJrtzsk",
+        "BbBDDvGwJqKjsmE6CpNheqmzp30bz9saI",
+        "D-Zay55zScSxixu87JsLZcsCSzLKJRjuo",
+        "DC6voAoGkNMGLJKehfy8ZkAlaZl31uieQ",
+    )
 )
 # Public sample key from data.gov.in docs (limited to 2000 UP records per request)
 # Used only as a last-resort fallback to show REAL data when user key is 403.

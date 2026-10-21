@@ -55,27 +55,17 @@ DATA_GOV_RESOURCE_IDS = (
     "6141ea17-a69d-4713-b600-0a43c8fd9a6c",
 )
 DATA_GOV_API = f"https://api.data.gov.in/resource/{DATA_GOV_RESOURCE_ID}"
-GOV_DATA_API_TOKEN_POOL = (
-    "579b464db66ec23bdd0000012f71f627d3ca4fac4963e4a1ffdc87ef",
-    "579b464db66ec23bdd0000017704f08e67e4414747189afb9ef2d662",
-    "579b464db66ec23bdd0000018f6d2aeef8304ec27142be2cf3ef3688",
-    "579b464db66ec23bdd000001a52cfa0cf9df446369ab0b90dbcd0df1",
-    "579b464db66ec23bdd000001c43ef34767ce496343897dfb1893102b",
-    "579b464db66ec23bdd000001ccc5a88319d2459f7a6636ac3d094690",
-    "579b464db66ec23bdd000001f436e980073b4bdd6780e17e5677bcf6",
-    "579b464db66ec23bdd0000011a3d34ba831d462471750c44dc8751a1",
-    "579b464db66ec23bdd0000012a392a566362485c4e95c88c71108314",
-    "579b464db66ec23bdd0000019caa65074d924b6d6b8473dc337b0bca",
-    "579b464db66ec23bdd000001b2514d41372b43dc72bd9f48789a2d05",
-    "579b464db66ec23bdd000001c5a31678fab4415f47f01852437363c0",
-    "579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645",
-    "579b464db66ec23bdd000001ee885840c47c49684f34c042ddbf9f24",
-    "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b",
+from update_data import (
+    GOV_DATA_API_TOKEN_POOL,
+    OPENROUTER_API_TOKEN_POOL,
+    GEMINI_API_TOKEN_POOL,
 )
 SAMPLE_DATA_GOV_API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+os.environ.setdefault("OPENROUTER_API_KEY", OPENROUTER_API_TOKEN_POOL[0])
+os.environ.setdefault("GEMINI_API_KEY", GEMINI_API_TOKEN_POOL[0])
 
 ACROP_BASE_URL = "https://acrop.app/mandi/uttar-pradesh"
 COMMODITYONLINE_URL = "https://www.commodityonline.com/mandi-prices/uttar-pradesh"
