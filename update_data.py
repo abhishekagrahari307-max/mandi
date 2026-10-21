@@ -2769,3 +2769,15 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ⚠ Web scraper error (non-fatal): {e}")
         import traceback; traceback.print_exc()
+
+    try:
+        from scripts.generate_full_data import refresh_all_snapshots
+        summary = refresh_all_snapshots()
+        print(
+            f"  ✅ 4x Daily Full Snapshot Engine synced ({summary['active_slot_ist']} IST): "
+            f"{summary['total_records']} verified records across "
+            f"{summary['total_districts']} districts & {summary['total_mandis']} mandis."
+        )
+    except Exception as refresh_err:
+        print(f"  ⚠ Full snapshot sync warning: {refresh_err}")
+

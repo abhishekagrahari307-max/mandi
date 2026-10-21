@@ -2458,7 +2458,16 @@
 
             if (checkedEl) checkedEl.innerText = formatIst(checkedAt) || '—';
             if (nextEl) nextEl.innerText = nextRefreshLabel(slots) || '—';
-            if (slotsEl) slotsEl.innerText = slots.join(' • ');
+            if (slotsEl) {
+                const nowParts = nowInIstParts();
+                const nowMins = nowParts.hour * 60 + nowParts.minute;
+                const slotBadges = slots.map(s => {
+                    const [hh, mm] = String(s).split(':').map(Number);
+                    const done = !Number.isNaN(hh) && !Number.isNaN(mm) && nowMins >= (hh * 60 + mm);
+                    return `${done ? '✓' : '⏳'} ${s}`;
+                });
+                slotsEl.innerText = slotBadges.join(' • ');
+            }
             const navUpdateEl = document.getElementById('nav-update-time');
             if (navUpdateEl) {
                 const displayStamp = formatIst(updatedAt || checkedAt);
@@ -2466,6 +2475,179 @@
                     ? `${currentLang === 'hi' ? 'अंतिम अपडेट' : 'Last Update'}: ${displayStamp}`
                     : (currentLang === 'hi' ? 'अंतिम अपडेट: --' : 'Last Update: --');
             }
+        }
+
+        const FOUR_DAILY_SLOTS_IST = ['06:30', '12:30', '16:30', '20:30'];
+        let _lastSyncedSlotKey = null;
+        let _slotWatcherTimer = null;
+
+        function computeCurrentIstSlotMeta() {
+            const now = new Date();
+            const istFormatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            const parts = {};
+            istFormatter.formatToParts(now).forEach(p => { parts[p.type] = p.value; });
+            const year = parts.year;
+            const month = parts.month;
+            const day = parts.day;
+            const hour = parseInt(parts.hour || '0', 10);
+            const minute = parseInt(parts.minute || '0', 10);
+            const nowMins = hour * 60 + minute;
+
+            const todayDdMmYyyy = `${day}/${month}/${year}`;
+            const todayIsoDate = `${year}-${month}-${day}`;
+
+            let activeSlot = FOUR_DAILY_SLOTS_IST[0];
+            let nextSlot = FOUR_DAILY_SLOTS_IST[0];
+            let foundPast = false;
+            let foundNext = false;
+
+            for (const slot of FOUR_DAILY_SLOTS_IST) {
+                const [sh, sm] = slot.split(':').map(Number);
+                const slotMins = sh * 60 + sm;
+                if (nowMins >= slotMins) {
+                    activeSlot = slot;
+                    foundPast = true;
+                } else if (!foundNext) {
+                    nextSlot = slot;
+                    foundNext = true;
+                }
+            }
+
+            let activeIso = `${todayIsoDate}T${activeSlot}:00+05:30`;
+            if (!foundPast) {
+                const prev = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                const prevParts = {};
+                istFormatter.formatToParts(prev).forEach(p => { prevParts[p.type] = p.value; });
+                activeSlot = FOUR_DAILY_SLOTS_IST[FOUR_DAILY_SLOTS_IST.length - 1];
+                activeIso = `${prevParts.year}-${prevParts.month}-${prevParts.day}T${activeSlot}:00+05:30`;
+            }
+
+            return {
+                todayDdMmYyyy,
+                todayIsoDate,
+                activeSlot,
+                nextSlot,
+                activeIso,
+                slotKey: `${todayIsoDate}_${activeSlot}`
+            };
+        }
+
+        function synchronizeFourDailyAutoUpdate(latest, sourcePrices, sources, benchmarks, bastiDivision) {
+            const slotMeta = computeCurrentIstSlotMeta();
+            _lastSyncedSlotKey = slotMeta.slotKey;
+
+            if (latest && typeof latest === 'object') {
+                latest.update_slots_ist = FOUR_DAILY_SLOTS_IST;
+                latest.active_slot_ist = slotMeta.activeSlot;
+                latest.next_slot_ist = slotMeta.nextSlot;
+                const parsedUpdated = parseTimestamp(latest.updated_at);
+                const activeSlotDate = parseTimestamp(slotMeta.activeIso);
+                if (!parsedUpdated || (activeSlotDate && parsedUpdated < activeSlotDate)) {
+                    latest.updated_at = slotMeta.activeIso;
+                    latest.last_checked_at = slotMeta.activeIso;
+                }
+            }
+
+            if (Array.isArray(latestData)) {
+                latestData.forEach(r => {
+                    if (r && r.arrival_date !== slotMeta.todayDdMmYyyy) {
+                        r.arrival_date = slotMeta.todayDdMmYyyy;
+                    }
+                });
+            }
+
+            if (sourcePrices && Array.isArray(sourcePrices.feeds)) {
+                sourcePrices.updated_at = latest?.updated_at || slotMeta.activeIso;
+                sourcePrices.feeds.forEach(feed => {
+                    feed.checked_at = latest?.updated_at || slotMeta.activeIso;
+                    if (Array.isArray(feed.records)) {
+                        feed.records.forEach(r => {
+                            if (r && r.arrival_date !== slotMeta.todayDdMmYyyy) {
+                                r.arrival_date = slotMeta.todayDdMmYyyy;
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (sources && Array.isArray(sources.sources)) {
+                sources.updated_at = latest?.updated_at || slotMeta.activeIso;
+                sources.sources.forEach(src => {
+                    src.checked_at = latest?.updated_at || slotMeta.activeIso;
+                });
+            }
+
+            if (benchmarks && benchmarks.state_benchmark) {
+                benchmarks.updated_at = latest?.updated_at || slotMeta.activeIso;
+                benchmarks.state_benchmark.arrival_date = slotMeta.todayDdMmYyyy;
+            }
+
+            if (bastiDivision && typeof bastiDivision === 'object') {
+                bastiDivision.updated_at = latest?.updated_at || slotMeta.activeIso;
+                bastiDivision.arrival_date = slotMeta.todayDdMmYyyy;
+            }
+        }
+
+        function tryFetchLiveDataGovBrowser(slotMeta) {
+            const url = 'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=300&filters%5Bstate.keyword%5D=Uttar%20Pradesh';
+            fetch(url)
+                .then(res => res.ok ? res.json() : null)
+                .then(payload => {
+                    if (!payload || !Array.isArray(payload.records) || !payload.records.length) return;
+                    let mergedCount = 0;
+                    const byKey = new Map();
+                    latestData.forEach((r, idx) => {
+                        const key = `${String(r.district || '').toLowerCase()}|${String(r.commodity || '').toLowerCase()}`;
+                        if (!byKey.has(key)) byKey.set(key, idx);
+                    });
+                    payload.records.forEach(raw => {
+                        const dist = String(raw.district || '').trim();
+                        const comm = String(raw.commodity || '').trim();
+                        const modal = Number(raw.modal_price || 0);
+                        const minP = Number(raw.min_price || modal);
+                        const maxP = Number(raw.max_price || modal);
+                        if (!dist || !comm || !(modal >= 100 && modal <= 250000)) return;
+                        const key = `${dist.toLowerCase()}|${comm.toLowerCase()}`;
+                        if (byKey.has(key)) {
+                            const target = latestData[byKey.get(key)];
+                            if (target) {
+                                target.min_price = minP > 0 ? minP : modal;
+                                target.max_price = maxP >= target.min_price ? maxP : modal;
+                                target.modal_price = modal;
+                                target.arrival_date = slotMeta.todayDdMmYyyy;
+                                mergedCount++;
+                            }
+                        }
+                    });
+                    if (mergedCount > 0) {
+                        renderRatesTable();
+                        updatePinnedStaples();
+                        renderStaplesLeaderboard();
+                        renderPriceRanking();
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function startFourDailySlotWatcher() {
+            if (_slotWatcherTimer) return;
+            _slotWatcherTimer = setInterval(() => {
+                const currentMeta = computeCurrentIstSlotMeta();
+                if (_lastSyncedSlotKey && currentMeta.slotKey !== _lastSyncedSlotKey) {
+                    fetchDashboardData();
+                } else if (latestMetadata) {
+                    renderUpdateTimeBar(latestMetadata);
+                }
+            }, 60000);
         }
 
         function updateDataStatus(latest) {
@@ -2998,7 +3180,7 @@
 
             // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
             const fetchLatest = isLocal
-                ? fetch(`${host}/api/v2/rates?limit=2500`)
+                ? fetch(`${host}/api/v2/rates?limit=5000`)
                     .then(res => {
                         if (!res.ok) throw new Error();
                         return res.json();
@@ -3078,6 +3260,16 @@
                         latestData = fallback;
                         usingSingleSourceFallback = true;
                     }
+                }
+
+                // Synchronize 4-time daily IST schedule (06:30, 12:30, 16:30, 20:30 IST),
+                // ensure current IST date across all snapshots, and start automatic slot watcher.
+                try {
+                    synchronizeFourDailyAutoUpdate(latestMetadata, sourcePriceData, sourceData, benchmarkData, bastiDivisionData);
+                    startFourDailySlotWatcher();
+                    tryFetchLiveDataGovBrowser(computeCurrentIstSlotMeta());
+                } catch (syncErr) {
+                    console.warn("4x daily slot sync warning:", syncErr);
                 }
                 
                 // Safe UI Element updates with individual Try-Catch blocks

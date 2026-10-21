@@ -1488,6 +1488,105 @@ async def websocket_auction_endpoint(websocket: WebSocket, username: str):
     })
     await websocket.close(code=1008)
 
+# ================= 4-TIME DAILY AUTOMATIC UPDATE SCHEDULER =================
+import threading
+import time
+from zoneinfo import ZoneInfo
+from scripts import generate_full_data as daily_snapshot_engine
+
+_IST_ZONE = ZoneInfo("Asia/Kolkata")
+_AUTO_UPDATE_LOCK = threading.Lock()
+_SCHEDULER_STARTED = False
+
+
+def sync_snapshots_and_db(force: bool = False) -> dict[str, Any]:
+    """Ensure snapshots & SQLite DB match today's IST date and active 4x daily slot."""
+    with _AUTO_UPDATE_LOCK:
+        now_ist = datetime.now(_IST_ZONE)
+        today_str = now_ist.strftime("%d/%m/%Y")
+        slot_info = daily_snapshot_engine.get_slot_schedule_info(now_ist)
+
+        needs_refresh = force
+        latest_meta: dict[str, Any] = {}
+        if os.path.exists("data/latest.json"):
+            try:
+                with open("data/latest.json", "r", encoding="utf-8") as fh:
+                    latest_meta = json.load(fh)
+                recs = latest_meta.get("records", [])
+                snap_date = recs[0].get("arrival_date") if recs else None
+                snap_slot = latest_meta.get("active_slot_ist")
+                if snap_date != today_str or snap_slot != slot_info["active_slot_ist"]:
+                    needs_refresh = True
+            except Exception:
+                needs_refresh = True
+        else:
+            needs_refresh = True
+
+        if needs_refresh and os.environ.get("ENVIRONMENT") != "production":
+            summary = daily_snapshot_engine.refresh_all_snapshots(now_ist)
+            seed_database()
+            return {"refreshed": True, **summary, **slot_info}
+
+        records = latest_meta.get("records", []) if isinstance(latest_meta, dict) else []
+        return {
+            "refreshed": False,
+            "updated_at": latest_meta.get("updated_at"),
+            "arrival_date": records[0].get("arrival_date", today_str) if records else today_str,
+            "total_records": len(records),
+            "total_districts": len({r.get("district") for r in records if r.get("district")}),
+            "total_mandis": len({r.get("mandi") for r in records if r.get("mandi")}),
+            "total_commodities": len({r.get("commodity") for r in records if r.get("commodity")}),
+            **slot_info,
+        }
+
+
+def _four_daily_scheduler_loop() -> None:
+    while True:
+        try:
+            sync_snapshots_and_db(force=False)
+        except Exception as exc:
+            logger.warning("4x daily auto-update check error: %s", exc)
+        time.sleep(60)
+
+
+if os.environ.get("ENVIRONMENT") != "production" and not _SCHEDULER_STARTED:
+    _SCHEDULER_STARTED = True
+    try:
+        sync_snapshots_and_db(force=False)
+        threading.Thread(
+            target=_four_daily_scheduler_loop,
+            name="mandi-4x-daily-updater",
+            daemon=True,
+        ).start()
+    except Exception as _sched_exc:
+        logger.warning("Could not start auto-update thread: %s", _sched_exc)
+
+
+@app.get("/api/v2/auto-update/status")
+def get_auto_update_status():
+    """Return live status of the 4-time daily automatic update engine (06:30, 12:30, 16:30, 20:30 IST)."""
+    status_info = sync_snapshots_and_db(force=False)
+    return {
+        "status": "active",
+        "auto_update_enabled": True,
+        "update_frequency": "4 times daily",
+        "update_slots_ist": daily_snapshot_engine.UPDATE_SLOTS_IST,
+        **status_info,
+    }
+
+
+@app.post("/api/v2/auto-update/sync")
+def trigger_auto_update_sync():
+    """Run an immediate 4x daily snapshot & database sync for the current IST slot."""
+    result = sync_snapshots_and_db(force=True)
+    return {
+        "status": "ok",
+        "auto_update_enabled": True,
+        "update_slots_ist": daily_snapshot_engine.UPDATE_SLOTS_IST,
+        **result,
+    }
+
+
 # ================= SERVER HEALTH ENDPOINTS =================
 
 @app.get("/health")

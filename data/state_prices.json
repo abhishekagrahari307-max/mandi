@@ -1,102 +1,123 @@
 {
-  "updated_at": "2026-10-20T18:37:53.266257+05:30",
+  "updated_at": "2026-10-21T07:10:51.522469+05:30",
   "source": "Cross-verified OGD (data.gov.in) & AGMARKNET",
   "verified": true,
   "states": [
     {
       "state": "Uttar Pradesh",
       "district_count": 75,
-      "mandi_count": 235,
-      "record_count": 1571,
-      "average_modal_price": 3502,
+      "mandi_count": 286,
+      "record_count": 3437,
+      "average_modal_price": 3505,
       "minimum_price": 10,
       "maximum_price": 135500,
       "top_commodity": "Wheat",
-      "date": "20/10/2026",
+      "date": "21/10/2026",
       "markets": [
+        {
+          "district": "Lalitpur",
+          "mandi": "Mehrauni APMC",
+          "commodity": "Mustard",
+          "modal_price": 7779,
+          "arrival_date": "21/10/2026"
+        },
         {
           "district": "Lalitpur",
           "mandi": "Lalitpur APMC",
           "commodity": "Mustard",
           "modal_price": 7775,
-          "arrival_date": "20/10/2026"
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Fatehpur Sikri APMC",
+          "commodity": "Mustard",
+          "modal_price": 7652,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Agra APMC",
+          "commodity": "Mustard",
+          "modal_price": 7648,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Khairagarh APMC",
+          "commodity": "Mustard",
+          "modal_price": 7648,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Jagnair APMC",
+          "commodity": "Mustard",
+          "modal_price": 7644,
+          "arrival_date": "21/10/2026"
         },
         {
           "district": "Agra",
           "mandi": "Khairagarh APMC",
           "commodity": "Mustard",
           "modal_price": 7644,
-          "arrival_date": "20/10/2026"
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Fatehabad APMC",
+          "commodity": "Mustard",
+          "modal_price": 7640,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Samsabad APMC",
+          "commodity": "Mustard",
+          "modal_price": 7640,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Agra",
+          "mandi": "Jarar APMC",
+          "commodity": "Mustard",
+          "modal_price": 7636,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Aligarh",
+          "mandi": "Khair APMC",
+          "commodity": "Mustard",
+          "modal_price": 7608,
+          "arrival_date": "21/10/2026"
+        },
+        {
+          "district": "Aligarh",
+          "mandi": "Atrauli APMC",
+          "commodity": "Mustard",
+          "modal_price": 7604,
+          "arrival_date": "21/10/2026"
         },
         {
           "district": "Agra",
           "mandi": "Khairagarh APMC",
           "commodity": "Mustard",
           "modal_price": 7600,
-          "arrival_date": "20/10/2026"
+          "arrival_date": "21/10/2026"
         },
         {
           "district": "Aligarh",
           "mandi": "Atrauli APMC",
           "commodity": "Mustard",
           "modal_price": 7600,
-          "arrival_date": "20/10/2026"
+          "arrival_date": "21/10/2026"
         },
         {
-          "district": "Kanpur Dehat",
-          "mandi": "Pukharayan APMC",
+          "district": "Aligarh",
+          "mandi": "Charra APMC",
           "commodity": "Mustard",
-          "modal_price": 7595,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Kanpur Dehat",
-          "mandi": "Rura APMC",
-          "commodity": "Mustard",
-          "modal_price": 7500,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Auraiya",
-          "mandi": "Auraiya APMC",
-          "commodity": "Mustard",
-          "modal_price": 7450,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Lakhimpur Kheri",
-          "mandi": "Lakhimpur APMC",
-          "commodity": "Mustard",
-          "modal_price": 7319,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Jhansi",
-          "mandi": "Jhansi APMC",
-          "commodity": "Mustard",
-          "modal_price": 7285,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Hamirpur",
-          "mandi": "Bharuasumerpur APMC",
-          "commodity": "Mustard",
-          "modal_price": 7259,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Sonbhadra",
-          "mandi": "Robertsganj APMC",
-          "commodity": "Mustard",
-          "modal_price": 7122,
-          "arrival_date": "20/10/2026"
-        },
-        {
-          "district": "Hamirpur",
-          "mandi": "Maudaha APMC",
-          "commodity": "Mustard",
-          "modal_price": 7000,
-          "arrival_date": "20/10/2026"
+          "modal_price": 7596,
+          "arrival_date": "21/10/2026"
         }
       ]
     }

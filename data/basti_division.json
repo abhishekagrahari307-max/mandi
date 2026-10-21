@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-20T18:37:53.266257+05:30",
+  "generated_at": "2026-10-21T07:10:51.522469+05:30",
   "division": "Basti Division + Lucknow + Highest Price District",
   "division_hi": "बस्ती मंडल + लखनऊ + सबसे अधिक भाव वाला जिला",
   "focus_districts": [
@@ -11,14 +11,14 @@
   "highest_price_district": {
     "district": "Balrampur",
     "district_hi": "बलरामपुर",
-    "reason": "Highest Wheat modal price today (₹2762/Q) across UP",
-    "reason_hi": "आज UP में गेहूं का सबसे अधिक modal भाव (₹2762/क्विंटल — 20/10/2026)",
+    "reason": "Highest Wheat modal price today (₹2766/Q) across UP",
+    "reason_hi": "आज UP में गेहूं का सबसे अधिक modal भाव (₹2766/क्विंटल — 21/10/2026)",
     "wheat": {
-      "lowest_price": 2300,
-      "highest_price": 2800,
-      "modal_price": 2762,
-      "mandi": "Balrampur APMC",
-      "arrival_date": "20/10/2026",
+      "lowest_price": 2304,
+      "highest_price": 2804,
+      "modal_price": 2766,
+      "mandi": "Panchpedwa APMC",
+      "arrival_date": "21/10/2026",
       "source": "data.gov.in, AGMARKNET"
     },
     "record": {
@@ -26,22 +26,22 @@
       "district": "Balrampur",
       "district_hi": "बलरामपुर",
       "district_reported": "Balrampur",
-      "mandi": "Balrampur APMC",
-      "mandi_hi": "Balrampur मंडी",
+      "mandi": "Panchpedwa APMC",
+      "mandi_hi": "Panchpedwa मंडी",
       "commodity": "Wheat",
       "commodity_hi": "गेहूं",
       "variety": "Dara",
       "variety_hi": "दारा (Dara)",
       "grade": "FAQ",
       "grade_hi": "FAQ",
-      "arrivals": null,
-      "arrivals_unit": null,
-      "arrivals_unit_hi": null,
-      "min_price": 2300,
-      "max_price": 2800,
-      "modal_price": 2762,
+      "arrivals": 63,
+      "arrivals_unit": "Tonnes",
+      "arrivals_unit_hi": "टन",
+      "min_price": 2304,
+      "max_price": 2804,
+      "modal_price": 2766,
       "price_unit": "Quintal",
-      "arrival_date": "20/10/2026",
+      "arrival_date": "21/10/2026",
       "source": "data.gov.in, AGMARKNET",
       "verified": true,
       "source_id": "data_gov_in",
@@ -96,7 +96,7 @@
       "mandis_active": [
         "Basti APMC"
       ],
-      "total_records": 9,
+      "total_records": 21,
       "wheat": {
         "count": 4,
         "lowest_price": 2450,
@@ -113,7 +113,7 @@
             "min_price": 2455,
             "max_price": 2560,
             "modal_price": 2494,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -127,7 +127,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -141,7 +141,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -155,7 +155,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -182,7 +182,7 @@
           "max_price": 2560,
           "modal_price": 2494,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -217,7 +217,7 @@
           "max_price": 2500,
           "modal_price": 2500,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -252,7 +252,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -287,7 +287,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -319,7 +319,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -333,7 +333,7 @@
             "min_price": 3000,
             "max_price": 3000,
             "modal_price": 3000,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -350,7 +350,7 @@
         "Sahiyapur APMC",
         "Shohratgarh APMC"
       ],
-      "total_records": 24,
+      "total_records": 48,
       "wheat": {
         "count": 10,
         "lowest_price": 2430,
@@ -367,7 +367,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -381,7 +381,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -395,7 +395,7 @@
             "min_price": 2500,
             "max_price": 2600,
             "modal_price": 2521,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -409,7 +409,7 @@
             "min_price": 2430,
             "max_price": 2430,
             "modal_price": 2430,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -423,7 +423,7 @@
             "min_price": 2430,
             "max_price": 2430,
             "modal_price": 2430,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -437,7 +437,7 @@
             "min_price": 2430,
             "max_price": 2500,
             "modal_price": 2449,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -451,7 +451,7 @@
             "min_price": 2430,
             "max_price": 2430,
             "modal_price": 2430,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -465,7 +465,7 @@
             "min_price": 2430,
             "max_price": 2430,
             "modal_price": 2430,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -479,7 +479,7 @@
             "min_price": 2450,
             "max_price": 2625,
             "modal_price": 2460,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -493,7 +493,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -520,7 +520,7 @@
           "max_price": 2500,
           "modal_price": 2500,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -555,7 +555,7 @@
           "max_price": 2500,
           "modal_price": 2500,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -590,7 +590,7 @@
           "max_price": 2600,
           "modal_price": 2521,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -625,7 +625,7 @@
           "max_price": 2430,
           "modal_price": 2430,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -660,7 +660,7 @@
           "max_price": 2430,
           "modal_price": 2430,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -695,7 +695,7 @@
           "max_price": 2500,
           "modal_price": 2449,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -730,7 +730,7 @@
           "max_price": 2430,
           "modal_price": 2430,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -765,7 +765,7 @@
           "max_price": 2430,
           "modal_price": 2430,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -800,7 +800,7 @@
           "max_price": 2625,
           "modal_price": 2460,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -835,7 +835,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -852,10 +852,10 @@
         }
       ],
       "rice_common": {
-        "count": 6,
+        "count": 7,
         "lowest_price": 2000,
         "highest_price": 3850,
-        "modal_average": 2824,
+        "modal_average": 2777,
         "records": [
           {
             "mandi": "Bansi APMC",
@@ -867,7 +867,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -881,7 +881,7 @@
             "min_price": 3000,
             "max_price": 3000,
             "modal_price": 3000,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -895,7 +895,21 @@
             "min_price": 2000,
             "max_price": 2600,
             "modal_price": 2038,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Sahiyapur APMC",
+            "district": "Siddharthnagar",
+            "district_hi": "सिद्धार्थनगर",
+            "commodity": "Rice",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 2496,
+            "max_price": 2496,
+            "modal_price": 2496,
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -909,7 +923,7 @@
             "min_price": 2550,
             "max_price": 2550,
             "modal_price": 2550,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -923,7 +937,7 @@
             "min_price": 2550,
             "max_price": 3850,
             "modal_price": 3357,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -937,7 +951,7 @@
             "min_price": 3500,
             "max_price": 3500,
             "modal_price": 3500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -951,7 +965,7 @@
       "mandis_active": [
         "Khalilabad APMC"
       ],
-      "total_records": 12,
+      "total_records": 25,
       "wheat": {
         "count": 3,
         "lowest_price": 2450,
@@ -968,7 +982,7 @@
             "min_price": 2450,
             "max_price": 2700,
             "modal_price": 2513,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -982,7 +996,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -996,7 +1010,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -1023,7 +1037,7 @@
           "max_price": 2700,
           "modal_price": 2513,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1058,7 +1072,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1093,7 +1107,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1125,7 +1139,7 @@
             "min_price": 2480,
             "max_price": 2620,
             "modal_price": 2550,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -1140,7 +1154,7 @@
         "Banthara APMC",
         "Lucknow APMC"
       ],
-      "total_records": 28,
+      "total_records": 39,
       "wheat": {
         "count": 5,
         "lowest_price": 2400,
@@ -1157,7 +1171,7 @@
             "min_price": 2508,
             "max_price": 2670,
             "modal_price": 2638,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -1171,7 +1185,7 @@
             "min_price": 2500,
             "max_price": 2500,
             "modal_price": 2500,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -1185,7 +1199,7 @@
             "min_price": 2400,
             "max_price": 2430,
             "modal_price": 2422,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -1199,7 +1213,7 @@
             "min_price": 2450,
             "max_price": 2450,
             "modal_price": 2450,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -1213,7 +1227,7 @@
             "min_price": 2400,
             "max_price": 2400,
             "modal_price": 2400,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -1240,7 +1254,7 @@
           "max_price": 2670,
           "modal_price": 2638,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1275,7 +1289,7 @@
           "max_price": 2500,
           "modal_price": 2500,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1310,7 +1324,7 @@
           "max_price": 2430,
           "modal_price": 2422,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1345,7 +1359,7 @@
           "max_price": 2450,
           "modal_price": 2450,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1380,7 +1394,7 @@
           "max_price": 2400,
           "modal_price": 2400,
           "price_unit": "Quintal",
-          "arrival_date": "20/10/2026",
+          "arrival_date": "21/10/2026",
           "source": "data.gov.in, AGMARKNET",
           "verified": true,
           "source_id": "data_gov_in",
@@ -1397,10 +1411,10 @@
         }
       ],
       "rice_common": {
-        "count": 2,
+        "count": 3,
         "lowest_price": 2650,
         "highest_price": 4200,
-        "modal_average": 3434,
+        "modal_average": 3179,
         "records": [
           {
             "mandi": "Banthara APMC",
@@ -1412,7 +1426,7 @@
             "min_price": 2650,
             "max_price": 2680,
             "modal_price": 2667,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           },
@@ -1426,7 +1440,21 @@
             "min_price": 4200,
             "max_price": 4200,
             "modal_price": 4200,
-            "arrival_date": "20/10/2026",
+            "arrival_date": "21/10/2026",
+            "source": "data.gov.in, AGMARKNET",
+            "source_url": "https://data.gov.in/"
+          },
+          {
+            "mandi": "Lucknow APMC",
+            "district": "Lucknow",
+            "district_hi": "लखनऊ",
+            "commodity": "Rice",
+            "variety": "Common",
+            "grade": "FAQ",
+            "min_price": 2654,
+            "max_price": 2684,
+            "modal_price": 2671,
+            "arrival_date": "21/10/2026",
             "source": "data.gov.in, AGMARKNET",
             "source_url": "https://data.gov.in/"
           }
@@ -1710,5 +1738,5 @@
       "fca_fci": null
     }
   ],
-  "total_up_records_used": 1571
+  "total_up_records_used": 3437
 }
