@@ -243,6 +243,17 @@ class AppSmokeTests(unittest.TestCase):
         # reported as a successful delivery.
         self.assertFalse(response.json()["welcome_delivered"])
 
+    def test_four_daily_auto_update_status_and_large_dataset(self):
+        status_resp = self.client.get("/api/v2/auto-update/status")
+        self.assertEqual(status_resp.status_code, 200)
+        body = status_resp.json()
+        self.assertEqual(body["status"], "active")
+        self.assertTrue(body["auto_update_enabled"])
+        self.assertEqual(body["update_slots_ist"], ["06:30", "12:30", "16:30", "20:30"])
+        self.assertGreaterEqual(body["total_records"], 3000)
+        self.assertEqual(body["total_districts"], 75)
+        self.assertGreaterEqual(body["total_mandis"], 285)
+
 
 if __name__ == "__main__":
     unittest.main()
