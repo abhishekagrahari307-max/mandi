@@ -250,7 +250,8 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(body["status"], "active")
         self.assertTrue(body["auto_update_enabled"])
         self.assertEqual(body["update_slots_ist"], ["06:30", "12:30", "16:30", "20:30"])
-        self.assertEqual(body["government_api_tokens_configured"], 15)
+        self.assertEqual(body["government_api_tokens_configured"], 60)
+        self.assertEqual(body["ai_api_tokens_configured"], 11)
         self.assertGreaterEqual(body["total_records"], 8000)
         self.assertEqual(body["total_districts"], 75)
         self.assertGreaterEqual(body["total_mandis"], 365)
@@ -259,7 +260,10 @@ class AppSmokeTests(unittest.TestCase):
         tok_resp = self.client.get("/api/v2/tokens/status")
         self.assertEqual(tok_resp.status_code, 200)
         tok_body = tok_resp.json()
-        self.assertEqual(tok_body["total_tokens"], 15)
+        self.assertEqual(tok_body["total_tokens"], 60)
+        self.assertEqual(tok_body["ai_tokens_total"], 11)
+        self.assertEqual(tok_body["openrouter_tokens_count"], 6)
+        self.assertEqual(tok_body["gemini_tokens_count"], 5)
         self.assertEqual(len(tok_body["resource_ids"]), 3)
 
         html = self.client.get("/").text
@@ -267,6 +271,15 @@ class AppSmokeTests(unittest.TestCase):
             "live-ticker-bar",
             "watchlist-panel",
             "category-pills-bar",
+            "section-ai",
+            "mandi-ai-chat-box",
+            "mandi-ai-question",
+            "crop-disease-result",
+            "receipt-ocr-result",
+            "trend-advisor-result",
+            "transport-profit-result",
+            "weather-risk-result",
+            "scheme-advisor-result",
             "section-compare",
             "renderMandiComparisonSuite",
             "renderMSPComparisonGrid",
@@ -276,6 +289,61 @@ class AppSmokeTests(unittest.TestCase):
             "exportFilteredRatesCSV",
         ):
             self.assertIn(required_hook, html)
+
+    def test_ai_status_and_grounded_mandi_ai_tools(self):
+        ai_status = self.client.get("/api/v2/ai/status")
+        self.assertEqual(ai_status.status_code, 200)
+        status_json = ai_status.json()
+        self.assertEqual(status_json["status"], "active")
+        self.assertTrue(status_json["ai_enabled"])
+        self.assertEqual(status_json["ai_tokens_total"], 11)
+        self.assertIn("mandi_ai_chat", status_json["tools_active"])
+        self.assertIn("transport_profit", status_json["tools_active"])
+
+        # Test Mandi AI Chat endpoint with live grounded fallback if upstream LLM fails
+        chat_resp = self.client.post(
+            "/api/v2/mandi-ai",
+            json={
+                "userQuestion": "Kanpur aur Lucknow me Wheat ka bhav kya hai?",
+                "mandiData": {},
+            },
+        )
+        self.assertEqual(chat_resp.status_code, 200)
+        chat_body = chat_resp.json()
+        self.assertTrue(chat_body.get("answer"))
+        self.assertTrue(chat_body.get("reply"))
+
+        # Test Smart AI Tool: transport_profit
+        tp_resp = self.client.post(
+            "/api/v2/ai-tools",
+            json={
+                "action": "transport_profit",
+                "sourceMandi": "Basti",
+                "destinationMandi": "Lucknow",
+                "sourcePrice": 2420,
+                "destinationPrice": 2650,
+                "distanceKm": 200,
+                "quantityQuintal": 50,
+                "transportCostPerKm": 20,
+            },
+        )
+        self.assertEqual(tp_resp.status_code, 200)
+        tp_body = tp_resp.json()
+        self.assertTrue(tp_body.get("answer"))
+        self.assertIn("calculation", tp_body)
+
+        # Test Smart AI Tool: scheme_advisor
+        sc_resp = self.client.post(
+            "/api/v2/ai-tools",
+            json={
+                "action": "scheme_advisor",
+                "crop": "Wheat",
+                "location": "Lucknow, UP",
+                "question": "PM Kisan aur Fasal Bima ke baare me batayein",
+            },
+        )
+        self.assertEqual(sc_resp.status_code, 200)
+        self.assertTrue(sc_resp.json().get("answer"))
 
 
 if __name__ == "__main__":
