@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-10-21T08:18:44.977698+05:30",
+  "last_checked_at": "2026-10-29T14:10:31.275424+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -13,21 +13,21 @@
       "status": "ok",
       "records": 8321,
       "url": "https://data.gov.in/",
-      "message": "Verified 8321 UP mandi records across 75 districts (21/10/2026 • 06:30 IST)"
+      "message": "Verified 8321 UP mandi records across 75 districts (29/10/2026 • 12:30 IST)"
     },
     {
       "name": "AGMARKNET portal",
       "status": "ok",
       "records": 8321,
       "url": "https://agmarknet.gov.in/home",
-      "message": "Cross-verified 8321 UP commodity price records (21/10/2026)"
+      "message": "Cross-verified 8321 UP commodity price records (29/10/2026)"
     },
     {
       "name": "AGMARKNET",
       "status": "ok",
       "records": 8321,
       "url": "https://agmarknet.gov.in/home",
-      "message": "Active (21/10/2026 • 06:30 IST)"
+      "message": "Active (29/10/2026 • 12:30 IST)"
     },
     {
       "name": "UP Mandi Parishad directory",
@@ -41,7 +41,7 @@
       "status": "ok",
       "records": 12,
       "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "Published 12 state-level benchmark commodities (21/10/2026)"
+      "message": "Published 12 state-level benchmark commodities (29/10/2026)"
     },
     {
       "name": "e-NAM trade feed",

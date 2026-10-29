@@ -3734,26 +3734,25 @@
             const timestamp = new Date().getTime();
 
             // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
-            const fetchLatest = isLocal
-                ? fetch(`${host}/api/v2/rates?limit=10000`)
-                    .then(res => {
-                        if (!res.ok) throw new Error();
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (!data || !Array.isArray(data.records) || data.records.length === 0) {
-                            return fetch(`data/latest.json?t=${timestamp}`).then(res => res.json());
-                        }
-                        return data;
-                    })
-                    .catch(() => fetch(`data/latest.json?t=${timestamp}`).then(res => res.json()))
-                    .catch(() => ({ records: [] }))
-                : fetch(`data/latest.json?t=${timestamp}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error();
-                        return res.json();
-                    })
-                    .catch(() => ({ records: [] }));
+                // Direct static load for stability (avoids 5MB API payload hang)
+                const fetchLatest = isLocal
+                    ? fetch(`data/latest.json?t=${timestamp}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (data && Array.isArray(data.records) && data.records.length > 0) return data;
+                            if (Array.isArray(data)) return { records: data };
+                            return data || { records: [] };
+                        })
+                        .catch(() => ({ records: [] }))
+                    : fetch(`data/latest.json?t=${timestamp}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.json();
+                        })
+                        .catch(() => ({ records: [] }));
 
             const fetchHistory = fetch(`data/history.json?t=${timestamp}`)
                 .then(res => {

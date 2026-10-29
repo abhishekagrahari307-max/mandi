@@ -850,10 +850,11 @@ def get_rates(
     district: str = "all", 
     commodity: str = "all", 
     search: str = "", 
-    page: int = 1, 
+    page: int = 1,
     limit: int = 50,
     db_sess: Session = Depends(get_db)
 ):
+    limit = min(limit, 500)
     query = db_sess.query(db.MandiRecord)
     if district != "all":
         query = query.filter(db.MandiRecord.district == district)
