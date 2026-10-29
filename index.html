@@ -5212,7 +5212,7 @@
             let cardsHtml = '';
             let lastDistrict = '';
 
-            filtered.forEach(r => {
+            filtered.slice(0, 300).forEach(r => {
                 const distName = escapeHtml(displayName(r, 'district') || (currentLang === 'hi' ? 'अज्ञात जिला' : 'Unknown district'));
                 const mandiName = escapeHtml(displayName(r, 'mandi') || (currentLang === 'hi' ? 'मंडी' : 'Mandi'));
                 const cropName = escapeHtml(displayName(r, 'commodity') || (currentLang === 'hi' ? 'जिंस' : 'Crop'));
@@ -5539,7 +5539,7 @@
             const filtered = getFilteredRecords().slice(0, 12);
             const dateStr = latestMetadata?.latest_arrival_date || '21/10/2026';
             let lines = [`🌾 *उत्तर प्रदेश लाइव मंडी भाव रिपोर्ट (${dateStr})* 🌾`, `📊 कुल सत्यापित रिकॉर्ड: ${getFilteredRecords().length}`, ``];
-            filtered.forEach((r, i) => {
+            filtered.slice(0, 300).forEach((r, i) => {
                 const d = r.district_hi || r.district;
                 const m = r.mandi_hi || r.mandi;
                 const c = r.commodity_hi || r.commodity;
@@ -5555,7 +5555,7 @@
             if (!filtered.length) return;
             const headers = ['District', 'District (Hindi)', 'Mandi', 'Mandi (Hindi)', 'Commodity', 'Commodity (Hindi)', 'Variety', 'Grade', 'Arrival Date', 'Min Price (Rs/Q)', 'Modal Price (Rs/Q)', 'Max Price (Rs/Q)', 'Source'];
             const csvRows = [headers.join(',')];
-            filtered.forEach(r => {
+            filtered.slice(0, 300).forEach(r => {
                 const row = [
                     r.district || '',
                     r.district_hi || '',
