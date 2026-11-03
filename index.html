@@ -602,6 +602,7 @@
                     </table>
                 </div>
                 <div id="rates-cards-mobile" class="md:hidden p-4 space-y-3"></div>
+                <div id="rates-pagination" class="print:hidden"></div>
             </div>
         </section>
 
@@ -2723,15 +2724,89 @@
         let calcWeightUnit = 'q';
         let globalBillDetails = null;
         let trendChartObj = null;
+
+        // Browser-performance guards. The canonical snapshots contain 8,000+
+        // rows repeated across three datasets; render only a small page at a
+        // time and reuse calculated collections instead of rebuilding them on
+        // every dashboard widget.
+        const RATES_PAGE_SIZE = 100;
+        const RANKING_PAGE_SIZE = 100;
+        const DISTRICT_DETAIL_LIMIT = 20;
+        const SOURCE_FEED_RENDER_LIMIT = 100;
+        const DASHBOARD_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+        let ratesVisibleCount = RATES_PAGE_SIZE;
+        let lastRatesRenderSignature = '';
+        let dashboardDataVersion = 0;
+        let combinedPriceRecordsCache = null;
+        let singleSourceRecordsCache = null;
+        let appInitialized = false;
+        let dashboardFetchInFlight = null;
+        let liveGovFetchSlotKey = null;
         // True when the verified table was empty and the dashboard is showing
         // clearly-labelled single-source government rows instead.
         let usingSingleSourceFallback = false;
+
+        // Expand data/dashboard.json's dictionary-encoded rows into ordinary
+        // record objects. Base fields live on a shared prototype, while the
+        // verification/source fields are own properties, so the three large
+        // datasets no longer duplicate 20+ fields per record in memory.
+        function expandDashboardSnapshot(snapshot) {
+            if (!snapshot || snapshot.schema_version !== 1 || !snapshot.fields || !snapshot.rows || !snapshot.dictionaries) {
+                throw new Error('Unsupported dashboard snapshot');
+            }
+            const dictionaries = snapshot.dictionaries;
+            const decodeRows = (rows, fields) => rows.map(row => {
+                const decoded = {};
+                fields.forEach((field, index) => { decoded[field] = dictionaries[field][row[index]]; });
+                return decoded;
+            });
+            const baseObjects = decodeRows(snapshot.rows.base || [], snapshot.fields.base || []);
+            const metaObjects = decodeRows(snapshot.rows.meta || [], snapshot.fields.meta || []);
+            const viewCache = new Map();
+            const expandEntries = entries => (Array.isArray(entries) ? entries : []).map(pair => {
+                const baseId = Number(pair[0]);
+                const metaId = Number(pair[1]);
+                const cacheKey = `${baseId}:${metaId}`;
+                let view = viewCache.get(cacheKey);
+                if (!view) {
+                    view = Object.create(baseObjects[baseId] || {});
+                    Object.assign(view, metaObjects[metaId] || {});
+                    viewCache.set(cacheKey, view);
+                }
+                return view;
+            });
+
+            const latestMetadata = { ...(snapshot.latest || {}) };
+            const latestEntries = latestMetadata.entries;
+            delete latestMetadata.entries;
+            const sourcePriceData = { ...(snapshot.source_prices || {}) };
+            sourcePriceData.feeds = (Array.isArray(sourcePriceData.feeds) ? sourcePriceData.feeds : []).map(feed => {
+                const expanded = { ...feed };
+                const entries = expanded.entries;
+                delete expanded.entries;
+                expanded.records = expandEntries(entries);
+                expanded.records.forEach(record => { record.feed_status = expanded.status; });
+                return expanded;
+            });
+            return {
+                latestData: expandEntries(latestEntries),
+                latestMetadata,
+                sourcePriceData
+            };
+        }
+
+        function invalidatePriceRecordCaches() {
+            combinedPriceRecordsCache = null;
+            singleSourceRecordsCache = null;
+            lastRatesRenderSignature = '';
+        }
 
         // Collect every single-feed observation, de-duplicated per
         // market/commodity/date. Prices are never averaged: when two feeds
         // disagree on the same market both rows are kept, each under its own
         // source name, exactly as reported.
         function collectSingleSourceRecords() {
+            if (singleSourceRecordsCache) return singleSourceRecordsCache;
             const feeds = Array.isArray(sourcePriceData?.feeds) ? sourcePriceData.feeds : [];
             const seen = new Map();
             feeds.forEach(feed => {
@@ -2747,20 +2822,14 @@
                         record.arrival_date, record.modal_price, feed.id
                     ].join('|');
                     if (seen.has(key)) return;
-                    seen.set(key, {
-                        ...record,
-                        source: record.source || feed.name,
-                        source_id: record.source_id || feed.id,
-                        verification_count: 1,
-                        cross_verified: false,
-                        multi_source_verified: false,
-                        three_source_verified: false,
-                        verification_level: 'single_source',
-                        feed_status: feed.status
-                    });
+                    // The compact snapshot already carries the correct source
+                    // and verification fields; reuse the record instead of
+                    // allocating a fresh 30-field object for every row.
+                    seen.set(key, record);
                 });
             });
-            return Array.from(seen.values());
+            singleSourceRecordsCache = Array.from(seen.values());
+            return singleSourceRecordsCache;
         }
 
         function renderIcons() {
@@ -2772,6 +2841,8 @@
         }
 
         function initializeApp() {
+            if (appInitialized) return;
+            appInitialized = true;
             renderIcons();
             loadLanguage(currentLang);
             initializeMandiAIControls();
@@ -2782,25 +2853,29 @@
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => {
                         console.log('Service Worker Registered');
+                        // A newly activated worker will be used on the next
+                        // navigation. Never force-reload from updatefound:
+                        // a waiting worker can otherwise cause a reload loop.
                         reg.onupdatefound = () => {
-                            const installingWorker = reg.installing;
-                            installingWorker.onstatechange = () => {
-                                if (installingWorker.state === 'installed') {
-                                    if (navigator.serviceWorker.controller) {
-                                        window.location.reload(true);
-                                    }
-                                }
-                            };
+                            console.log('A new offline cache is available for the next visit.');
                         };
                     })
                     .catch(err => console.log('Service Worker Failed to Register', err));
             }
 
-            setInterval(fetchDashboardData, 120000);
+            // Official snapshots are republished four times a day. Check them
+            // without a cache-busting timestamp and skip hidden/offline tabs;
+            // fetchDashboardData() also prevents overlapping requests.
+            setInterval(() => {
+                if (document.hidden || !navigator.onLine) return;
+                fetchDashboardData();
+            }, DASHBOARD_REFRESH_INTERVAL_MS);
             // Keep "updated X min ago" and the "next update" countdown honest
             // between data refreshes.
             renderUpdateTimeBar(latestMetadata);
-            setInterval(() => renderUpdateTimeBar(latestMetadata), 30000);
+            setInterval(() => {
+                if (!document.hidden) renderUpdateTimeBar(latestMetadata);
+            }, 30000);
 
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
@@ -2832,6 +2907,20 @@
         // run above this line when the DOM is already parsed; a `const` here
         // would be in its temporal dead zone and throw a ReferenceError.
         var IST_TIME_ZONE = 'Asia/Kolkata';
+
+        function nowInIstParts() {
+            const parts = {};
+            new Intl.DateTimeFormat('en-GB', {
+                timeZone: IST_TIME_ZONE,
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).formatToParts(new Date()).forEach(part => { parts[part.type] = part.value; });
+            return {
+                hour: parseInt(parts.hour || '0', 10),
+                minute: parseInt(parts.minute || '0', 10)
+            };
+        }
 
         function parseTimestamp(value) {
             if (!value) return null;
@@ -3117,10 +3206,20 @@
 
         function tryFetchLiveDataGovBrowser(slotMeta, tokenIndex = 0, resourceIndex = 0) {
             if (tokenIndex >= GOV_DATA_API_TOKENS.length || resourceIndex >= GOV_DATA_RESOURCE_IDS.length) return;
+            // The published snapshot already refreshes four times daily. Probe
+            // the public API at most once per slot instead of on every poll.
+            if (tokenIndex === 0 && resourceIndex === 0) {
+                const slotKey = slotMeta?.slotKey || 'unknown';
+                if (liveGovFetchSlotKey === slotKey) return;
+                liveGovFetchSlotKey = slotKey;
+            }
             const apiKey = GOV_DATA_API_TOKENS[tokenIndex];
             const resId = GOV_DATA_RESOURCE_IDS[resourceIndex];
             const url = `https://api.data.gov.in/resource/${resId}?api-key=${apiKey}&format=json&limit=500&filters%5Bstate.keyword%5D=Uttar%20Pradesh`;
-            fetch(url)
+            const timeoutSignal = typeof AbortSignal.timeout === 'function'
+                ? AbortSignal.timeout(8000)
+                : undefined;
+            fetch(url, timeoutSignal ? { signal: timeoutSignal } : undefined)
                 .then(res => {
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     return res.json();
@@ -3158,6 +3257,7 @@
                         }
                     });
                     if (mergedCount > 0) {
+                        invalidatePriceRecordCaches();
                         renderRatesTable();
                         updatePinnedStaples();
                         renderStaplesLeaderboard();
@@ -3457,14 +3557,20 @@
 
         function buildAtoZMandiDirectory() {
             const officialMandis = Array.isArray(mandiDetailsData?.mandis) ? mandiDetailsData.mandis : [];
+            // Build one lookup instead of scanning 8,000 rows for each of the
+            // 291 official mandis (previously ~2.4 million comparisons).
+            const recordsByMandi = new Map();
+            const mandiLookupKey = row => `${String(row.district || '')}|${String(row.mandi || '').replace(/ APMC$/i, '')}`;
+            (Array.isArray(latestData) ? latestData : []).forEach(row => {
+                const key = mandiLookupKey(row);
+                if (!recordsByMandi.has(key)) recordsByMandi.set(key, []);
+                recordsByMandi.get(key).push(row);
+            });
             // Enrich mandis with commodity_count from latestData when JSON has 0
             if (officialMandis.length) {
                 mandiDirectoryList = officialMandis.map(mandi => {
-                    const mandiRecords = latestData.filter(row => {
-                        const mMatch = (row.mandi || '').replace(/ APMC$/i, '') === (mandi.mandi || '').replace(/ APMC$/i, '');
-                        const dMatch = (row.district || '') === (mandi.district || '');
-                        return mMatch && dMatch;
-                    });
+                    const lookupKey = `${String(mandi.district || '')}|${String(mandi.mandi || '').replace(/ APMC$/i, '')}`;
+                    const mandiRecords = recordsByMandi.get(lookupKey) || [];
                     const liveCommodities = [...new Set(mandiRecords.map(r => r.commodity).filter(Boolean))];
                     return {
                         ...mandi,
@@ -3726,57 +3832,39 @@
         });
 
         function fetchDashboardData() {
+            // Never start a second 9-file refresh while one is still decoding
+            // or rendering. This also makes repeated interval/manual clicks safe.
+            if (dashboardFetchInFlight) return dashboardFetchInFlight;
+
             const refreshIcon = document.getElementById('refresh-icon');
+            const stopRefreshIcon = () => {
+                if (refreshIcon) {
+                    setTimeout(() => refreshIcon.classList.remove('animate-spin'), 300);
+                }
+            };
             if (refreshIcon) refreshIcon.classList.add('animate-spin');
 
-            const host = window.location.origin;
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const timestamp = new Date().getTime();
-
-            // Production-grade router: directly fetch from data/latest.json with Cache-Busting timestamp if on GitHub Pages
-            const fetchLatest = isLocal
-                ? fetch(`${host}/api/v2/rates?limit=10000`)
-                    .then(res => {
-                        if (!res.ok) throw new Error();
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (!data || !Array.isArray(data.records) || data.records.length === 0) {
-                            return fetch(`data/latest.json?t=${timestamp}`).then(res => res.json());
-                        }
-                        return data;
-                    })
-                    .catch(() => fetch(`data/latest.json?t=${timestamp}`).then(res => res.json()))
-                    .catch(() => ({ records: [] }))
-                : fetch(`data/latest.json?t=${timestamp}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error();
-                        return res.json();
-                    })
-                    .catch(() => ({ records: [] }));
-
-            const fetchHistory = fetch(`data/history.json?t=${timestamp}`)
-                .then(res => {
-                    if (!res.ok) throw new Error();
-                    return res.json();
-                })
-                .catch(() => ({}));
-
-            const fetchJson = (path, fallback) => fetch(`${path}?t=${timestamp}`)
+            // Stable URLs let HTTP ETags and the service worker reuse one cache
+            // entry. Timestamp query strings used to create a fresh ~29 MB
+            // network transfer and cache entry every two minutes.
+            const fetchJson = (path, fallback) => fetch(path, { cache: 'no-cache' })
                 .then(res => {
                     if (!res.ok) throw new Error(`${path} returned ${res.status}`);
                     return res.json();
                 })
                 .catch(error => {
-                    console.warn(`Optional dashboard feed unavailable: ${path}`, error);
+                    console.warn(`Dashboard feed unavailable: ${path}`, error);
                     return fallback;
                 });
 
+            // The browser only loads the compact snapshot. The large canonical
+            // JSON files remain on disk for the Python API and audit trail.
+            const fetchDashboard = fetchJson('data/dashboard.json', null);
+            const fetchHistory = fetchJson('data/history.json', {});
             const fetchStatePrices = fetchJson('data/state_prices.json', { states: [] });
             const fetchMandiDetails = fetchJson('data/mandis.json', { mandis: [] });
             const fetchLaws = fetchJson('data/laws.json', { chapters: [], practical_rules: [], official_sources: [] });
             const fetchSources = fetchJson('data/sources.json', { sources: [] });
-            const fetchSourcePrices = fetchJson('data/source_prices.json', { feeds: [] });
             const fetchBenchmarks = fetchJson('data/benchmarks.json', {
                 state_benchmark: { commodities: [] },
                 mandi_parishad_directory: { mandis: [] },
@@ -3789,25 +3877,29 @@
                 portal_cross_check: { portals: [] }
             });
 
-            Promise.all([fetchLatest, fetchHistory, fetchStatePrices, fetchMandiDetails, fetchLaws, fetchSources, fetchSourcePrices, fetchBenchmarks, fetchBastiDivision])
-            .then(([latest, history, states, mandis, laws, sources, sourcePrices, benchmarks, bastiDivision]) => {
-                latestData = (latest && latest.records) ? latest.records : (latest || []);
-                if (!Array.isArray(latestData)) latestData = [];
-                latestMetadata = latest && !Array.isArray(latest) ? latest : {};
+            dashboardFetchInFlight = Promise.all([
+                fetchDashboard, fetchHistory, fetchStatePrices, fetchMandiDetails,
+                fetchLaws, fetchSources, fetchBenchmarks, fetchBastiDivision
+            ])
+            .then(([dashboard, history, states, mandis, laws, sources, benchmarks, bastiDivision]) => {
+                if (!dashboard) throw new Error('data/dashboard.json is unavailable');
+                const expanded = expandDashboardSnapshot(dashboard);
+                latestData = expanded.latestData;
+                latestMetadata = expanded.latestMetadata;
+                sourcePriceData = expanded.sourcePriceData;
                 historicalData = history || {};
                 statePriceData = states || { states: [] };
                 mandiDetailsData = mandis || { mandis: [] };
                 lawsData = laws || { chapters: [], practical_rules: [], official_sources: [] };
                 sourceData = sources || { sources: [] };
-                sourcePriceData = sourcePrices || { feeds: [] };
                 benchmarkData = benchmarks || { state_benchmark: { commodities: [] }, mandi_parishad_directory: { mandis: [] }, official_portals: [] };
                 bastiDivisionData = bastiDivision || { reports: [], highest_price_district: null, portal_cross_check: { portals: [] } };
+                dashboardDataVersion++;
+                invalidatePriceRecordCaches();
+                ratesVisibleCount = RATES_PAGE_SIZE;
 
                 // When the cross-verification gate published nothing, fall back
                 // to the single-source rows so the dashboard is not blank.
-                // Every such row is tagged `single_source` and the table badges
-                // it as "1 स्रोत — cross-verified नहीं", so a single-feed rate
-                // can never be mistaken for a verified one.
                 usingSingleSourceFallback = false;
                 if (!latestData.length) {
                     const fallback = collectSingleSourceRecords();
@@ -3817,19 +3909,18 @@
                     }
                 }
 
-                // Synchronize 4-time daily IST schedule (06:30, 12:30, 16:30, 20:30 IST),
-                // ensure current IST date across all snapshots, and start automatic slot watcher.
+                // Synchronize 4-time daily IST schedule (06:30, 12:30, 16:30, 20:30 IST).
                 try {
                     synchronizeFourDailyAutoUpdate(latestMetadata, sourcePriceData, sourceData, benchmarkData, bastiDivisionData);
                     startFourDailySlotWatcher();
                     tryFetchLiveDataGovBrowser(computeCurrentIstSlotMeta());
                 } catch (syncErr) {
-                    console.warn("4x daily slot sync warning:", syncErr);
+                    console.warn('4x daily slot sync warning:', syncErr);
                 }
-                
-                // Safe UI Element updates with individual Try-Catch blocks
+
+                const latest = latestMetadata;
                 try {
-                    const lastUpdatedDate = (latest && latest.updated_at) ? new Date(latest.updated_at) : null;
+                    const lastUpdatedDate = latest?.updated_at ? new Date(latest.updated_at) : null;
                     const locale = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
                     const elTime = document.getElementById('stat-updated-time');
                     const elDate = document.getElementById('stat-updated-date');
@@ -3843,10 +3934,9 @@
                         ? lastUpdatedDate.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
                         : '-';
                     if (elGuideUpdated && lastUpdatedDate && !Number.isNaN(lastUpdatedDate.valueOf())) {
-                        elGuideUpdated.innerText = lastUpdatedDate.toLocaleDateString(locale, { 
-                            day: '2-digit', month: 'short', year: 'numeric', 
-                            hour: '2-digit', minute: '2-digit',
-                            timeZone: 'Asia/Kolkata' 
+                        elGuideUpdated.innerText = lastUpdatedDate.toLocaleDateString(locale, {
+                            day: '2-digit', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata'
                         }) + ' IST';
                     }
                     if (elSource) {
@@ -3861,97 +3951,92 @@
                         : '4 times daily • ' + (latest?.update_slots_ist || []).join(', ');
                     updateDataStatus(latest || {});
                     renderUpdateTimeBar(latest || {});
-                } catch (e) { console.error("Error setting update metadata:", e); }
+                } catch (e) { console.error('Error setting update metadata:', e); }
 
                 try {
-                    const sourceRecords = collectSingleSourceRecords();
-                    const uniqueMandis = new Set(sourceRecords.map(r => r.mandi || ''));
-                    const uniqueDistricts = new Set(sourceRecords.map(r => r.district || ''));
+                    const canonicalRecords = getAllPriceRecords();
+                    const uniqueMandis = new Set(canonicalRecords.map(r => r.mandi || ''));
+                    const uniqueDistricts = new Set(canonicalRecords.map(r => r.district || ''));
                     const elMCount = document.getElementById('stat-mandi-count');
                     const elDCount = document.getElementById('stat-districts');
                     const elRCount = document.getElementById('stat-records-count');
                     if (elMCount) elMCount.innerText = uniqueMandis.size;
                     if (elDCount) elDCount.innerText = uniqueDistricts.size;
-                    if (elRCount) elRCount.innerText = sourceRecords.length;
-                } catch (e) { console.error("Error setting mandi count:", e); }
-                
+                    if (elRCount) elRCount.innerText = canonicalRecords.length;
+                } catch (e) { console.error('Error setting mandi count:', e); }
+
                 try {
-                    const sourceRecords = collectSingleSourceRecords();
                     const commCounts = {};
-                    sourceRecords.forEach(r => { const c = r.commodity||''; if(c) commCounts[c] = (commCounts[c]||0)+1; });
-                    const topCrop = Object.entries(commCounts).sort((a,b)=>b[1]-a[1])[0];
-                    if (topCrop) {
-                        const elHot = document.getElementById('stat-hot-crop');
-                        if (elHot) {
-                            elHot.innerText = (currentLang === 'hi') 
-                                ? (topCrop[0] || '-') 
-                                : (topCrop[0] || '-');
-                        }
-                    }
-                } catch (e) { console.error("Error setting hot crop:", e); }
+                    getAllPriceRecords().forEach(r => {
+                        const c = r.commodity || '';
+                        if (c) commCounts[c] = (commCounts[c] || 0) + 1;
+                    });
+                    const topCrop = Object.entries(commCounts).sort((a, b) => b[1] - a[1])[0];
+                    const elHot = document.getElementById('stat-hot-crop');
+                    if (topCrop && elHot) elHot.innerText = topCrop[0] || '-';
+                } catch (e) { console.error('Error setting hot crop:', e); }
 
-                // Safe sequential function runner (Guarantees zero rendering blocks!)
                 const safeRun = (fnName, fn) => {
-                    try {
-                        fn();
-                        console.log(`✅ ${fnName} completed.`);
-                    } catch (e) {
-                        console.error(`❌ Error in ${fnName}:`, e);
-                    }
+                    try { fn(); } catch (e) { console.error(`Error in ${fnName}:`, e); }
                 };
+                const runTasks = tasks => tasks.forEach(([name, fn]) => safeRun(name, fn));
 
-                safeRun('populateDropdowns', populateDropdowns);
-                safeRun('renderRatesTable', renderRatesTable);
-                safeRun('renderStatePrices', renderStatePrices);
-                safeRun('renderStateBenchmark', renderStateBenchmark);
-                safeRun('renderOfficialPortals', renderOfficialPortals);
-                safeRun('renderSourceMonitor', renderSourceMonitor);
-                safeRun('renderSourcePrices', renderSourcePrices);
-                safeRun('buildAtoZMandiDirectory', buildAtoZMandiDirectory);
-                safeRun('renderLaws', renderLaws);
-                safeRun('updatePinnedStaples', updatePinnedStaples);
-                safeRun('renderStaplesLeaderboard', renderStaplesLeaderboard);
-                safeRun('renderPriceRanking', renderPriceRanking);
-                safeRun('renderBastiDivision', renderBastiDivision);
-                safeRun('renderLiveMarketTicker', renderLiveMarketTicker);
-                safeRun('renderWatchlistChips', renderWatchlistChips);
-                safeRun('initCompareSuiteControls', initCompareSuiteControls);
-                safeRun('renderMandiComparisonSuite', renderMandiComparisonSuite);
-                safeRun('renderDistrictSideBySide', renderDistrictSideBySide);
-                safeRun('renderMSPComparisonGrid', renderMSPComparisonGrid);
-                safeRun('renderSmartForecastAdvisor', renderSmartForecastAdvisor);
-                safeRun('renderUPDivisionsExplorer', renderUPDivisionsExplorer);
-                safeRun('initAIToolsControls', initAIToolsControls);
-                safeRun('renderLiveArrivalDesk', renderLiveArrivalDesk);
-                safeRun('initCalculatorEnhancements', initCalculatorEnhancements);
-                safeRun('calculateUnitAndMoisture', calculateUnitAndMoisture);
-                safeRun('renderInlineMandiDirectory', renderInlineMandiDirectory);
-                
-                if (refreshIcon) {
-                    setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
+                // Render the first screen immediately, then yield to the browser
+                // before the secondary widgets. No single task owns the main
+                // thread long enough to make the tab unresponsive.
+                runTasks([
+                    ['populateDropdowns', populateDropdowns],
+                    ['renderRatesTable', renderRatesTable],
+                    ['renderStatePrices', renderStatePrices],
+                    ['updatePinnedStaples', updatePinnedStaples],
+                    ['renderStaplesLeaderboard', renderStaplesLeaderboard],
+                    ['renderPriceRanking', renderPriceRanking],
+                    ['renderLiveMarketTicker', renderLiveMarketTicker],
+                    ['buildAtoZMandiDirectory', buildAtoZMandiDirectory],
+                    ['renderInlineMandiDirectory', renderInlineMandiDirectory]
+                ]);
+                stopRefreshIcon();
+
+                const secondaryTasks = [
+                    ['renderSourcePrices', renderSourcePrices],
+                    ['renderStateBenchmark', renderStateBenchmark],
+                    ['renderOfficialPortals', renderOfficialPortals],
+                    ['renderSourceMonitor', renderSourceMonitor],
+                    ['renderLaws', renderLaws],
+                    ['renderBastiDivision', renderBastiDivision],
+                    ['renderWatchlistChips', renderWatchlistChips],
+                    ['initCompareSuiteControls', initCompareSuiteControls],
+                    ['renderMandiComparisonSuite', renderMandiComparisonSuite],
+                    ['renderDistrictSideBySide', renderDistrictSideBySide],
+                    ['renderMSPComparisonGrid', renderMSPComparisonGrid],
+                    ['renderSmartForecastAdvisor', renderSmartForecastAdvisor],
+                    ['renderUPDivisionsExplorer', renderUPDivisionsExplorer],
+                    ['initAIToolsControls', initAIToolsControls],
+                    ['renderLiveArrivalDesk', renderLiveArrivalDesk],
+                    ['initCalculatorEnhancements', initCalculatorEnhancements],
+                    ['calculateUnitAndMoisture', calculateUnitAndMoisture]
+                ];
+                const runSecondary = () => runTasks(secondaryTasks);
+                if (typeof window.requestIdleCallback === 'function') {
+                    window.requestIdleCallback(runSecondary, { timeout: 1200 });
+                } else {
+                    setTimeout(runSecondary, 50);
                 }
             })
             .catch(err => {
                 console.error('Error fetching dashboard data:', err);
-                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
-            });
+                stopRefreshIcon();
+            })
+            .finally(() => { dashboardFetchInFlight = null; });
+
+            return dashboardFetchInFlight;
         }
 
         function refreshData() {
-            // Save scroll position
-            sessionStorage.setItem('mandiScrollY', window.scrollY);
-            // Quick reload
-            location.reload();
+            // Fetch in place. Reloading the whole page used to restart the
+            // 29 MB parse/render cycle and could trigger a service-worker loop.
+            fetchDashboardData();
         }
-
-        // Restore scroll position after page load
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedY = sessionStorage.getItem('mandiScrollY');
-            if (savedY !== null) {
-                window.scrollTo(0, parseInt(savedY, 10));
-                sessionStorage.removeItem('mandiScrollY');
-            }
-        });
 
         // ================= AI MANDI ASSISTANT =================
         function initializeMandiAIControls() {
@@ -4070,11 +4155,12 @@
                 name: feed.name,
                 name_hi: feed.name_hi,
                 status: feed.status,
-                records: rankMandiAIRecords(feed.records || [], question).slice(0, 40).map(record => compactRecord({
-                    ...record,
-                    source: record.source || feed.name || feed.id,
-                    verification_level: 'single_source'
-                }))
+                records: rankMandiAIRecords(feed.records || [], question).slice(0, 40).map(record => {
+                    const compact = compactRecord(record);
+                    compact.source = record.source || feed.name || feed.id;
+                    compact.verification_level = 'single_source';
+                    return compact;
+                })
             }));
             return {
                 updated_at: latestMetadata?.updated_at,
@@ -4722,18 +4808,18 @@
         function renderInlineMandiDirectory(searchQuery = '') {
             const grid = document.getElementById('inline-mandi-directory-grid');
             if (!grid) return;
-            const list = Array.isArray(mandiDirectoryData) && mandiDirectoryData.length
-                ? mandiDirectoryData
+            const list = Array.isArray(mandiDirectoryList) && mandiDirectoryList.length
+                ? mandiDirectoryList
                 : [];
             if (!list.length) return;
             const q = String(searchQuery || document.getElementById('inline-mandi-search')?.value || '').trim().toLowerCase();
             const filtered = q
-                ? list.filter(m => searchableText(m.name, m.name_hi, m.district, m.district_hi, m.grade).includes(q))
+                ? list.filter(m => searchableText(m.mandi, m.mandi_hi, m.district, m.district_hi, m.grade).includes(q))
                 : list;
             grid.innerHTML = filtered.slice(0, 120).map(m => `
-                <button onclick="openMandiDetails('${escapeJsString(m.name)}')" class="text-left bg-slate-50 dark:bg-slate-900/60 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-400 rounded-xl p-3 transition group">
+                <button onclick="openMandiDetails(${Number(m._directoryIndex ?? 0)})" class="text-left bg-slate-50 dark:bg-slate-900/60 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-400 rounded-xl p-3 transition group">
                     <div class="flex items-center justify-between gap-1">
-                        <span class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-brand-700 truncate">${escapeHtml(m.name_hi || m.name)}</span>
+                        <span class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-brand-700 truncate">${escapeHtml(m.mandi_hi || m.mandi || m.name_hi || m.name || '—')}</span>
                         <span class="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[9px] font-black">${escapeHtml(m.grade || 'Grade A')}</span>
                     </div>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">📍 ${escapeHtml(m.district_hi || m.district)} • 📞 ${escapeHtml(m.cug || m.phone || 'Helpline')}</p>
@@ -4898,34 +4984,26 @@
             return false;
         }
         function getAllPriceRecords() {
-            const verified = (Array.isArray(latestData) ? latestData : []).filter(r => isUPRecord(r) && !isOutlier(r));
-            const singleSource = [];
-            if (Array.isArray(sourcePriceData?.feeds)) {
-                for (const feed of sourcePriceData.feeds) {
-                    if (feed && Array.isArray(feed.records)) {
-                        for (const r of feed.records) {
-                            if (r && Number.isFinite(Number(r.modal_price)) && isUPRecord(r) && !isOutlier(r)) {
-                                singleSource.push({
-                                    ...r,
-                                    source: r.source || feed.name || feed.id,
-                                    verification_level: r.verification_level || 'single_source'
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            // Deduplicate by (district, mandi, commodity, variety, date)
+            if (combinedPriceRecordsCache) return combinedPriceRecordsCache;
             const seen = new Set();
             const combined = [];
-            for (const r of [...verified, ...singleSource]) {
+            const addRecord = r => {
+                if (!r || !Number.isFinite(Number(r.modal_price)) || !isUPRecord(r) || isOutlier(r)) return;
+                // Deduplicate by (district, mandi, commodity, variety, date).
+                // Verified rows win over single-source rows.
                 const key = `${r.district}|${r.mandi}|${r.commodity}|${r.variety}|${r.arrival_date}`;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    combined.push(r);
+                if (seen.has(key)) return;
+                seen.add(key);
+                combined.push(r);
+            };
+            (Array.isArray(latestData) ? latestData : []).forEach(addRecord);
+            if (Array.isArray(sourcePriceData?.feeds)) {
+                for (const feed of sourcePriceData.feeds) {
+                    if (feed && Array.isArray(feed.records)) feed.records.forEach(addRecord);
                 }
             }
-            return combined;
+            combinedPriceRecordsCache = combined;
+            return combinedPriceRecordsCache;
         }
 
         function updatePinnedStaples() {
@@ -5179,7 +5257,23 @@
             const cardsContainer = document.getElementById('rates-cards-mobile');
             const emptyState = document.getElementById('rates-empty-state');
             const countBadge = document.getElementById('records-count');
+            const pagination = document.getElementById('rates-pagination');
             if (!tableBody || !cardsContainer) return;
+
+            // Reset to the first page whenever a filter, sort, language or data
+            // version changes. A stable signature lets "Show more" append rows
+            // without rebuilding the whole 8,000-row DOM.
+            const filterSignature = [
+                dashboardDataVersion, currentLang, currentSortMode, currentCategoryFilter,
+                document.getElementById('rate-search')?.value || '',
+                document.getElementById('filter-district')?.value || 'all',
+                document.getElementById('filter-commodity')?.value || 'all',
+                document.getElementById('filter-date')?.value || 'all'
+            ].join('|');
+            if (filterSignature !== lastRatesRenderSignature) {
+                lastRatesRenderSignature = filterSignature;
+                ratesVisibleCount = RATES_PAGE_SIZE;
+            }
 
             const filtered = getFilteredRecords();
             if (countBadge) countBadge.innerText = `${filtered.length} ${currentLang === 'hi' ? 'रिकॉर्ड' : 'records'}`;
@@ -5187,6 +5281,7 @@
             if (filtered.length === 0) {
                 tableBody.innerHTML = '';
                 cardsContainer.innerHTML = '';
+                if (pagination) pagination.innerHTML = '';
                 if (emptyState) {
                     explainWhyNoPrices();
                     emptyState.classList.remove('hidden');
@@ -5209,11 +5304,12 @@
                 filtered.sort((a, b) => (Number(a.modal_price) || 0) - (Number(b.modal_price) || 0));
             }
 
+            const visibleRecords = filtered.slice(0, Math.min(ratesVisibleCount, filtered.length));
             let tableHtml = '';
             let cardsHtml = '';
             let lastDistrict = '';
 
-            filtered.forEach(r => {
+            visibleRecords.forEach(r => {
                 const distName = escapeHtml(displayName(r, 'district') || (currentLang === 'hi' ? 'अज्ञात जिला' : 'Unknown district'));
                 const mandiName = escapeHtml(displayName(r, 'mandi') || (currentLang === 'hi' ? 'मंडी' : 'Mandi'));
                 const cropName = escapeHtml(displayName(r, 'commodity') || (currentLang === 'hi' ? 'जिंस' : 'Crop'));
@@ -5302,7 +5398,27 @@
 
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
+            if (pagination) {
+                const shown = visibleRecords.length;
+                const total = filtered.length;
+                const showingLabel = currentLang === 'hi'
+                    ? `${shown.toLocaleString('en-IN')} / ${total.toLocaleString('en-IN')} रिकॉर्ड दिखाए गए`
+                    : `Showing ${shown.toLocaleString('en-IN')} of ${total.toLocaleString('en-IN')} records`;
+                const moreLabel = currentLang === 'hi' ? 'और भाव दिखाएँ' : 'Show more rates';
+                pagination.innerHTML = `
+                    <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">${showingLabel}</span>
+                        ${shown < total
+                            ? `<button type="button" onclick="showMoreRates()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">${moreLabel} →</button>`
+                            : ''}
+                    </div>`;
+            }
             renderIcons();
+        }
+
+        function showMoreRates() {
+            ratesVisibleCount += RATES_PAGE_SIZE;
+            renderRatesTable();
         }
 
         // Dynamic list sorting controller
@@ -5312,6 +5428,7 @@
             const modes = ['district', 'price-desc', 'price-asc'];
             modes.forEach(m => {
                 const btn = document.getElementById(`sort-btn-${m}`);
+                if (!btn) return;
                 if (m === mode) {
                     btn.className = "py-1.5 px-3 rounded-lg border font-bold text-[11px] transition bg-emerald-50 border-emerald-500 text-emerald-700";
                 } else {
@@ -6001,6 +6118,7 @@
             const scopes = ['all', 'top10', 'bottom10'];
             scopes.forEach(s => {
                 const btn = document.getElementById(`rank-scope-${s === 'all' ? 'all' : (s === 'top10' ? 'top' : 'bottom')}`);
+                if (!btn) return;
                 if (s === scope) {
                     btn.className = "py-1 px-2.5 font-bold text-[10px] rounded transition bg-white text-slate-700 shadow-sm";
                 } else {
@@ -6052,11 +6170,19 @@
             setRankCard(3, records[2]);
             setRankCard('lowest', records.length ? records[records.length - 1] : null);
 
-            let renderedList = [...records];
+            let renderedList;
+            let getRank;
             if (currentRankingScope === 'top10') {
                 renderedList = records.slice(0, 10);
+                getRank = (record, index) => index + 1;
             } else if (currentRankingScope === 'bottom10') {
                 renderedList = records.slice(-10).reverse();
+                getRank = (record, index) => records.length - index;
+            } else {
+                // "All" means the top 100 on screen. CSV/PDF exports still use
+                // the complete filtered dataset.
+                renderedList = records.slice(0, RANKING_PAGE_SIZE);
+                getRank = (record, index) => index + 1;
             }
 
             let maxVal = records.length > 0 ? (Number(records[0].modal_price) || 0) : 0;
@@ -6067,7 +6193,7 @@
 
             let html = '';
             renderedList.forEach((r, idx) => {
-                const rank = records.indexOf(r) + 1;
+                const rank = getRank(r, idx);
                 const distName = escapeHtml(displayName(r, 'district') || '—');
                 const mandiName = escapeHtml(displayName(r, 'mandi') || '—');
                 const cropName = escapeHtml(displayName(r, 'commodity') || '—');
@@ -6120,6 +6246,12 @@
                 `;
             });
 
+            if (currentRankingScope === 'all' && records.length > renderedList.length) {
+                const note = currentLang === 'hi'
+                    ? `तेज़ लोडिंग के लिए शीर्ष ${renderedList.length.toLocaleString('en-IN')} / ${records.length.toLocaleString('en-IN')} भाव दिखाए गए हैं। Top 10 / Bottom 10 या फ़िल्टर का उपयोग करें।`
+                    : `Showing the top ${renderedList.length.toLocaleString('en-IN')} of ${records.length.toLocaleString('en-IN')} rates for fast loading. Use Top 10, Bottom 10 or a filter.`;
+                html += `<tr><td colspan="7" class="p-3 text-center text-xs font-semibold text-slate-500">${escapeHtml(note)}</td></tr>`;
+            }
             tableBody.innerHTML = html || '<tr><td colspan="7" class="p-8 text-center text-slate-400">कोई डेटा उपलब्ध नहीं है।</td></tr>';
             renderIcons();
         }
@@ -6586,15 +6718,16 @@
         async function initLiveAuctionYard() {
             const status = document.getElementById('ws-status');
             if (status) status.innerText = currentLang === 'hi' ? 'Official feed जाँच रहे हैं...' : 'Checking official feed...';
-            const timestamp = Date.now();
             const isApiHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-            const url = isApiHost ? '/api/v2/auction/lots' : `data/auction.json?t=${timestamp}`;
+            // Stable URL: a timestamp creates a new service-worker cache entry
+            // every time the auction tab is opened.
+            const url = isApiHost ? '/api/v2/auction/lots' : 'data/auction.json';
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, { cache: 'no-cache' });
                 if (!response.ok) throw new Error(`Auction feed returned ${response.status}`);
                 auctionSnapshot = await response.json();
             } catch (error) {
-                console.error('Official auction feed failed:', error);
+                console.warn('Official auction feed unavailable:', error);
                 auctionSnapshot = {
                     status: 'temporarily_unavailable',
                     message_hi: 'अधिकृत e-NAM feed उपलब्ध नहीं है। कोई simulated lot नहीं दिखाया गया है।',
@@ -7024,11 +7157,14 @@
                             </div>
                         </button>
                         <div id="${detailsId}" class="hidden border-t border-slate-100 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-900">
-                            ${recs.map(r => `
+                            ${recs.slice(0, DISTRICT_DETAIL_LIMIT).map(r => `
                                 <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 flex items-center justify-between gap-2 text-xs">
                                     <div><p class="font-bold text-slate-800 dark:text-white">${escapeHtml(displayName(r,'mandi')||r.mandi)}</p><p class="text-[10px] text-slate-400">${escapeHtml(displayName(r,'commodity')||r.commodity)} • ${escapeHtml(displayName(r,'variety')||'Other')}</p></div>
                                     <div class="text-right"><p class="font-black text-emerald-700 dark:text-emerald-400">₹${(Number(r.modal_price)||0).toLocaleString('en-IN')}/Q</p><p class="text-[9px] text-slate-400">₹${(Number(r.min_price)||0).toLocaleString('en-IN')} – ₹${(Number(r.max_price)||0).toLocaleString('en-IN')}</p></div>
                                 </div>`).join('')}
+                            ${recs.length > DISTRICT_DETAIL_LIMIT
+                                ? `<p class="text-center text-[10px] font-bold text-slate-500 pt-1">${currentLang === 'hi' ? 'पहले' : 'First'} ${DISTRICT_DETAIL_LIMIT} / ${recs.length.toLocaleString('en-IN')} ${currentLang === 'hi' ? 'भाव दिखाए गए' : 'rates shown'}</p>`
+                                : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -7196,7 +7332,7 @@
                     record.district, record.district_hi, record.mandi, record.mandi_hi,
                     record.commodity, record.commodity_hi, record.variety, record.grade
                 ].some(value => String(value || '').toLocaleLowerCase().includes(query))) : allRecords;
-                const visible = filtered.slice(0, 500);
+                const visible = filtered.slice(0, SOURCE_FEED_RENDER_LIMIT);
                 const status = feed.status || 'unavailable';
                 const isLive = status === 'live';
                 const isCached = status === 'cached';

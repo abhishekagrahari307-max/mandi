@@ -25,6 +25,7 @@
 - **🤖 AI Mandi Sahayak:** किसान/व्यापारी Hindi/Hinglish में सवाल पूछ सकते हैं; backend official mandi JSON को OpenRouter या किसी भी configured OpenAI-compatible AI provider तक भेजता है और API key कभी frontend में expose नहीं होती।
 - **🏆 Smart Agri-Tech AI Tools:** configured Vision/Text models से crop disease photo scanner, mandi receipt OCR/local khata, sell/hold trend advisor, Hindi voice question+answer, transport profit calculator, Open-Meteo weather risk warning और govt scheme advisor।
 - **🔄 दिन में 4 बार auto-update:** 06:30, 12:30, 16:30 और 20:30 IST। Source failure पर last verified snapshot रखा जाता है—random data नहीं बनता।
+- **📱 Mobile-safe loading:** browser केवल ~750 KB का `data/dashboard.json` पढ़ता है, रिकॉर्ड 100-100 के पेज में render होते हैं, और refresh stable cache keys का उपयोग करता है। 29 MB के दोहराए गए canonical JSON अब page load पर parse नहीं होते।
 
 ---
 
@@ -37,6 +38,7 @@
 ├── sw.js                       # सर्विस वर्कर (ऑफ़लाइन कैशिंग के लिए)
 ├── update_data.py              # Official multi-source data pipeline (no simulation)
 ├── data/
+│   ├── dashboard.json          # Browser के लिए compact, dictionary-encoded snapshot
 │   ├── latest.json             # 2-source gate पास UP verified prices
 │   ├── source_prices.json      # हर official feed के अलग single-source prices
 │   ├── state_prices.json       # State/district/mandi price summary
