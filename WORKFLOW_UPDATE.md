@@ -76,6 +76,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python update_data.py
 
+      - name: Build compact browser snapshot
+        run: python scripts/build_dashboard_snapshot.py --verify
+
       - name: Validate application and generated snapshots
         run: python run_tests_safe.py
 
@@ -86,6 +89,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+workflow@users.noreply.github.com"
           git add -- \
+            data/dashboard.json \
             data/latest.json \
             data/source_prices.json \
             data/history.json \
@@ -107,9 +111,10 @@ jobs:
 
 ### Key Changes:
 1. ✅ **New step:** `Run 6-method parallel data fetcher` runs `complete_fetcher_all_methods.py` BEFORE `update_data.py`
-2. ✅ **GEMINI_API_KEY** added to both step env blocks
-3. ✅ **up_emandi_directory.json** added to git add list
-4. ✅ Step name changed: "Install test dependencies" → "Install dependencies"
+2. ✅ **Mobile-safe snapshot:** `scripts/build_dashboard_snapshot.py --verify` creates the compact `data/dashboard.json` after every official refresh, and the workflow publishes it with the other snapshots.
+3. ✅ **GEMINI_API_KEY** added to both step env blocks
+4. ✅ **up_emandi_directory.json** added to git add list
+5. ✅ Step name changed: "Install test dependencies" → "Install dependencies"
 
 ### Step 3: GitHub Secrets add karo
 
