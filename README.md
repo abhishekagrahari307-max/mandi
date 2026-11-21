@@ -110,7 +110,7 @@ AI_API_KEY=freellmapi-your-unified-key
 AI_MODEL=auto
 AI_VISION_MODEL=auto
 ```
-`AI_API_BASE_URL` किसी भी compatible `/v1` base URL पर set किया जा सकता है; `AI_MODEL` और `AI_VISION_MODEL` से gateway के उपलब्ध model/profile चुनें। OpenRouter की credentials custom endpoint पर forward नहीं होतीं। `AI_TIMEOUT_SECONDS` और `AI_MAX_TOKENS` वैकल्पिक overrides हैं। ये `AI_API_*` settings interactive assistant/tools के लिए हैं; `update_data.py` का वैकल्पिक web-grounded AI fetcher अभी अलग से `OPENROUTER_API_KEY` या `GEMINI_API_KEY` पढ़ता है। Core price refresh फिर भी official feeds पर आधारित है।
+`AI_API_BASE_URL` किसी भी compatible `/v1` base URL पर set किया जा सकता है; `AI_MODEL` और `AI_VISION_MODEL` से gateway के उपलब्ध model/profile चुनें। OpenRouter की credentials custom endpoint पर forward नहीं होतीं। `AI_TIMEOUT_SECONDS` और `AI_MAX_TOKENS` वैकल्पिक overrides हैं। ये `AI_API_*` settings केवल interactive assistant/tools के लिए हैं; AI-generated उत्तर price refresh में सरकारी feed के रूप में इस्तेमाल नहीं होते।
 
 FreeLLMAPI upstream free-tier quotas/availability पर निर्भर करता है; provider keys और model requests upstream providers तक पहुँचते हैं, इसलिए उनके terms/privacy भी देखें। Mandi की server-side key को `index.html` या browser JavaScript में कभी न रखें। Docker में `localhost` Mandi container को बताता है—FreeLLMAPI उसी host/network पर चल रहा हो तो reachable service/host URL इस्तेमाल करें। Render जैसे cloud backend से local computer का `localhost` उपलब्ध नहीं होगा; वहाँ backend से reachable, secured HTTPS/private endpoint configure करें और उसे अनधिकृत public access के लिए न खोलें।
 
@@ -202,14 +202,15 @@ unavailable/unverified status दिखाता है।
 > report)। बाकी दो — e-NAM और UP e-Mandi trade feeds — केवल उन्हीं integrators को
 > मिलते हैं जिन्हें संबंधित सरकारी portal ने authorise किया हो। इसलिए 3 का नियम
 > व्यवहार में **हर भाव को हमेशा के लिए रोक देता था**, चाहे दोनों public feeds बिल्कुल
-> एक जैसा भाव बताएं। दो स्वतंत्र सरकारी feeds का exact match अब भी असली
-> cross-verification है।
+> एक जैसा भाव बताएं। दो feeds का exact match दिखाया जाता है, लेकिन data.gov.in और AGMARKNET एक ही मूल डेटा साझा करते हैं; उनका match स्वतंत्र पुष्टि नहीं है। स्वतंत्र पुष्टि के लिए अलग अधिकृत स्रोत आवश्यक है।
 
 **एकल-स्रोत (single-source) भाव:** अगर किसी भाव को केवल 1 feed ने बताया है तो वह
 मुख्य verified तालिका में नहीं जाता, लेकिन dashboard उसे छिपाता भी नहीं। ऐसा भाव
 **`⚠ 1 स्रोत — cross-verified नहीं`** badge और उस सरकारी feed के नाम के साथ दिखाया
 जाता है, ताकि किसान/व्यापारी उसे कभी सत्यापित भाव न समझें। सौदे से पहले संबंधित
 मंडी समिति से पुष्टि करने की सलाह UI में दी जाती है।
+
+**Setup:** GitHub repository के Settings → Secrets and variables → Actions में `DATA_GOV_IN_API_KEY` जोड़ें। अधिकृत e-NAM और UP e-Mandi endpoints मिले हों तो नीचे दिए URL/key secrets भी जोड़ें। फ़ीड JSON में `records`, `data` या `prices` array और प्रत्येक row में state, district, market/mandi, commodity, modal price और date अपेक्षित हैं; आवश्यक field/schema अलग हो तो adapter बदलना पड़ेगा। URL/key कभी frontend में न रखें। Workflow merge होने के बाद Actions → Multi-Daily Mandi Price Update → Run workflow से परीक्षण करें और Source Monitor में status देखें। Credentials के बिना restricted feeds connect नहीं होंगे; केवल URL भरना approval का विकल्प नहीं है।
 
 Pipeline इन सरकारी sources को अलग-अलग monitor करता है:
 
