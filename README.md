@@ -29,6 +29,12 @@
 
 ---
 
+### User-uploaded CSV snapshot
+
+Rates पेज पर **अपलोड किए गए CSV भाव** एक अलग, manually imported UP snapshot है। यह user-provided फ़ाइल है; उसका मूल स्रोत स्वतंत्र रूप से सत्यापित नहीं है, और इसे live, सरकारी पुष्टि या cross-verified भाव न समझें। रिकॉर्ड की अपनी तारीख दिखती है; यह अपने-आप अपडेट नहीं होता और verified snapshots, graphs या government feed में नहीं मिलता। नया OGD-format CSV मिलने पर, repository root से `python scripts/import_mandi_csv.py path/to/file.csv` चलाकर `data/uploaded_prices.json` पुनः बनाएँ। Script State, District, Market, Commodity, Variety, Grade, Arrival_Date और `Min_x0020_Price`, `Max_x0020_Price`, `Modal_x0020_Price` columns अपेक्षित करता है; invalid UP rows छोड़ता है और valid UP records न हों तो पुराना snapshot नहीं बदलता। स्रोत और डेटा साझा करने की अनुमति जाँचें।
+
+Live official feed के लिए अलग से `DATA_GOV_IN_API_KEY` configure करना आवश्यक है; CSV से API credentials या automatic feed नहीं बनते।
+
 ### बिना key का community मंडी भाव
 
 Rates पेज पर **Community mirror** बटन [Mandi Price API](https://mandi-api.vercel.app/docs) (shrinivas-sn) से सीधे browser में UP के भाव पढ़ता है। यह third-party data.gov.in mirror है, न कोई सरकारी feed और न स्वतंत्र cross-verification। हर पंक्ति पर reported तारीख देखें; पुराना डेटा live नहीं माना जाता। API अधिकतम 200 परिणाम देती है; exact English commodity और optional market से खोजें। यह existing verified tables या snapshots में शामिल नहीं होता। कोई API key नहीं चाहिए, लेकिन network, CORS और provider availability पर निर्भर है। Provider repository का [CC BY-NC-SA 4.0 license](https://github.com/shrinivas-sn/mandi-api/blob/main/LICENSE) गैर-व्यावसायिक है; commercial deployment से पहले provider की अनुमति लें।

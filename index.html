@@ -531,6 +531,19 @@
                 <div id="mirror-prices" class="text-xs text-slate-700 dark:text-slate-200" aria-live="polite">भाव देखने के लिए बटन दबाएँ।</div>
             </div>
 
+            <!-- Uploaded snapshot: never added to live/verified feeds. -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-sky-200 dark:border-sky-800 p-5 space-y-3">
+                <h3 class="font-black text-lg text-slate-900 dark:text-white">📄 अपलोड किए गए CSV भाव · UP</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300">उपयोगकर्ता द्वारा दी गई फ़ाइल का एक बार का snapshot। स्रोत की स्वतंत्र पुष्टि नहीं हुई; यह live या cross-verified feed नहीं है। तारीख देखें और सौदे से पहले मंडी से पुष्टि करें।</p>
+                <div class="flex flex-wrap gap-2 items-end">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-200">जिला, मंडी या फसल खोजें
+                        <input id="uploaded-search" type="search" oninput="renderUploadedPrices()" placeholder="Wheat / Lucknow" class="block mt-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900">
+                    </label>
+                    <button type="button" onclick="loadUploadedPrices()" class="px-4 py-2 rounded-lg bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs">CSV भाव देखें</button>
+                </div>
+                <div id="uploaded-prices" aria-live="polite" class="text-xs text-slate-700 dark:text-slate-200">बटन दबाकर snapshot देखें।</div>
+            </div>
+
             <!-- Personal Watchlist Bar -->
             <div id="watchlist-panel" class="bg-gradient-to-r from-amber-50 via-yellow-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-emerald-950/30 rounded-2xl shadow-sm border border-amber-200 dark:border-slate-700 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
@@ -8205,6 +8218,60 @@
                 if (requestId === mandiMirrorRequest) output.textContent = 'Community feed उपलब्ध नहीं है। इंटरनेट जाँचें और बाद में फिर प्रयास करें।';
             } finally {
                 clearTimeout(timeout);
+            }
+        }
+        // Separate, manually imported data; never treated as a live feed.
+        let uploadedPriceRows = null;
+        let uploadedPriceLimit = 50;
+        let uploadedLoadId = 0;
+        async function loadUploadedPrices() {
+            const output = document.getElementById('uploaded-prices');
+            const id = ++uploadedLoadId;
+            uploadedPriceRows = null;
+            output.textContent = 'Snapshot लोड हो रहा है…';
+            try {
+                const response = await fetch('data/uploaded_prices.json', {cache: 'no-cache'});
+                if (!response.ok) throw new Error('Snapshot unavailable');
+                const payload = await response.json();
+                if (!Array.isArray(payload.records)) throw new Error('Invalid snapshot');
+                if (id !== uploadedLoadId) return;
+                uploadedPriceRows = payload.records;
+                uploadedPriceLimit = 50;
+                renderUploadedPrices();
+            } catch (error) {
+                if (id === uploadedLoadId) output.textContent = 'CSV snapshot उपलब्ध नहीं है। बाद में फिर प्रयास करें।';
+            }
+        }
+        function renderUploadedPrices(showMore = false) {
+            if (!uploadedPriceRows) return;
+            if (showMore === true) uploadedPriceLimit += 50;
+            else uploadedPriceLimit = 50;
+            const output = document.getElementById('uploaded-prices');
+            const query = document.getElementById('uploaded-search').value.trim().toLocaleLowerCase();
+            const filtered = uploadedPriceRows.filter(row => row && ['district', 'market', 'commodity', 'variety'].some(key => String(row[key] || '').toLocaleLowerCase().includes(query)));
+            output.replaceChildren();
+            const summary = document.createElement('p');
+            summary.className = 'font-semibold mb-2';
+            summary.textContent = `${filtered.length} रिकॉर्ड · User-uploaded CSV · स्रोत स्वतंत्र रूप से सत्यापित नहीं · automatic update नहीं`;
+            output.appendChild(summary);
+            if (!filtered.length) return;
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2';
+            filtered.slice(0, uploadedPriceLimit).forEach(row => {
+                const card = document.createElement('div');
+                card.className = 'rounded-lg p-3 bg-sky-50 dark:bg-slate-900 border border-sky-100 dark:border-slate-700';
+                // Text nodes avoid treating CSV data as markup.
+                card.textContent = `${row.district} · ${row.market} | ${row.commodity} (${row.variety || '—'} / ${row.grade || '—'}) | भाव तिथि: ${row.arrival_date} | न्यूनतम ₹${row.min_price} · मॉडल ₹${row.modal_price} · अधिकतम ₹${row.max_price}`;
+                grid.appendChild(card);
+            });
+            output.appendChild(grid);
+            if (filtered.length > uploadedPriceLimit) {
+                const more = document.createElement('button');
+                more.type = 'button';
+                more.className = 'mt-3 px-3 py-2 rounded-lg bg-sky-700 text-white font-bold';
+                more.textContent = `और देखें (${Math.min(uploadedPriceLimit, filtered.length)}/${filtered.length})`;
+                more.onclick = () => renderUploadedPrices(true);
+                output.appendChild(more);
             }
         }
     </script>
