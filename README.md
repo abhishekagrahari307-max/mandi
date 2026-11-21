@@ -96,6 +96,16 @@ docker compose up --build
 
 `JWT_SECRET` बनाने के लिए `openssl rand -hex 32` का उपयोग कर सकते हैं। असली secret, password या access token को कभी commit न करें।
 
+### Admin login सुरक्षा
+
+API mode में केवल configured admin account से login करें; public signup उपलब्ध नहीं है। Login endpoint एक process में हर client IP के लिए 5 प्रयास प्रति 5 मिनट तक सीमित करता है, जिसमें सफल प्रयास भी गिने जाते हैं। Limit पर HTTP 429 और `Retry-After` मिलता है। यह in-memory सुरक्षा है: restart पर reset होती है और multiple workers/servers में साझा नहीं है। Production में reverse proxy या shared rate limiter भी लगाएँ; trusted proxy configuration सही रखें। Bearer tokens 60 मिनट बाद expire होते हैं; logout browser से token हटाता है, server पर तत्काल revoke नहीं करता। केवल HTTPS पर admin panel चलाएँ।
+
+पुराने repository versions में embedded provider credentials मौजूद थे। यदि वे आपके हैं या आपके provider account से जुड़े हैं, तो उन्हें तुरंत provider dashboard से revoke/rotate करें—केवल code से हटाने पर Git history से वे नहीं हटते। नए secrets `.env` या deployment secrets में दें, repository में नहीं।
+
+### API directories का उपयोग
+
+दिए गए public-apis और अन्य सूचीबद्ध repositories directories हैं, स्वयं मंडी-price feeds नहीं। पहले से जोड़ा गया Mandi Price API community mirror keyless है लेकिन third-party, 200-result सीमित और गैर-व्यावसायिक licence के अधीन है; उसके भाव स्वतंत्र रूप से verified नहीं हैं। data.gov.in का official feed key मांगता है; e-NAM और UP e-Mandi trade feeds के लिए अधिकृत access चाहिए। अनजान, demo/mock, stock या GST APIs को मंडी भाव के रूप में न जोड़ें। किसी भी नए स्रोत के लिए coverage, freshness, licence और source provenance जाँचें।
+
 ### AI Mandi Sahayak: OpenRouter या FreeLLMAPI
 
 `/api/v2/mandi-ai` और `/api/v2/ai-tools` official mandi JSON के साथ OpenAI-compatible `/v1/chat/completions` API इस्तेमाल करते हैं। Default provider OpenRouter है और पुराने `OPENROUTER_*` settings काम करते रहेंगे।

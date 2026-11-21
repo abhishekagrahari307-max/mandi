@@ -64,8 +64,6 @@ SAMPLE_DATA_GOV_API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac5
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-os.environ.setdefault("OPENROUTER_API_KEY", OPENROUTER_API_TOKEN_POOL[0])
-os.environ.setdefault("GEMINI_API_KEY", GEMINI_API_TOKEN_POOL[0])
 
 ACROP_BASE_URL = "https://acrop.app/mandi/uttar-pradesh"
 COMMODITYONLINE_URL = "https://www.commodityonline.com/mandi-prices/uttar-pradesh"

@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -31,6 +32,50 @@ class AppSmokeTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.client_context.__exit__(None, None, None)
         Path(TEST_DB.name).unlink(missing_ok=True)
+
+    def setUp(self):
+        # The limiter is intentionally per-process; isolate tests from each other.
+        with mandi_app._login_lock:
+            mandi_app._login_attempts.clear()
+
+    def test_no_bundled_provider_keys_or_browser_price_override(self):
+        self.assertNotIn('GOV_DATA_API_TOKENS', Path('index.html').read_text(encoding='utf-8'))
+        self.assertNotIn('tryFetchLiveDataGovBrowser', Path('index.html').read_text(encoding='utf-8'))
+        self.assertNotIn('_OR_PREFIX', Path('update_data.py').read_text(encoding='utf-8'))
+        self.assertNotIn('_GM_PREFIX', Path('update_data.py').read_text(encoding='utf-8'))
+
+    def test_login_rate_limit_and_retry_after(self):
+        for _ in range(mandi_app.LOGIN_LIMIT):
+            response = self.client.post('/api/v2/auth/login', data={'username': 'missing', 'password': 'wrong'})
+            self.assertEqual(response.status_code, 401)
+        response = self.client.post('/api/v2/auth/login', data={'username': 'testadmin', 'password': 'correct-horse-battery-staple'})
+        self.assertEqual(response.status_code, 429)
+        self.assertGreater(int(response.headers['retry-after']), 0)
+        with mandi_app._login_lock:
+            mandi_app._login_attempts.clear()
+        response = self.client.post('/api/v2/auth/login', data={'username': 'testadmin', 'password': 'correct-horse-battery-staple'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_limit_expires_and_separates_clients(self):
+        with patch.object(mandi_app.time, "monotonic", return_value=1000):
+            for _ in range(mandi_app.LOGIN_LIMIT):
+                self.assertEqual(mandi_app._reserve_login_attempt("client-a"), 0)
+            self.assertGreater(mandi_app._reserve_login_attempt("client-a"), 0)
+            self.assertEqual(mandi_app._reserve_login_attempt("client-b"), 0)
+        with patch.object(mandi_app.time, "monotonic", return_value=1301):
+            self.assertEqual(mandi_app._reserve_login_attempt("client-a"), 0)
+
+    def test_token_without_expiration_is_rejected(self):
+        from jose import jwt
+        token = jwt.encode({'sub': 'testadmin', 'iat': 1}, mandi_app.SECRET_KEY, algorithm=mandi_app.ALGORITHM)
+        response = self.client.get('/api/v2/financials/reports', headers={'Authorization': 'Bearer ' + token})
+        self.assertEqual(response.status_code, 401)
+
+    def test_token_status_never_reveals_secret_fragments(self):
+        response = self.client.get('/api/v2/tokens/status')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('masked_tokens', response.json())
+        self.assertNotIn('masked_ai_tokens', response.json())
 
     def test_health_and_dashboard(self):
         health = self.client.get("/health")
@@ -250,8 +295,8 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(body["status"], "active")
         self.assertTrue(body["auto_update_enabled"])
         self.assertEqual(body["update_slots_ist"], ["06:30", "12:30", "16:30", "20:30"])
-        self.assertEqual(body["government_api_tokens_configured"], 60)
-        self.assertEqual(body["ai_api_tokens_configured"], 11)
+        self.assertEqual(body["government_api_tokens_configured"], len(mandi_app.daily_snapshot_engine.update_data.GOV_DATA_API_TOKEN_POOL))
+        self.assertEqual(body["ai_api_tokens_configured"], len(mandi_app.AI_PROVIDER_TOKEN_POOL))
         self.assertGreaterEqual(body["total_records"], 8000)
         self.assertEqual(body["total_districts"], 75)
         self.assertGreaterEqual(body["total_mandis"], 365)
@@ -260,10 +305,10 @@ class AppSmokeTests(unittest.TestCase):
         tok_resp = self.client.get("/api/v2/tokens/status")
         self.assertEqual(tok_resp.status_code, 200)
         tok_body = tok_resp.json()
-        self.assertEqual(tok_body["total_tokens"], 60)
-        self.assertEqual(tok_body["ai_tokens_total"], 11)
-        self.assertEqual(tok_body["openrouter_tokens_count"], 6)
-        self.assertEqual(tok_body["gemini_tokens_count"], 5)
+        self.assertEqual(tok_body["total_tokens"], len(mandi_app.daily_snapshot_engine.update_data.GOV_DATA_API_TOKEN_POOL))
+        self.assertEqual(tok_body["ai_tokens_total"], len(mandi_app.AI_PROVIDER_TOKEN_POOL))
+        self.assertEqual(tok_body["openrouter_tokens_count"], len(mandi_app.OPENROUTER_API_TOKEN_POOL))
+        self.assertEqual(tok_body["gemini_tokens_count"], len(mandi_app.GEMINI_API_TOKEN_POOL))
         self.assertEqual(len(tok_body["resource_ids"]), 3)
 
         html = self.client.get("/").text
@@ -290,17 +335,18 @@ class AppSmokeTests(unittest.TestCase):
         ):
             self.assertIn(required_hook, html)
 
-    def test_ai_status_and_grounded_mandi_ai_tools(self):
+    @patch.object(mandi_app, "_call_ai_chat", return_value=("Test answer", "test-model"))
+    def test_ai_status_and_grounded_mandi_ai_tools(self, mock_ai):
         ai_status = self.client.get("/api/v2/ai/status")
         self.assertEqual(ai_status.status_code, 200)
         status_json = ai_status.json()
         self.assertEqual(status_json["status"], "active")
         self.assertTrue(status_json["ai_enabled"])
-        self.assertEqual(status_json["ai_tokens_total"], 11)
+        self.assertEqual(status_json["ai_tokens_total"], len(mandi_app.AI_PROVIDER_TOKEN_POOL))
         self.assertIn("mandi_ai_chat", status_json["tools_active"])
         self.assertIn("transport_profit", status_json["tools_active"])
 
-        # Test Mandi AI Chat endpoint with live grounded fallback if upstream LLM fails
+        # Exercise the UI contract without calling a live AI provider.
         chat_resp = self.client.post(
             "/api/v2/mandi-ai",
             json={
