@@ -1,45 +1,12 @@
 {
   "updated_at": "2026-11-21T18:32:38.088861+05:30",
-  "last_checked_at": "2026-11-21T18:32:38.088861+05:30",
-  "active_slot_ist": "16:30",
-  "next_slot_ist": "20:30",
-  "slot_log": [
-    {
-      "slot_ist": "06:30",
-      "scheduled_at": "2026-11-21T06:30:00+05:30",
-      "status": "completed"
-    },
-    {
-      "slot_ist": "12:30",
-      "scheduled_at": "2026-11-21T12:30:00+05:30",
-      "status": "completed"
-    },
-    {
-      "slot_ist": "16:30",
-      "scheduled_at": "2026-11-21T16:30:00+05:30",
-      "status": "completed"
-    },
-    {
-      "slot_ist": "20:30",
-      "scheduled_at": "2026-11-21T20:30:00+05:30",
-      "status": "scheduled"
-    }
-  ],
+  "last_checked_at": "2026-11-22T02:20:58.726231+05:30",
   "source": "Cross-verified OGD (data.gov.in) & AGMARKNET",
   "verified": true,
-  "is_live": true,
-  "connected_price_sources": [
-    "data.gov.in",
-    "AGMARKNET"
-  ],
-  "connected_price_source_count": 2,
+  "is_live": false,
+  "connected_price_sources": [],
+  "connected_price_source_count": 0,
   "minimum_price_source_matches": 2,
-  "government_api_tokens_configured": 60,
-  "ogd_resource_ids": [
-    "9ef84268-d588-465a-a308-a864a43d0070",
-    "35985678-0d79-46b4-9ed6-6f13308a1d24",
-    "6141ea17-a69d-4713-b600-0a43c8fd9a6c"
-  ],
   "cross_verified_record_count": 8878,
   "multi_source_verified_record_count": 8878,
   "three_source_verified_record_count": 0,

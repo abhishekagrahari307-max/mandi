@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-21T18:32:38.088861+05:30",
+  "updated_at": "2026-11-22T02:21:05.305881+05:30",
   "policy": "Every value below is copied from an official government portal. No simulated, random or interpolated figure is stored.",
   "state_benchmark": {
     "title_hi": "उत्तर प्रदेश राज्य-स्तरीय संदर्भ भाव (Benchmark)",
@@ -10,7 +10,8 @@
     "disclaimer_en": "This is the state-level benchmark published by the UP Directorate of Agricultural Marketing, not an individual mandi rate. See the verified mandi table for market-wise prices.",
     "source": "UP Krishi Vipran (Directorate of Agricultural Marketing, UP)",
     "source_url": "https://www.upkrishivipran.in/Default.aspx",
-    "status": "ok",
+    "status": "cached",
+    "message": "state ticker returned no parseable benchmark rates",
     "commodities": [
       {
         "commodity": "Wheat",
@@ -132,15 +133,14 @@
         "is_mandi_rate": false,
         "date": "21/11/2026"
       }
-    ],
-    "updated_at": "2026-11-21T18:32:38.088861+05:30"
+    ]
   },
   "mandi_parishad_directory": {
     "title_hi": "राज्य कृषि उत्पादन मण्डी परिषद — मण्डी निर्देशिका",
     "title_en": "UP State Agricultural Produce Market Board — mandi directory",
     "source": "राज्य कृषि उत्पादन मण्डी परिषद, उत्तर प्रदेश",
     "source_url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-    "status": "ok",
+    "status": "cached",
     "fields": [
       "division",
       "district",
@@ -285,7 +285,11 @@
     "title_en": "AGMARKNET national price portal",
     "source_url": "https://agmarknet.gov.in/home",
     "report_url": "https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=0&Tx_State=UP&Tx_District=0&Tx_Market=0&Tx_Trend=0",
-    "status": "ok"
+    "status": {
+      "reachable": false,
+      "url": "https://agmarknet.gov.in/home",
+      "error": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
+    }
   },
   "official_portals": [
     {

@@ -1,5 +1,5 @@
 {
-  "last_checked_at": "2026-11-21T18:32:38.088861+05:30",
+  "last_checked_at": "2026-11-22T02:20:58.726231+05:30",
   "update_frequency": "4 times daily",
   "update_slots_ist": [
     "06:30",
@@ -10,62 +10,54 @@
   "sources": [
     {
       "name": "data.gov.in",
-      "status": "ok",
-      "records": 8878,
-      "url": "https://data.gov.in/",
-      "message": "Verified 8878 UP mandi records across 75 districts (21/11/2026 • 16:30 IST)"
+      "status": "error",
+      "message": "DATA_GOV_IN_API_KEY format invalid: key contains spaces/newlines — paste only the raw key — Possible reasons: key invalid / not verified / expired / email verification pending. Troubleshoot: 1) data.gov.in → My Account → verify email (click verification link). 2) Copy key again without spaces. 3) In GitHub repo → Settings → Secrets and variables → Actions → pencil icon on DATA_GOV_IN_API_KEY → paste → Save. 4) Actions tab → Multi-Daily Mandi Price Update → Run workflow."
     },
     {
       "name": "AGMARKNET portal",
-      "status": "ok",
-      "records": 8878,
+      "status": "error",
       "url": "https://agmarknet.gov.in/home",
-      "message": "Cross-verified 8878 UP commodity price records (21/11/2026)"
+      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
     },
     {
       "name": "AGMARKNET",
-      "status": "ok",
-      "records": 8878,
-      "url": "https://agmarknet.gov.in/home",
-      "message": "Active (21/11/2026 • 16:30 IST)"
-    },
-    {
-      "name": "UP Mandi Parishad directory",
-      "status": "ok",
-      "records": 394,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
-      "message": "394 notified APMC mandis across 18 divisions & 75 districts"
-    },
-    {
-      "name": "UP Krishi Vipran state benchmark",
-      "status": "ok",
-      "records": 12,
-      "url": "https://www.upkrishivipran.in/Default.aspx",
-      "message": "Published 12 state-level benchmark commodities (21/11/2026)"
+      "status": "error",
+      "message": "HTTP Error 403: Forbidden — <!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
     },
     {
       "name": "e-NAM trade feed",
       "status": "not_configured",
-      "records": 0,
-      "url": "https://www.enam.gov.in/web/"
+      "records": 0
     },
     {
       "name": "UP e-Mandi trade feed",
       "status": "not_configured",
-      "records": 0,
-      "url": "https://emandi.up.gov.in/"
+      "records": 0
     },
     {
       "name": "UP e-Mandi contacts",
-      "status": "ok",
+      "status": "unavailable",
+      "records": 0,
+      "url": null
+    },
+    {
+      "name": "UP Mandi Parishad directory",
+      "status": "error",
       "records": 9,
-      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx"
+      "url": "https://dashboard.mandiprojects.in/MandiDetails.aspx",
+      "message": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'dashboard.mandiprojects.in'. (_ssl.c:1018)>"
+    },
+    {
+      "name": "UP Krishi Vipran state benchmark",
+      "status": "error",
+      "records": 12,
+      "url": "https://www.upkrishivipran.in/Default.aspx",
+      "message": "state ticker returned no parseable benchmark rates"
     },
     {
       "name": "e-NAM authorised auction feed",
       "status": "not_configured",
-      "records": 0,
-      "url": "https://www.enam.gov.in/web/"
+      "records": 0
     }
   ],
   "official_portals": [
