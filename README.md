@@ -29,6 +29,12 @@
 
 ---
 
+### कृषि मौसम डेटा / Agricultural weather data
+
+AI Tools में मौसम कार्ड के **पूर्वानुमान देखें** बटन से Open-Meteo का 7-दिन का तापमान, वर्षा, वर्षा की संभावना, अधिकतम हवा और FAO ET₀ (संदर्भ वाष्पोत्सर्जन) देखें। यह बिना AI backend या API key के काम करता है। स्थान preset, GPS या coordinates से चुनें; अनुरोध केवल बटन दबाने पर होता है और coordinates सीधे Open-Meteo को भेजे जाते हैं। GPS के लिए browser permission आवश्यक है। डेटा पूर्वानुमान है, मंडी भाव या सरकारी मौसम चेतावनी नहीं; उपलब्ध न होने पर कोई अनुमानित डेटा नहीं दिखाया जाता। Open-Meteo की मुफ्त सेवा **गैर-व्यावसायिक उपयोग** के लिए है; व्यावसायिक deployment से पहले उनकी [शर्तें और pricing](https://open-meteo.com/en/terms) जाँचें।
+
+[public-apis](https://github.com/public-apis/public-apis) एक directory है, एक एकीकृत कृषि feed नहीं। इस सूची से Open-Meteo चुना गया है; असंबंधित या अप्रमाणित APIs को सरकारी भाव के रूप में नहीं दिखाया जाता। Existing data.gov.in और अधिकृत feeds की server-side key configuration नीचे दी गई है।
+
 ## 🛠️ फ़ाइल संरचना (Project Structure)
 
 ```bash
