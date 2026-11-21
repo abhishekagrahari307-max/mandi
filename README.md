@@ -29,6 +29,10 @@
 
 ---
 
+### बिना key का community मंडी भाव
+
+Rates पेज पर **Community mirror** बटन [Mandi Price API](https://mandi-api.vercel.app/docs) (shrinivas-sn) से सीधे browser में UP के भाव पढ़ता है। यह third-party data.gov.in mirror है, न कोई सरकारी feed और न स्वतंत्र cross-verification। हर पंक्ति पर reported तारीख देखें; पुराना डेटा live नहीं माना जाता। API अधिकतम 200 परिणाम देती है; exact English commodity और optional market से खोजें। यह existing verified tables या snapshots में शामिल नहीं होता। कोई API key नहीं चाहिए, लेकिन network, CORS और provider availability पर निर्भर है। Provider repository का [CC BY-NC-SA 4.0 license](https://github.com/shrinivas-sn/mandi-api/blob/main/LICENSE) गैर-व्यावसायिक है; commercial deployment से पहले provider की अनुमति लें।
+
 ### कृषि मौसम डेटा / Agricultural weather data
 
 AI Tools में मौसम कार्ड के **पूर्वानुमान देखें** बटन से Open-Meteo का 7-दिन का तापमान, वर्षा, वर्षा की संभावना, अधिकतम हवा और FAO ET₀ (संदर्भ वाष्पोत्सर्जन) देखें। यह बिना AI backend या API key के काम करता है। स्थान preset, GPS या coordinates से चुनें; अनुरोध केवल बटन दबाने पर होता है और coordinates सीधे Open-Meteo को भेजे जाते हैं। GPS के लिए browser permission आवश्यक है। डेटा पूर्वानुमान है, मंडी भाव या सरकारी मौसम चेतावनी नहीं; उपलब्ध न होने पर कोई अनुमानित डेटा नहीं दिखाया जाता। Open-Meteo की मुफ्त सेवा **गैर-व्यावसायिक उपयोग** के लिए है; व्यावसायिक deployment से पहले उनकी [शर्तें और pricing](https://open-meteo.com/en/terms) जाँचें।
