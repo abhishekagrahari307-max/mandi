@@ -245,6 +245,7 @@
                 body: params
             })
             .then(res => {
+                if (res.status === 429) throw new Error("Too many attempts");
                 if (!res.ok) throw new Error("Unauthorized");
                 return res.json();
             })
@@ -256,7 +257,11 @@
             })
             .catch(err => {
                 console.error(err);
-                document.getElementById('login-error').classList.remove('hidden');
+                const errorBox = document.getElementById('login-error');
+                errorBox.textContent = err.message === 'Too many attempts'
+                    ? 'बहुत अधिक प्रयास। कृपया कुछ मिनट बाद दोबारा कोशिश करें।'
+                    : 'लॉगिन नहीं हुआ। विवरण और नेटवर्क जाँचें।';
+                errorBox.classList.remove('hidden');
             });
         }
 

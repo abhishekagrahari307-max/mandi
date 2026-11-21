@@ -9,6 +9,8 @@ import io
 import hashlib
 import logging
 import secrets
+import threading
+import time
 from typing import Any
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, Request, WebSocket
@@ -258,9 +260,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_sess: Session = Dep
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"require_exp": True, "require_iat": True, "require_sub": True})
         username: str = payload.get("sub")
-        if username is None:
+        if not isinstance(username, str) or not username:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
@@ -407,11 +409,6 @@ MAX_AI_CONTEXT_RECORDS = 120
 from update_data import OPENROUTER_API_TOKEN_POOL, GEMINI_API_TOKEN_POOL
 AI_PROVIDER_TOKEN_POOL = OPENROUTER_API_TOKEN_POOL + GEMINI_API_TOKEN_POOL
 
-# Pre-configure default server-side AI credentials from the token pool when
-# none were supplied externally. Unit tests that pop OPENROUTER_API_KEY /
-# AI_API_KEY from os.environ still exercise the fail-closed 503 check.
-os.environ.setdefault("OPENROUTER_API_KEY", OPENROUTER_API_TOKEN_POOL[0])
-os.environ.setdefault("GEMINI_API_KEY", GEMINI_API_TOKEN_POOL[0])
 
 
 def _read_json_file(path: str, fallback: Any) -> Any:
@@ -833,10 +830,43 @@ def _safe_image_data_url(image_data: str | None) -> str:
 
 # ================= REST API ENDPOINTS =================
 
+# Per-process, bounded login throttling. Use a shared reverse-proxy/Redis limit
+# in multi-worker deployments; never trust arbitrary X-Forwarded-For headers.
+LOGIN_LIMIT = 5
+LOGIN_WINDOW_SECONDS = 300
+LOGIN_MAX_CLIENTS = 10000
+_login_attempts: dict[str, list[float]] = {}
+_login_lock = threading.Lock()
+_DUMMY_PASSWORD_HASH = bcrypt.hashpw(b"not-a-valid-password", bcrypt.gensalt()).decode("utf-8")
+
+
+def _reserve_login_attempt(client: str) -> int:
+    now = time.monotonic()
+    with _login_lock:
+        for key in list(_login_attempts):
+            _login_attempts[key] = [t for t in _login_attempts[key] if now - t < LOGIN_WINDOW_SECONDS]
+            if not _login_attempts[key]:
+                del _login_attempts[key]
+        attempts = _login_attempts.get(client, [])
+        if len(attempts) >= LOGIN_LIMIT:
+            return max(1, int(LOGIN_WINDOW_SECONDS - (now - attempts[0]) + 0.999))
+        if client not in _login_attempts and len(_login_attempts) >= LOGIN_MAX_CLIENTS:
+            return LOGIN_WINDOW_SECONDS
+        attempts.append(now)
+        _login_attempts[client] = attempts
+        return 0
+
+
 @app.post("/api/v2/auth/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = Depends(get_db)):
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db_sess: Session = Depends(get_db)):
+    client = request.client.host if request.client else "unknown"
+    retry_after = _reserve_login_attempt(client)
+    if retry_after:
+        raise HTTPException(status_code=429, detail="Too many login attempts; try again later",
+                            headers={"Retry-After": str(retry_after)})
     user = db_sess.query(db.User).filter(db.User.username == form_data.username).first()
-    if not user or not user.is_active or not verify_password(form_data.password, user.hashed_password):
+    password_valid = verify_password(form_data.password, user.hashed_password if user else _DUMMY_PASSWORD_HASH)
+    if not user or not user.is_active or not password_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -1768,17 +1798,13 @@ def get_government_tokens_status():
     """Return status of configured Government of India OGD API tokens, AI tokens, and resources."""
     token_pool = list(getattr(daily_snapshot_engine.update_data, "GOV_DATA_API_TOKEN_POOL", ()))
     resource_ids = list(getattr(daily_snapshot_engine.update_data, "DATA_GOV_RESOURCE_IDS", ()))
-    masked_tokens = [f"{t[:10]}...{t[-6:]}" for t in token_pool]
-    masked_ai_tokens = [f"{t[:10]}...{t[-6:]}" for t in AI_PROVIDER_TOKEN_POOL]
     return {
         "status": "active",
         "provider": "Open Government Data (data.gov.in), AGMARKNET & OpenRouter/Gemini AI",
         "total_tokens": len(token_pool),
-        "masked_tokens": masked_tokens,
         "ai_tokens_total": len(AI_PROVIDER_TOKEN_POOL),
         "openrouter_tokens_count": len(OPENROUTER_API_TOKEN_POOL),
         "gemini_tokens_count": len(GEMINI_API_TOKEN_POOL),
-        "masked_ai_tokens": masked_ai_tokens,
         "resource_ids": resource_ids,
         "rotation_mode": "automatic_failover",
     }
