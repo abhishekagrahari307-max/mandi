@@ -512,6 +512,25 @@
                 <div id="source-price-feeds" class="p-4 space-y-6"></div>
             </div>
 
+            <!-- Community mirror is deliberately separate from official and verified feeds. -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-amber-200 dark:border-amber-800 p-5 space-y-3">
+                <div>
+                    <h3 class="font-black text-lg text-slate-900 dark:text-white">🌾 बिना key के मंडी भाव · Community mirror</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Third-party Mandi Price API, data.gov.in से प्राप्त डेटा। यह सरकारी API नहीं है और स्वतंत्र cross-verification नहीं है। तारीख देखकर मंडी से पुष्टि करें।</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-200">फसल / Commodity (exact)
+                        <input id="mirror-commodity" type="text" maxlength="80" placeholder="Wheat" class="block mt-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-200">मंडी / Market (optional)
+                        <input id="mirror-market" type="text" maxlength="80" placeholder="Lucknow" class="block mt-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900">
+                    </label>
+                    <button id="mirror-load" type="button" onclick="loadMandiMirror()" class="self-end px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs">भाव देखें / Refresh</button>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">अधिकतम 200 रिकॉर्ड; पूरी मंडी सूची नहीं। डेटा पुराना या अनुपलब्ध हो सकता है। <a href="https://mandi-api.vercel.app/docs" target="_blank" rel="noopener noreferrer" class="underline">Mandi Price API</a> · <a href="https://github.com/shrinivas-sn/mandi-api" target="_blank" rel="noopener noreferrer" class="underline">shrinivas-sn</a> · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer" class="underline">CC BY-NC-SA 4.0</a> (non-commercial; commercial use requires permission).</p>
+                <div id="mirror-prices" class="text-xs text-slate-700 dark:text-slate-200" aria-live="polite">भाव देखने के लिए बटन दबाएँ।</div>
+            </div>
+
             <!-- Personal Watchlist Bar -->
             <div id="watchlist-panel" class="bg-gradient-to-r from-amber-50 via-yellow-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-emerald-950/30 rounded-2xl shadow-sm border border-amber-200 dark:border-slate-700 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
@@ -8228,6 +8247,53 @@
                 output.appendChild(grid);
             } catch (error) {
                 if (requestId === agriForecastRequest) output.textContent = 'पूर्वानुमान उपलब्ध नहीं है। इंटरनेट या coordinates जाँचकर फिर प्रयास करें।';
+            } finally {
+                clearTimeout(timeout);
+            }
+        }
+        // Community mirror results are never merged into the official snapshots.
+        let mandiMirrorRequest = 0;
+        async function loadMandiMirror() {
+            const output = document.getElementById('mirror-prices');
+            const commodity = document.getElementById('mirror-commodity').value.trim();
+            const market = document.getElementById('mirror-market').value.trim();
+            const requestId = ++mandiMirrorRequest;
+            output.replaceChildren();
+            output.textContent = 'Community feed लोड हो रहा है…';
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            try {
+                const params = new URLSearchParams({state: 'Uttar Pradesh'});
+                if (commodity) params.set('commodity', commodity);
+                if (market) params.set('market', market);
+                const response = await fetch('https://mandi-api.onrender.com/v1/prices?' + params, {signal: controller.signal, cache: 'no-store'});
+                if (!response.ok) throw new Error('Feed unavailable');
+                const payload = await response.json();
+                if (payload.success !== true || !Array.isArray(payload.data)) throw new Error('Invalid feed');
+                if (requestId !== mandiMirrorRequest) return;
+                output.replaceChildren();
+                if (!payload.data.length) {
+                    output.textContent = 'कोई भाव नहीं मिला या feed उपलब्ध नहीं है। दूसरे filters से फिर प्रयास करें।';
+                    return;
+                }
+                const info = document.createElement('p');
+                info.className = 'font-semibold mb-2';
+                info.textContent = `Community mirror: ${Math.min(payload.data.length, 200)} रिकॉर्ड · जाँच ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})} IST · प्रत्येक रिकॉर्ड की तारीख देखें; अधिकतम 200 परिणाम।`;
+                output.appendChild(info);
+                const container = document.createElement('div');
+                container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto';
+                const field = value => (typeof value === 'string' && value.trim()) ? value.trim() : '—';
+                const price = value => (typeof value === 'number' && Number.isFinite(value) && value >= 0) ? `₹${value.toLocaleString('en-IN')}` : '—';
+                payload.data.slice(0, 200).forEach(row => {
+                    if (!row || typeof row !== 'object') return;
+                    const card = document.createElement('div');
+                    card.className = 'rounded-lg p-3 bg-amber-50 dark:bg-slate-900 border border-amber-100 dark:border-slate-700';
+                    card.textContent = `${field(row.district)} · ${field(row.market)} | ${field(row.commodity)} (${field(row.variety)} / ${field(row.grade)}) | तारीख: ${field(row.arrival_date)} | न्यूनतम ${price(row.min_price)} · मॉडल ${price(row.modal_price)} · अधिकतम ${price(row.max_price)} / क्विंटल`;
+                    container.appendChild(card);
+                });
+                output.appendChild(container);
+            } catch (error) {
+                if (requestId === mandiMirrorRequest) output.textContent = 'Community feed उपलब्ध नहीं है। इंटरनेट जाँचें और बाद में फिर प्रयास करें।';
             } finally {
                 clearTimeout(timeout);
             }
